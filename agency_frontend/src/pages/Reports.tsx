@@ -347,7 +347,7 @@ function Reports() {
                     <th className="px-4 py-2 border">Наименование расходов</th>
                     <th className="px-4 py-2 border">Расход</th>
                     <th className="px-4 py-2 border">Комментарий</th>
-                    <th className="px-4 py-2 border"></th>
+                    <th className="px-4 py-2 border">Действия</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -379,7 +379,7 @@ function Reports() {
                     <th className="px-4 py-2 border">Наименование поступления</th>
                     <th className="px-4 py-2 border">Сумма</th>
                     <th className="px-4 py-2 border">Комментарий</th>
-                    <th className="px-4 py-2 border"></th>
+                    <th className="px-4 py-2 border">Действия</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -412,7 +412,7 @@ function Reports() {
                     <th className="px-4 py-2 border">Сумма</th>
                     <th className="px-4 py-2 border">Сумма с учетом НДС</th>
                     <th className="px-4 py-2 border">Комментарий</th>
-                    <th className="px-4 py-2 border"></th>
+                    <th className="px-4 py-2 border">Действия</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -424,8 +424,8 @@ function Reports() {
                       <td className="px-4 py-2 border">{c.comment}</td>
                       <td className="px-4 py-2 border space-x-2">
                         <button className="text-blue-500" onClick={() => openClientExpense(c)}>Редактировать</button>
-                        <button className="text-green-500" onClick={() => openCloseClientExpense(c)}>Закрыть</button>
                         <button className="text-red-500" onClick={() => deleteClientExpense(c.id)}>Удалить</button>
+                        <button className="ml-4 px-2 py-1 border rounded text-green-600" onClick={() => openCloseClientExpense(c)}>Закрыть расход</button>
                       </td>
                     </tr>
                   ))}
