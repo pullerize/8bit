@@ -133,6 +133,7 @@ function ProjectDetail() {
         }
       }
     } else {
+      setPosts(posts.map((p) => (p.id === post.id ? updated : p)))
       const res = await fetch(`${API_URL}/project_posts/${post.id}`, {
         method: 'PUT',
         headers: {
@@ -140,7 +141,7 @@ function ProjectDetail() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          date: updated.date + 'T00:00:00',
+          date: (updated.date.includes('T') ? updated.date : updated.date + 'T00:00:00'),
           posts_per_day: updated.posts_per_day,
           post_type: updated.post_type,
           status: updated.status,
@@ -150,7 +151,7 @@ function ProjectDetail() {
         const saved = await res.json()
         setPosts(posts.map((p) => (p.id === post.id ? saved : p)))
       } else {
-        setPosts(posts.map((p) => (p.id === post.id ? updated : p)))
+        // keep optimistic value
       }
     }
   }
@@ -214,7 +215,7 @@ function ProjectDetail() {
         </div>
       )}
 
-      <table className="min-w-full bg-white border">
+      <table className="min-w-full bg-white border-separate border-spacing-y-2 border">
         <thead>
           <tr className="bg-gray-100">
             <th className="px-2 py-1 border">Дата</th>
