@@ -291,8 +291,15 @@ def list_expenses(
 
 
 @app.post("/projects/{project_id}/expenses", response_model=schemas.Expense)
-def add_expense(project_id: int, exp: schemas.ExpenseCreate, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
-    return crud.create_expense(db, project_id, exp)
+def add_expense(
+    project_id: int,
+    exp: schemas.ExpenseCreate,
+    month: int | None = None,
+    db: Session = Depends(auth.get_db),
+    current: models.User = Depends(auth.get_current_active_user),
+):
+    today = datetime.utcnow()
+    return crud.create_expense(db, project_id, exp, month or today.month, today.year)
 
 
 @app.put("/expenses/{expense_id}", response_model=schemas.Expense)
@@ -329,8 +336,15 @@ def list_client_expenses(
 
 
 @app.post("/projects/{project_id}/client_expenses", response_model=schemas.ClientExpense)
-def add_client_expense(project_id: int, exp: schemas.ClientExpenseCreate, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
-    return crud.create_client_expense(db, project_id, exp)
+def add_client_expense(
+    project_id: int,
+    exp: schemas.ClientExpenseCreate,
+    month: int | None = None,
+    db: Session = Depends(auth.get_db),
+    current: models.User = Depends(auth.get_current_active_user),
+):
+    today = datetime.utcnow()
+    return crud.create_client_expense(db, project_id, exp, month or today.month, today.year)
 
 
 @app.put("/client_expenses/{expense_id}", response_model=schemas.ClientExpense)
@@ -372,8 +386,15 @@ def list_receipts(
 
 
 @app.post("/projects/{project_id}/receipts", response_model=schemas.Receipt)
-def add_receipt(project_id: int, rec: schemas.ReceiptCreate, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
-    return crud.create_receipt(db, project_id, rec)
+def add_receipt(
+    project_id: int,
+    rec: schemas.ReceiptCreate,
+    month: int | None = None,
+    db: Session = Depends(auth.get_db),
+    current: models.User = Depends(auth.get_current_active_user),
+):
+    today = datetime.utcnow()
+    return crud.create_receipt(db, project_id, rec, month or today.month, today.year)
 
 
 @app.put("/receipts/{receipt_id}", response_model=schemas.Receipt)

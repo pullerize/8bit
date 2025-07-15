@@ -321,8 +321,24 @@ def get_expenses(db: Session, project_id: int, start: datetime | None = None, en
     return q.all()
 
 
-def create_expense(db: Session, project_id: int, exp: schemas.ExpenseCreate) -> models.ProjectExpense:
-    e = models.ProjectExpense(project_id=project_id, name=exp.name, amount=exp.amount, comment=exp.comment)
+def create_expense(
+    db: Session,
+    project_id: int,
+    exp: schemas.ExpenseCreate,
+    month: int | None = None,
+    year: int | None = None,
+) -> models.ProjectExpense:
+    created = datetime.utcnow()
+    if month:
+        y = year or created.year
+        created = datetime(y, month, 1)
+    e = models.ProjectExpense(
+        project_id=project_id,
+        name=exp.name,
+        amount=exp.amount,
+        comment=exp.comment,
+        created_at=created,
+    )
     db.add(e)
     db.commit()
     db.refresh(e)
@@ -357,8 +373,24 @@ def get_receipts(db: Session, project_id: int, start: datetime | None = None, en
     return q.all()
 
 
-def create_receipt(db: Session, project_id: int, rec: schemas.ReceiptCreate) -> models.ProjectReceipt:
-    r = models.ProjectReceipt(project_id=project_id, name=rec.name, amount=rec.amount, comment=rec.comment)
+def create_receipt(
+    db: Session,
+    project_id: int,
+    rec: schemas.ReceiptCreate,
+    month: int | None = None,
+    year: int | None = None,
+) -> models.ProjectReceipt:
+    created = datetime.utcnow()
+    if month:
+        y = year or created.year
+        created = datetime(y, month, 1)
+    r = models.ProjectReceipt(
+        project_id=project_id,
+        name=rec.name,
+        amount=rec.amount,
+        comment=rec.comment,
+        created_at=created,
+    )
     db.add(r)
     db.commit()
     db.refresh(r)
@@ -402,8 +434,24 @@ def get_client_expenses(db: Session, project_id: int, start: datetime | None = N
     return q.all()
 
 
-def create_client_expense(db: Session, project_id: int, exp: schemas.ClientExpenseCreate) -> models.ProjectClientExpense:
-    e = models.ProjectClientExpense(project_id=project_id, name=exp.name, amount=exp.amount, comment=exp.comment)
+def create_client_expense(
+    db: Session,
+    project_id: int,
+    exp: schemas.ClientExpenseCreate,
+    month: int | None = None,
+    year: int | None = None,
+) -> models.ProjectClientExpense:
+    created = datetime.utcnow()
+    if month:
+        y = year or created.year
+        created = datetime(y, month, 1)
+    e = models.ProjectClientExpense(
+        project_id=project_id,
+        name=exp.name,
+        amount=exp.amount,
+        comment=exp.comment,
+        created_at=created,
+    )
     db.add(e)
     db.commit()
     db.refresh(e)

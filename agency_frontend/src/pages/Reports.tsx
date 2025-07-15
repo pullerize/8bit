@@ -159,7 +159,9 @@ function Reports() {
 
   const submitExpense = async () => {
     if (!projectId) return
-    const url = editingExpense ? `${API_URL}/expenses/${editingExpense.id}` : `${API_URL}/projects/${projectId}/expenses`
+    const url = editingExpense
+      ? `${API_URL}/expenses/${editingExpense.id}`
+      : `${API_URL}/projects/${projectId}/expenses?month=${month}`
     const method = editingExpense ? 'PUT' : 'POST'
     const res = await fetch(url, {
       method,
@@ -195,7 +197,9 @@ function Reports() {
 
   const submitReceipt = async () => {
     if (!projectId) return
-    const url = editingReceipt ? `${API_URL}/receipts/${editingReceipt.id}` : `${API_URL}/projects/${projectId}/receipts`
+    const url = editingReceipt
+      ? `${API_URL}/receipts/${editingReceipt.id}`
+      : `${API_URL}/projects/${projectId}/receipts?month=${month}`
     const method = editingReceipt ? 'PUT' : 'POST'
     const res = await fetch(url, {
       method,
@@ -230,7 +234,9 @@ function Reports() {
 
   const submitClientExpense = async () => {
     if (!projectId) return
-    const url = editingClientExpense ? `${API_URL}/client_expenses/${editingClientExpense.id}` : `${API_URL}/projects/${projectId}/client_expenses`
+    const url = editingClientExpense
+      ? `${API_URL}/client_expenses/${editingClientExpense.id}`
+      : `${API_URL}/projects/${projectId}/client_expenses?month=${month}`
     const method = editingClientExpense ? 'PUT' : 'POST'
     const res = await fetch(url, {
       method,
