@@ -42,10 +42,6 @@ function ProjectDetail() {
   const [month, setMonth] = useState(now.getMonth() + 1)
   const [year, setYear] = useState(now.getFullYear())
 
-  const [newDate, setNewDate] = useState('')
-  const [newCount, setNewCount] = useState(1)
-  const [newType, setNewType] = useState('video')
-  const [newStatus, setNewStatus] = useState('in_progress')
 
   const load = async () => {
     const res = await fetch(`${API_URL}/projects/${id}`, { headers: { Authorization: `Bearer ${token}` } })
@@ -63,38 +59,75 @@ function ProjectDetail() {
 
   useEffect(() => { load() }, [id])
 
-  const saveInfo = async () => {
-    await fetch(`${API_URL}/projects/${id}/info`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ posts_count: postsCount, start_date: startDate, end_date: endDate })
-    })
+  const updateInfo = async (data: Partial<{name:string;posts_count:number;start_date:string;end_date:string}>) => {
+    if ('name' in data) {
+      await fetch(`${API_URL}/projects/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ name: data.name })
+      })
+    }
+    const payload: any = {}
+    if ('posts_count' in data) payload.posts_count = data.posts_count
+    if ('start_date' in data) payload.start_date = data.start_date
+    if ('end_date' in data) payload.end_date = data.end_date
+    if (Object.keys(payload).length) {
+      await fetch(`${API_URL}/projects/${id}/info`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(payload)
+      })
+    }
     load()
   }
 
-  const addPost = async () => {
-    if (!newDate) return
-    await fetch(`${API_URL}/projects/${id}/posts`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({
-        date: newDate + 'T00:00:00',
-        posts_per_day: newCount,
-        post_type: newType,
-        status: newStatus
+  const updatePost = async (idx: number, post: Post, field: string, value: any) => {
+    const updated = { ...post, [field]: value }
+    let newPosts = [...posts]
+    if (post.id === 0) {
+      if (field === 'date' && !value) {
+        newPosts = posts
+      } else {
+        const res = await fetch(`${API_URL}/projects/${id}/posts`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({
+            date: updated.date ? updated.date + 'T00:00:00' : new Date().toISOString(),
+            posts_per_day: updated.posts_per_day,
+            post_type: updated.post_type,
+            status: updated.status,
+          })
+        })
+        if (res.ok) {
+          const created = await res.json()
+          newPosts.push(created)
+          updated.id = created.id
+        }
+      }
+    } else {
+      await fetch(`${API_URL}/project_posts/${post.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          date: updated.date + 'T00:00:00',
+          posts_per_day: updated.posts_per_day,
+          post_type: updated.post_type,
+          status: updated.status,
+        })
       })
-    })
-    setNewDate('')
-    setNewCount(1)
-    setNewType('video')
-    setNewStatus('in_progress')
-    load()
+      newPosts = posts.map(p => p.id === post.id ? updated : p)
+    }
+    setPosts(newPosts)
   }
 
   const filteredPosts = posts.filter(p => {
     const d = new Date(p.date)
     return d.getFullYear() === year && d.getMonth() + 1 === month
   })
+  const rows = [...filteredPosts]
+  while (rows.length < postsCount) {
+    rows.push({ id: 0, date: '', posts_per_day: 1, post_type: 'video', status: 'in_progress' })
+  }
 
   return (
     <div className="p-4 space-y-4">
@@ -112,11 +145,11 @@ function ProjectDetail() {
             </thead>
             <tbody>
               <tr>
-                <td className="border px-2 py-1"><input className="border p-1 w-full" value={name} onChange={e=>setName(e.target.value)} /></td>
-                <td className="border px-2 py-1"><input type="number" className="border p-1 w-full" value={postsCount} onChange={e=>setPostsCount(Number(e.target.value))} /></td>
-                <td className="border px-2 py-1"><input type="date" className="border p-1 w-full" value={startDate} onChange={e=>setStartDate(e.target.value)} /></td>
-                <td className="border px-2 py-1"><input type="date" className="border p-1 w-full" value={endDate} onChange={e=>setEndDate(e.target.value)} /></td>
-                <td className="border px-2 py-1 text-center"><button className="px-2 py-1 border rounded" onClick={saveInfo}>Сохранить</button></td>
+                <td className="border px-2 py-1"><input className="border p-1 w-full" value={name} onChange={e=>setName(e.target.value)} onBlur={()=>updateInfo({name})} /></td>
+                <td className="border px-2 py-1"><input type="number" className="border p-1 w-full" value={postsCount} onChange={e=>setPostsCount(Number(e.target.value))} onBlur={()=>updateInfo({posts_count: postsCount})} /></td>
+                <td className="border px-2 py-1"><input type="date" className="border p-1 w-full" value={startDate} onChange={e=>setStartDate(e.target.value)} onBlur={()=>updateInfo({start_date:startDate})} /></td>
+                <td className="border px-2 py-1"><input type="date" className="border p-1 w-full" value={endDate} onChange={e=>setEndDate(e.target.value)} onBlur={()=>updateInfo({end_date:endDate})} /></td>
+                <td className="border px-2 py-1"></td>
               </tr>
             </tbody>
           </table>
@@ -141,36 +174,31 @@ function ProjectDetail() {
           </tr>
         </thead>
         <tbody>
-          {filteredPosts.map(p => (
-            <tr key={p.id} className="text-center border-t" style={{backgroundColor: statusColors[p.status]}}>
-              <td className="border px-2 py-1">{p.date.slice(0,10)}</td>
-              <td className="border px-2 py-1">{p.posts_per_day}</td>
-              <td className="border px-2 py-1">{p.post_type}</td>
-              <td className="border px-2 py-1">{p.status}</td>
+          {rows.map((p, idx) => (
+            <tr key={p.id || `new-${idx}`} className="text-center border-t" style={{borderColor: statusColors[p.status], borderWidth: '2px'}}>
+              <td className="border px-2 py-1">
+                <input type="date" className="border p-1" value={p.date ? p.date.slice(0,10) : ''} onChange={e=>updatePost(idx, p, 'date', e.target.value)} />
+              </td>
+              <td className="border px-2 py-1">
+                <input type="number" className="border p-1 w-16" value={p.posts_per_day} onChange={e=>updatePost(idx, p, 'posts_per_day', Number(e.target.value))} />
+              </td>
+              <td className="border px-2 py-1">
+                <select className="border p-1" value={p.post_type} onChange={e=>updatePost(idx, p, 'post_type', e.target.value)}>
+                  <option value="video">Видео</option>
+                  <option value="static">Статика</option>
+                  <option value="carousel">Карусель</option>
+                </select>
+              </td>
+              <td className="border px-2 py-1">
+                <select className="border p-1" value={p.status} onChange={e=>updatePost(idx, p, 'status', e.target.value)}>
+                  {p.status === 'overdue' && <option value="overdue" disabled>Просрочено</option>}
+                  <option value="in_progress">В работе</option>
+                  <option value="approved">Утвержден</option>
+                  <option value="cancelled">Отменен</option>
+                </select>
+              </td>
             </tr>
           ))}
-          <tr className="text-center border-t">
-            <td className="border px-2 py-1"><input type="date" className="border p-1" value={newDate} onChange={e=>setNewDate(e.target.value)} /></td>
-            <td className="border px-2 py-1"><input type="number" className="border p-1 w-16" value={newCount} onChange={e=>setNewCount(Number(e.target.value))} /></td>
-            <td className="border px-2 py-1">
-              <select className="border p-1" value={newType} onChange={e=>setNewType(e.target.value)}>
-                <option value="video">Видео</option>
-                <option value="static">Статика</option>
-                <option value="carousel">Карусель</option>
-              </select>
-            </td>
-            <td className="border px-2 py-1">
-              <select className="border p-1" value={newStatus} onChange={e=>setNewStatus(e.target.value)}>
-                <option value="in_progress">В работе</option>
-                <option value="approved">Утвержден</option>
-                <option value="cancelled">Отменен</option>
-                <option value="overdue">Просрочено</option>
-              </select>
-            </td>
-            <td className="border px-2 py-1">
-              <button className="px-2 py-1 border rounded" onClick={addPost}>Добавить</button>
-            </td>
-          </tr>
         </tbody>
       </table>
     </div>
