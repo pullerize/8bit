@@ -133,18 +133,25 @@ function ProjectDetail() {
         }
       }
     } else {
-      await fetch(`${API_URL}/project_posts/${post.id}`, {
+      const res = await fetch(`${API_URL}/project_posts/${post.id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({
           date: updated.date + 'T00:00:00',
           posts_per_day: updated.posts_per_day,
           post_type: updated.post_type,
           status: updated.status,
-        })
+        }),
       })
-      setPosts(posts.map(p => p.id === post.id ? updated : p))
-      load()
+      if (res.ok) {
+        const saved = await res.json()
+        setPosts(posts.map((p) => (p.id === post.id ? saved : p)))
+      } else {
+        setPosts(posts.map((p) => (p.id === post.id ? updated : p)))
+      }
     }
   }
 
