@@ -20,7 +20,7 @@ function Donut({stats}:{stats:PostSummary}) {
   const pIn = total? stats.in_progress/total*100:0
   const pOver = total? stats.overdue/total*100:0
   const pCancel = total? stats.cancelled/total*100:0
-  const bg = `conic-gradient(green 0 ${pApproved}%, yellow ${pApproved}% ${pApproved+pIn}%, red ${pApproved+pIn}% ${pApproved+pIn+pOver}%, gray ${pApproved+pIn+pOver}% 100%)`
+  const bg = `conic-gradient(green 0 ${pApproved}%, #d4a017 ${pApproved}% ${pApproved+pIn}%, red ${pApproved+pIn}% ${pApproved+pIn+pOver}%, gray ${pApproved+pIn+pOver}% 100%)`
   return <div className="w-32 h-32 rounded-full" style={{background:bg}} />
 }
 

@@ -76,14 +76,26 @@ class Operator(Base):
     role = Column(Enum(OperatorRole))
     color = Column(String, default="#ff0000")
 
+def first_day_current_month() -> datetime:
+    now = datetime.utcnow()
+    return datetime(now.year, now.month, 1)
+
+
+def first_day_next_month() -> datetime:
+    now = datetime.utcnow()
+    year = now.year + (1 if now.month == 12 else 0)
+    month = 1 if now.month == 12 else now.month + 1
+    return datetime(year, month, 1)
+
+
 class Project(Base):
     __tablename__ = "projects"
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, index=True)
     posts_count = Column(Integer, default=0)
-    start_date = Column(DateTime, default=datetime.utcnow)
-    end_date = Column(DateTime, default=datetime.utcnow)
+    start_date = Column(DateTime, default=first_day_current_month)
+    end_date = Column(DateTime, default=first_day_next_month)
 
 class Shooting(Base):
     __tablename__ = "shootings"

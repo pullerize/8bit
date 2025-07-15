@@ -19,7 +19,7 @@ interface Project {
 }
 
 const statusColors: Record<string, string> = {
-  in_progress: 'yellow',
+  in_progress: '#d4a017',
   cancelled: 'gray',
   approved: 'green',
   overdue: 'red',
