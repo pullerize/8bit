@@ -14,7 +14,10 @@ uvicorn agency_backend.app.main:app --reload --port 8000
 ```
 
 A default admin user with login `admin` and password `admin123` is created on
-first run.
+first run. The API requires authentication for most endpoints, so obtain a token
+via the `/token` endpoint before requesting protected resources. If you see
+`401 Unauthorized` errors in the frontend, make sure you are logged in and the
+`Authorization` header is being sent with your requests.
 
 ## Frontend
 
