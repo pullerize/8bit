@@ -43,6 +43,7 @@ function ProjectDetail() {
   const [month, setMonth] = useState(now.getMonth() + 1)
   const [year, setYear] = useState(now.getFullYear())
   const [loaded, setLoaded] = useState(false)
+  const [initialized, setInitialized] = useState(false)
 
 
   const load = async () => {
@@ -69,6 +70,10 @@ function ProjectDetail() {
 
   useEffect(() => {
     if (!loaded) return
+    if (!initialized) {
+      setInitialized(true)
+      return
+    }
     const start = new Date(Date.UTC(year, month - 1, 1))
     const end = new Date(Date.UTC(year, month, 1))
     const startStr = start.toISOString().slice(0, 10)
@@ -78,7 +83,7 @@ function ProjectDetail() {
     setEndDate(endStr)
     setDrafts([])
     updateInfo({ posts_count: 0, start_date: startStr, end_date: endStr })
-  }, [month, year, loaded])
+  }, [month, year, loaded, initialized])
 
   const updateInfo = async (data: Partial<{name:string;posts_count:number;start_date:string;end_date:string}>) => {
     if ('name' in data) {
@@ -149,25 +154,21 @@ function ProjectDetail() {
   })
 
   useEffect(() => {
+    if (!loaded) return
     const relevant = posts.filter(p => {
       const d = new Date(p.date)
       return d.getFullYear() === year && d.getMonth() + 1 === month
     })
     const total = relevant.reduce((sum, p) => sum + p.posts_per_day, 0)
-    let needed = postsCount - (total + drafts.reduce((s, d) => s + d.posts_per_day, 0))
-    setDrafts(prev => {
-      let arr = [...prev]
-      while (needed > 0) {
-        arr.push({ id: 0, date: '', posts_per_day: 1, post_type: 'video', status: 'in_progress' })
-        needed--
-      }
-      while (needed < 0 && arr.length) {
-        arr.pop()
-        needed++
-      }
-      return arr
-    })
-  }, [postsCount, posts, month, year])
+    const needed = Math.max(0, postsCount - total)
+    setDrafts(Array.from({ length: needed }, () => ({
+      id: 0,
+      date: '',
+      posts_per_day: 1,
+      post_type: 'video',
+      status: 'in_progress',
+    })))
+  }, [postsCount, posts, month, year, loaded])
 
   const rows = [...filteredPosts, ...drafts]
 
