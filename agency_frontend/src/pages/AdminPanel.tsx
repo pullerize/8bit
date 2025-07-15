@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import Users from './Users'
 import Operators from './Operators'
-import Projects from './Projects'
+import Projects from './ProjectsAdmin'
 
 function AdminPanel() {
   const [tab, setTab] = useState<'users'|'operators'|'projects'>('users')

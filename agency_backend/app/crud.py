@@ -204,6 +204,21 @@ def update_project(db: Session, project_id: int, name: str) -> Optional[models.P
     return proj
 
 
+def update_project_info(db: Session, project_id: int, info: schemas.ProjectUpdate) -> Optional[models.Project]:
+    proj = db.query(models.Project).filter(models.Project.id == project_id).first()
+    if not proj:
+        return None
+    if info.posts_count is not None:
+        proj.posts_count = info.posts_count
+    if info.start_date is not None:
+        proj.start_date = info.start_date
+    if info.end_date is not None:
+        proj.end_date = info.end_date
+    db.commit()
+    db.refresh(proj)
+    return proj
+
+
 def get_shootings(db: Session) -> List[models.Shooting]:
     return db.query(models.Shooting).all()
 
@@ -491,3 +506,51 @@ def close_client_expense(db: Session, expense_id: int, amount: float, comment: O
     db.commit()
     db.refresh(e)
     return e
+
+
+def get_project_posts(db: Session, project_id: int, start: datetime | None = None, end: datetime | None = None) -> List[models.ProjectPost]:
+    q = db.query(models.ProjectPost).filter(models.ProjectPost.project_id == project_id)
+    if start:
+        q = q.filter(models.ProjectPost.date >= start)
+    if end:
+        q = q.filter(models.ProjectPost.date <= end)
+    posts = q.all()
+    today = datetime.utcnow().date()
+    for p in posts:
+        if p.status == models.PostStatus.in_progress and p.date.date() < today:
+            p.status = models.PostStatus.overdue
+    return posts
+
+
+def create_project_post(db: Session, project_id: int, data: schemas.ProjectPostCreate) -> models.ProjectPost:
+    post = models.ProjectPost(
+        project_id=project_id,
+        date=data.date,
+        posts_per_day=data.posts_per_day,
+        post_type=data.post_type,
+        status=data.status or models.PostStatus.in_progress,
+    )
+    db.add(post)
+    db.commit()
+    db.refresh(post)
+    return post
+
+
+def update_project_post(db: Session, post_id: int, data: schemas.ProjectPostCreate) -> Optional[models.ProjectPost]:
+    post = db.query(models.ProjectPost).filter(models.ProjectPost.id == post_id).first()
+    if not post:
+        return None
+    post.date = data.date
+    post.posts_per_day = data.posts_per_day
+    post.post_type = data.post_type
+    post.status = data.status or post.status
+    db.commit()
+    db.refresh(post)
+    return post
+
+
+def delete_project_post(db: Session, post_id: int) -> None:
+    post = db.query(models.ProjectPost).filter(models.ProjectPost.id == post_id).first()
+    if post:
+        db.delete(post)
+        db.commit()

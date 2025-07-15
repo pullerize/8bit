@@ -81,6 +81,9 @@ class Project(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, index=True)
+    posts_count = Column(Integer, default=0)
+    start_date = Column(DateTime, default=datetime.utcnow)
+    end_date = Column(DateTime, default=datetime.utcnow)
 
 class Shooting(Base):
     __tablename__ = "shootings"
@@ -151,5 +154,31 @@ class ProjectClientExpense(Base):
     amount = Column(Integer)
     comment = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+    project = relationship("Project")
+
+
+class PostType(str, enum.Enum):
+    video = "video"
+    static = "static"
+    carousel = "carousel"
+
+
+class PostStatus(str, enum.Enum):
+    in_progress = "in_progress"
+    cancelled = "cancelled"
+    approved = "approved"
+    overdue = "overdue"
+
+
+class ProjectPost(Base):
+    __tablename__ = "project_posts"
+
+    id = Column(Integer, primary_key=True, index=True)
+    project_id = Column(Integer, ForeignKey("projects.id"))
+    date = Column(DateTime)
+    posts_per_day = Column(Integer, default=1)
+    post_type = Column(Enum(PostType))
+    status = Column(Enum(PostStatus), default=PostStatus.in_progress)
 
     project = relationship("Project")

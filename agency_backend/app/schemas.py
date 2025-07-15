@@ -57,10 +57,36 @@ class Operator(OperatorBase):
 class Project(BaseModel):
     id: int
     name: str
+    posts_count: int = 0
+    start_date: datetime | None = None
+    end_date: datetime | None = None
+
     model_config = ConfigDict(from_attributes=True)
 
 class ProjectCreate(BaseModel):
     name: str
+
+
+class ProjectUpdate(BaseModel):
+    posts_count: Optional[int] = None
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+
+
+class ProjectPostBase(BaseModel):
+    date: datetime
+    posts_per_day: int = 1
+    post_type: str
+    status: Optional[str] = None
+
+
+class ProjectPostCreate(ProjectPostBase):
+    pass
+
+
+class ProjectPost(ProjectPostBase):
+    id: int
+    model_config = ConfigDict(from_attributes=True)
 
 class ShootingBase(BaseModel):
     title: str

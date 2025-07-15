@@ -7,7 +7,10 @@ import Reports from './pages/Reports'
 import Finance from './pages/Finance'
 import Users from './pages/Users'
 import Operators from './pages/Operators'
-import Projects from './pages/Projects'
+import Projects from './pages/ProjectsOverview'
+import ProjectsAdmin from './pages/ProjectsAdmin'
+import ProjectsOverview from './pages/ProjectsOverview'
+import ProjectDetail from './pages/ProjectDetail'
 import AdminPanel from './pages/AdminPanel'
 
 function App() {
@@ -34,7 +37,9 @@ function App() {
           element={token ? <AdminPanel /> : <Navigate to="/login" />} />
         <Route path="/users" element={token ? <Users /> : <Navigate to="/login" />} />
         <Route path="/operators" element={token ? <Operators /> : <Navigate to="/login" />} />
-        <Route path="/projects" element={token ? <Projects /> : <Navigate to="/login" />} />
+        <Route path="/projects" element={token ? <ProjectsOverview /> : <Navigate to="/login" />} />
+        <Route path="/projects/:id" element={token ? <ProjectDetail /> : <Navigate to="/login" />} />
+        <Route path="/projects-admin" element={token ? <ProjectsAdmin /> : <Navigate to="/login" />} />
         <Route
           path="*"
           element={<Navigate to={token ? '/tasks' : '/login'} />} />

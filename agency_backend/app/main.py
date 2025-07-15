@@ -172,11 +172,27 @@ def create_project(project: schemas.ProjectCreate, db: Session = Depends(auth.ge
     return crud.create_project(db, project.name)
 
 
+@app.get("/projects/{project_id}", response_model=schemas.Project)
+def get_project(project_id: int, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
+    proj = db.query(models.Project).filter(models.Project.id == project_id).first()
+    if not proj:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return proj
+
+
 @app.put("/projects/{project_id}", response_model=schemas.Project)
 def update_project(project_id: int, project: schemas.ProjectCreate, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
     if current.role != models.RoleEnum.admin:
         raise HTTPException(status_code=403, detail="Not enough permissions")
     updated = crud.update_project(db, project_id, project.name)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return updated
+
+
+@app.put("/projects/{project_id}/info", response_model=schemas.Project)
+def update_project_info(project_id: int, data: schemas.ProjectUpdate, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
+    updated = crud.update_project_info(db, project_id, data)
     if not updated:
         raise HTTPException(status_code=404, detail="Project not found")
     return updated
@@ -408,6 +424,30 @@ def edit_receipt(receipt_id: int, rec: schemas.ReceiptCreate, db: Session = Depe
 @app.delete("/receipts/{receipt_id}")
 def remove_receipt(receipt_id: int, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
     crud.delete_receipt(db, receipt_id)
+    return {"ok": True}
+
+
+@app.get("/projects/{project_id}/posts", response_model=list[schemas.ProjectPost])
+def list_project_posts(project_id: int, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
+    return crud.get_project_posts(db, project_id)
+
+
+@app.post("/projects/{project_id}/posts", response_model=schemas.ProjectPost)
+def create_project_post(project_id: int, data: schemas.ProjectPostCreate, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
+    return crud.create_project_post(db, project_id, data)
+
+
+@app.put("/project_posts/{post_id}", response_model=schemas.ProjectPost)
+def update_project_post(post_id: int, data: schemas.ProjectPostCreate, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
+    updated = crud.update_project_post(db, post_id, data)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Post not found")
+    return updated
+
+
+@app.delete("/project_posts/{post_id}")
+def delete_project_post(post_id: int, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
+    crud.delete_project_post(db, post_id)
     return {"ok": True}
 
 
