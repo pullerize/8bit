@@ -42,6 +42,7 @@ function ProjectDetail() {
   const now = new Date()
   const [month, setMonth] = useState(now.getMonth() + 1)
   const [year, setYear] = useState(now.getFullYear())
+  const [loaded, setLoaded] = useState(false)
 
 
   const load = async () => {
@@ -53,14 +54,21 @@ function ProjectDetail() {
       setPostsCount(data.posts_count)
       setStartDate(data.start_date?.slice(0, 10) || '')
       setEndDate(data.end_date?.slice(0, 10) || '')
+      if (data.start_date) {
+        const d = new Date(data.start_date)
+        setMonth(d.getMonth() + 1)
+        setYear(d.getFullYear())
+      }
     }
     const r = await fetch(`${API_URL}/projects/${id}/posts`, { headers: { Authorization: `Bearer ${token}` } })
     if (r.ok) setPosts(await r.json())
+    setLoaded(true)
   }
 
   useEffect(() => { load() }, [id])
 
   useEffect(() => {
+    if (!loaded) return
     const start = new Date(year, month - 1, 1)
     const end = new Date(year, month, 1)
     const startStr = start.toISOString().slice(0, 10)
@@ -70,7 +78,7 @@ function ProjectDetail() {
     setEndDate(endStr)
     setDrafts([])
     updateInfo({ posts_count: 0, start_date: startStr, end_date: endStr })
-  }, [month, year])
+  }, [month, year, loaded])
 
   const updateInfo = async (data: Partial<{name:string;posts_count:number;start_date:string;end_date:string}>) => {
     if ('name' in data) {
@@ -141,7 +149,11 @@ function ProjectDetail() {
   })
 
   useEffect(() => {
-    const total = filteredPosts.reduce((sum, p) => sum + p.posts_per_day, 0)
+    const relevant = posts.filter(p => {
+      const d = new Date(p.date)
+      return d.getFullYear() === year && d.getMonth() + 1 === month
+    })
+    const total = relevant.reduce((sum, p) => sum + p.posts_per_day, 0)
     let needed = postsCount - (total + drafts.reduce((s, d) => s + d.posts_per_day, 0))
     setDrafts(prev => {
       let arr = [...prev]
@@ -155,7 +167,7 @@ function ProjectDetail() {
       }
       return arr
     })
-  }, [postsCount, filteredPosts])
+  }, [postsCount, posts, month, year])
 
   const rows = [...filteredPosts, ...drafts]
 
