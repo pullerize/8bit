@@ -18,11 +18,16 @@ interface Project {
   end_date: string
 }
 
+// Row border colors based on post status
 const statusColors: Record<string, string> = {
-  in_progress: '#d4a017',
-  cancelled: 'gray',
-  approved: 'green',
-  overdue: 'red',
+  // dark yellow
+  in_progress: '#b8860b',
+  // grey for cancelled
+  cancelled: '#808080',
+  // green for approved
+  approved: '#008000',
+  // red for overdue
+  overdue: '#ff0000',
 }
 
 const MONTHS = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь']
