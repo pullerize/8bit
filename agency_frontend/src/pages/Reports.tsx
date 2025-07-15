@@ -14,12 +14,17 @@ interface Report {
   expenses: Expense[]
 }
 
-function formatNumber(n: number) {
-  return n.toLocaleString('ru-RU')
+function formatCurrency(n: number) {
+  return n.toLocaleString('ru-RU') + ' сум'
+}
+
+function formatInput(value: string) {
+  const digits = value.replace(/\D/g, '')
+  return digits.replace(/\B(?=(\d{3})+(?!\d))/g, ' ')
 }
 
 function parseNumber(value: string) {
-  return parseFloat(value.replace(/\s+/g, '').replace(',', '.')) || 0
+  return parseFloat(value.replace(/[^0-9.,]/g, '').replace(/\s+/g, '').replace(',', '.')) || 0
 }
 
 function Reports() {
@@ -48,7 +53,7 @@ function Reports() {
   useEffect(() => { if (projectId) loadReport(projectId as number) }, [projectId])
 
   const openEditField = (field: 'contract_amount' | 'receipts') => {
-    setFieldValue(report ? formatNumber(report[field]) : '')
+    setFieldValue(report ? formatInput(String(report[field])) : '')
     setModal(field)
   }
 
@@ -99,27 +104,27 @@ function Reports() {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             <div className="p-2 border rounded bg-white cursor-pointer" onClick={() => openEditField('contract_amount')}>
               <div className="text-sm text-gray-500">Сумма контракта</div>
-              <div className="text-lg font-semibold">{formatNumber(report.contract_amount)}</div>
+              <div className="text-lg font-semibold">{formatCurrency(report.contract_amount)}</div>
             </div>
             <div className="p-2 border rounded bg-white cursor-pointer" onClick={() => openEditField('receipts')}>
               <div className="text-sm text-gray-500">Поступления</div>
-              <div className="text-lg font-semibold">{formatNumber(report.receipts)}</div>
+              <div className="text-lg font-semibold">{formatCurrency(report.receipts)}</div>
             </div>
             <div className="p-2 border rounded border-red-500 bg-gray-50">
               <div className="text-sm text-gray-500">Долг</div>
-              <div className="text-lg font-semibold">{formatNumber(report.debt)}</div>
+              <div className="text-lg font-semibold">{formatCurrency(report.debt)}</div>
             </div>
             <div className="p-2 border rounded bg-gray-50">
               <div className="text-sm text-gray-500">Баланс после вычета налога</div>
-              <div className="text-lg font-semibold">{formatNumber(report.balance_after_tax)}</div>
+              <div className="text-lg font-semibold">{formatCurrency(report.balance_after_tax)}</div>
             </div>
             <div className="p-2 border rounded bg-gray-50">
               <div className="text-sm text-gray-500">Общий расход</div>
-              <div className="text-lg font-semibold">{formatNumber(report.total_expenses)}</div>
+              <div className="text-lg font-semibold">{formatCurrency(report.total_expenses)}</div>
             </div>
             <div className="p-2 border rounded border-green-500 bg-gray-50">
               <div className="text-sm text-gray-500">Положительный баланс</div>
-              <div className="text-lg font-semibold">{formatNumber(report.positive_balance)}</div>
+              <div className="text-lg font-semibold">{formatCurrency(report.positive_balance)}</div>
             </div>
           </div>
           <div className="flex justify-between items-center mt-4">
@@ -139,7 +144,7 @@ function Reports() {
               {report.expenses.map(e => (
                 <tr key={e.id} className="text-center border-t">
                   <td className="px-4 py-2 border">{e.name}</td>
-                  <td className="px-4 py-2 border">{formatNumber(e.amount)}</td>
+                  <td className="px-4 py-2 border">{formatCurrency(e.amount)}</td>
                   <td className="px-4 py-2 border">{e.comment}</td>
                   <td className="px-4 py-2 border">
                     <button className="text-red-500" onClick={() => deleteExpense(e.id)}>Удалить</button>
@@ -160,7 +165,7 @@ function Reports() {
                     </label>
                     <label className="block">
                       <span className="text-sm text-gray-500">Сумма</span>
-                      <input className="border p-2 w-full" value={expAmount} onChange={e => setExpAmount(e.target.value)} />
+                      <input className="border p-2 w-full" value={expAmount} onChange={e => setExpAmount(formatInput(e.target.value))} />
                     </label>
                     <label className="block">
                       <span className="text-sm text-gray-500">Комментарий</span>
@@ -174,7 +179,7 @@ function Reports() {
                 ) : (
                   <>
                     <h2 className="text-lg font-semibold">{modal === 'contract_amount' ? 'Сумма контракта' : 'Поступления'}</h2>
-                    <input className="border p-2 w-full" value={fieldValue} onChange={e => setFieldValue(e.target.value)} />
+                    <input className="border p-2 w-full" value={fieldValue} onChange={e => setFieldValue(formatInput(e.target.value))} />
                     <div className="flex justify-end space-x-2">
                       <button className="px-3 py-1 border rounded" onClick={() => setModal('')}>Отмена</button>
                       <button className="px-3 py-1 bg-blue-500 text-white rounded" onClick={submitField}>Сохранить</button>

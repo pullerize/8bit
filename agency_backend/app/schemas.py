@@ -124,8 +124,8 @@ class Expense(ExpenseBase):
 
 
 class ProjectReportBase(BaseModel):
-    contract_amount: Optional[float] = 0
-    receipts: Optional[float] = 0
+    contract_amount: Optional[float] = None
+    receipts: Optional[float] = None
 
 
 class ProjectReportUpdate(ProjectReportBase):
