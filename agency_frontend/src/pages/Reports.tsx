@@ -35,6 +35,7 @@ function Reports() {
   const token = localStorage.getItem('token')
   const [projects, setProjects] = useState<Project[]>([])
   const [projectId, setProjectId] = useState<number | ''>('')
+  const [month, setMonth] = useState(new Date().getMonth() + 1)
   const [report, setReport] = useState<Report | null>(null)
 
   const [modal, setModal] = useState<'' | 'contract_amount' | 'expense' | 'receipt' | 'client_expense' | 'close_client_expense'>('')
@@ -60,13 +61,13 @@ function Reports() {
     if (res.ok) setProjects(await res.json())
   }
 
-  const loadReport = async (pid: number) => {
-    const res = await fetch(`${API_URL}/projects/${pid}/report`, { headers: { Authorization: `Bearer ${token}` } })
+  const loadReport = async (pid: number, m: number = month) => {
+    const res = await fetch(`${API_URL}/projects/${pid}/report?month=${m}`, { headers: { Authorization: `Bearer ${token}` } })
     if (res.ok) setReport(await res.json())
   }
 
   useEffect(() => { loadProjects() }, [])
-  useEffect(() => { if (projectId) loadReport(projectId as number) }, [projectId])
+  useEffect(() => { if (projectId) loadReport(projectId as number, month) }, [projectId, month])
 
   const openEditField = (field: 'contract_amount') => {
     setFieldValue(report ? formatInput(String(report[field])) : '')
@@ -85,7 +86,7 @@ function Reports() {
       const data = await res.json()
       setReport(data)
     } else {
-      loadReport(projectId as number)
+      loadReport(projectId as number, month)
     }
   }
 
@@ -173,7 +174,7 @@ function Reports() {
       })
       setEditingExpense(null)
     } else {
-      loadReport(projectId as number)
+      loadReport(projectId as number, month)
     }
   }
 
@@ -208,7 +209,7 @@ function Reports() {
       })
       setEditingReceipt(null)
     } else {
-      loadReport(projectId as number)
+      loadReport(projectId as number, month)
     }
   }
 
@@ -242,7 +243,7 @@ function Reports() {
       })
       setEditingClientExpense(null)
     } else {
-      loadReport(projectId as number)
+      loadReport(projectId as number, month)
     }
   }
 
@@ -274,33 +275,40 @@ function Reports() {
       })
       setEditingClientExpense(null)
     } else {
-      loadReport(projectId as number)
+      loadReport(projectId as number, month)
     }
   }
 
 
   const deleteExpense = async (id: number) => {
     await fetch(`${API_URL}/expenses/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
-    if (projectId) loadReport(projectId as number)
+    if (projectId) loadReport(projectId as number, month)
   }
 
   const deleteReceipt = async (id: number) => {
     await fetch(`${API_URL}/receipts/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
-    if (projectId) loadReport(projectId as number)
+    if (projectId) loadReport(projectId as number, month)
   }
 
   const deleteClientExpense = async (id: number) => {
     await fetch(`${API_URL}/client_expenses/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
-    if (projectId) loadReport(projectId as number)
+    if (projectId) loadReport(projectId as number, month)
   }
 
   return (
     <div className="p-4 space-y-4">
       <h1 className="text-2xl mb-4">Отчеты по проектам</h1>
-      <select className="border p-2" value={projectId} onChange={e => setProjectId(Number(e.target.value))}>
-        <option value="">Выберите проект</option>
-        {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-      </select>
+      <div className="flex space-x-2">
+        <select className="border p-2" value={projectId} onChange={e => setProjectId(Number(e.target.value))}>
+          <option value="">Выберите проект</option>
+          {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+        </select>
+        <select className="border p-2" value={month} onChange={e => setMonth(Number(e.target.value))}>
+          {Array.from({ length: 12 }, (_, i) => (
+            <option key={i + 1} value={i + 1}>{i + 1}</option>
+          ))}
+        </select>
+      </div>
       {report && (
         <>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
