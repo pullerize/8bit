@@ -195,10 +195,10 @@ def get_project_report(project_id: int, db: Session = Depends(auth.get_db), curr
     expenses = crud.get_expenses(db, project_id)
     client_expenses = crud.get_client_expenses(db, project_id)
     receipts_list = crud.get_receipts(db, project_id)
-    total_expenses = sum(e.amount for e in expenses)
-    client_debt = sum(e.amount for e in client_expenses)
+    client_sum = sum(e.amount for e in client_expenses)
+    total_expenses = sum(e.amount for e in expenses) + client_sum
     balance_after_tax = report.receipts * 0.83
-    debt = report.contract_amount - report.receipts + client_debt
+    debt = report.contract_amount - report.receipts + client_sum
     positive_balance = balance_after_tax - total_expenses
     return schemas.ProjectReport(
         project_id=project_id,
@@ -220,10 +220,10 @@ def update_project_report(project_id: int, data: schemas.ProjectReportUpdate, db
     expenses = crud.get_expenses(db, project_id)
     client_expenses = crud.get_client_expenses(db, project_id)
     receipts_list = crud.get_receipts(db, project_id)
-    total_expenses = sum(e.amount for e in expenses)
-    client_debt = sum(e.amount for e in client_expenses)
+    client_sum = sum(e.amount for e in client_expenses)
+    total_expenses = sum(e.amount for e in expenses) + client_sum
     balance_after_tax = report.receipts * 0.83
-    debt = report.contract_amount - report.receipts + client_debt
+    debt = report.contract_amount - report.receipts + client_sum
     positive_balance = balance_after_tax - total_expenses
     return schemas.ProjectReport(
         project_id=project_id,

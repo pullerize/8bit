@@ -200,9 +200,10 @@ function Reports() {
           list = [...list, item]
           sum = sum + item.amount
         }
-        const balance_after_tax = sum * 0.83
+       const balance_after_tax = sum * 0.83
         const positive_balance = balance_after_tax - r.total_expenses
-        const debt = r.contract_amount - sum
+        const clientSum = r.client_expenses.reduce((s,x)=>s+x.amount,0)
+        const debt = r.contract_amount - sum + clientSum
         return { ...r, receipts: sum, receipts_list: list, balance_after_tax, positive_balance, debt }
       })
       setEditingReceipt(null)
@@ -226,13 +227,18 @@ function Reports() {
       setReport(r => {
         if (!r) return r
         let list = r.client_expenses
+        let total = r.total_expenses
         if (editingClientExpense) {
           list = list.map(x => x.id === item.id ? item : x)
+          total = total - editingClientExpense.amount + item.amount
         } else {
           list = [...list, item]
+          total = total + item.amount
         }
-        const debt = r.contract_amount - r.receipts + list.reduce((s,x)=>s+x.amount,0)
-        return { ...r, client_expenses: list, debt }
+        const clientSum = list.reduce((s,x)=>s+x.amount,0)
+        const debt = r.contract_amount - r.receipts + clientSum
+        const positive_balance = r.balance_after_tax - total
+        return { ...r, client_expenses: list, debt, total_expenses: total, positive_balance }
       })
       setEditingClientExpense(null)
     } else {
@@ -253,13 +259,18 @@ function Reports() {
       setReport(r => {
         if (!r) return r
         let list = r.client_expenses
+        let total = r.total_expenses
         if (item) {
           list = list.map(x => x.id === item.id ? item : x)
+          total = total - editingClientExpense.amount + item.amount
         } else {
           list = list.filter(x => x.id !== editingClientExpense.id)
+          total = total - editingClientExpense.amount
         }
-        const debt = r.contract_amount - r.receipts + list.reduce((s,x)=>s+x.amount,0)
-        return { ...r, client_expenses: list, debt }
+        const clientSum = list.reduce((s,x)=>s+x.amount,0)
+        const debt = r.contract_amount - r.receipts + clientSum
+        const positive_balance = r.balance_after_tax - total
+        return { ...r, client_expenses: list, debt, total_expenses: total, positive_balance }
       })
       setEditingClientExpense(null)
     } else {
