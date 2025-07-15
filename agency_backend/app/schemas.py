@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional, List
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, field_validator, ConfigDict
 
 class UserBase(BaseModel):
     login: str
@@ -18,9 +18,7 @@ class UserUpdate(BaseModel):
 
 class User(UserBase):
     id: int
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class TaskBase(BaseModel):
     title: str
@@ -42,9 +40,7 @@ class Task(TaskBase):
     created_at: datetime
     finished_at: Optional[datetime] = None
     high_priority: bool = False
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class OperatorBase(BaseModel):
     name: str
@@ -56,16 +52,12 @@ class OperatorCreate(OperatorBase):
 
 class Operator(OperatorBase):
     id: int
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class Project(BaseModel):
     id: int
     name: str
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class ProjectCreate(BaseModel):
     name: str
@@ -94,16 +86,14 @@ class Shooting(ShootingBase):
     completed_managers: Optional[List[int]] = None
     completed_operators: Optional[List[int]] = None
 
-    @validator('managers', 'completed_managers', 'completed_operators', pre=True)
+    @field_validator('managers', 'completed_managers', 'completed_operators', mode='before')
     def parse_managers(cls, v):
         if isinstance(v, str):
             if not v:
                 return []
             return [int(x) for x in v.split(',') if x]
         return v
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ExpenseBase(BaseModel):
@@ -118,9 +108,7 @@ class ExpenseCreate(ExpenseBase):
 
 class Expense(ExpenseBase):
     id: int
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ProjectReportBase(BaseModel):
@@ -139,6 +127,4 @@ class ProjectReport(ProjectReportBase):
     balance_after_tax: float
     positive_balance: float
     expenses: List[Expense]
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
