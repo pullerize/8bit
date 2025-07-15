@@ -69,8 +69,8 @@ function ProjectDetail() {
 
   useEffect(() => {
     if (!loaded) return
-    const start = new Date(year, month - 1, 1)
-    const end = new Date(year, month, 1)
+    const start = new Date(Date.UTC(year, month - 1, 1))
+    const end = new Date(Date.UTC(year, month, 1))
     const startStr = start.toISOString().slice(0, 10)
     const endStr = end.toISOString().slice(0, 10)
     setPostsCount(0)
