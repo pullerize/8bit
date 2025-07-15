@@ -239,12 +239,16 @@ function ProjectDetail() {
             <th className="px-2 py-1 border">Постов/день</th>
             <th className="px-2 py-1 border">Тип</th>
             <th className="px-2 py-1 border">Статус</th>
+            <th className="px-2 py-1 border w-8"></th>
           </tr>
         </thead>
         <tbody>
           {rows.map((p, idx) => (
-            <tr key={p.id || `new-${idx}`} className="text-center border-t relative" style={{borderColor: statusColors[p.status], borderWidth: '2px'}}>
-              <button className="absolute right-1 top-1 text-xs" onClick={()=>removeRow(idx, p)}>-</button>
+            <tr
+              key={p.id || `new-${idx}`}
+              className="text-center border-2"
+              style={{ borderColor: statusColors[p.status] }}
+            >
               <td className="border px-2 py-1">
                 <input type="date" className="border p-1" value={p.date ? p.date.slice(0,10) : ''} onChange={e=>updatePost(idx, p, 'date', e.target.value)} />
               </td>
@@ -266,10 +270,18 @@ function ProjectDetail() {
                   <option value="cancelled">Отменен</option>
                 </select>
               </td>
+              <td className="border px-2 py-1">
+                <button
+                  className="px-2 py-1 border rounded text-lg"
+                  onClick={() => removeRow(idx, p)}
+                >
+                  -
+                </button>
+              </td>
             </tr>
           ))}
           <tr>
-            <td colSpan={4} className="text-center border">
+            <td colSpan={5} className="text-center border">
               <button className="px-2 py-1 border rounded" onClick={addRow}>Добавить</button>
             </td>
           </tr>
