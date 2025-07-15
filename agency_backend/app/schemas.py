@@ -111,6 +111,21 @@ class Expense(ExpenseBase):
     model_config = ConfigDict(from_attributes=True)
 
 
+class ReceiptBase(BaseModel):
+    name: str
+    amount: float
+    comment: Optional[str] = None
+
+
+class ReceiptCreate(ReceiptBase):
+    pass
+
+
+class Receipt(ReceiptBase):
+    id: int
+    model_config = ConfigDict(from_attributes=True)
+
+
 class ProjectReportBase(BaseModel):
     contract_amount: Optional[float] = None
     receipts: Optional[float] = None
@@ -123,6 +138,7 @@ class ProjectReportUpdate(ProjectReportBase):
 class ProjectReport(ProjectReportBase):
     project_id: int
     total_expenses: float
+    receipts_list: List[Receipt]
     debt: float
     balance_after_tax: float
     positive_balance: float

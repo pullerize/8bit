@@ -193,6 +193,7 @@ def delete_project(project_id: int, db: Session = Depends(auth.get_db), current:
 def get_project_report(project_id: int, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
     report = crud.get_or_create_report(db, project_id)
     expenses = crud.get_expenses(db, project_id)
+    receipts_list = crud.get_receipts(db, project_id)
     total_expenses = sum(e.amount for e in expenses)
     balance_after_tax = report.receipts * 0.83
     debt = report.contract_amount - report.receipts
@@ -201,6 +202,7 @@ def get_project_report(project_id: int, db: Session = Depends(auth.get_db), curr
         project_id=project_id,
         contract_amount=report.contract_amount,
         receipts=report.receipts,
+        receipts_list=receipts_list,
         total_expenses=total_expenses,
         debt=debt,
         balance_after_tax=balance_after_tax,
@@ -213,6 +215,7 @@ def get_project_report(project_id: int, db: Session = Depends(auth.get_db), curr
 def update_project_report(project_id: int, data: schemas.ProjectReportUpdate, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
     report = crud.update_report(db, project_id, data)
     expenses = crud.get_expenses(db, project_id)
+    receipts_list = crud.get_receipts(db, project_id)
     total_expenses = sum(e.amount for e in expenses)
     balance_after_tax = report.receipts * 0.83
     debt = report.contract_amount - report.receipts
@@ -221,6 +224,7 @@ def update_project_report(project_id: int, data: schemas.ProjectReportUpdate, db
         project_id=project_id,
         contract_amount=report.contract_amount,
         receipts=report.receipts,
+        receipts_list=receipts_list,
         total_expenses=total_expenses,
         debt=debt,
         balance_after_tax=balance_after_tax,
@@ -239,9 +243,41 @@ def add_expense(project_id: int, exp: schemas.ExpenseCreate, db: Session = Depen
     return crud.create_expense(db, project_id, exp)
 
 
+@app.put("/expenses/{expense_id}", response_model=schemas.Expense)
+def edit_expense(expense_id: int, exp: schemas.ExpenseCreate, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
+    updated = crud.update_expense(db, expense_id, exp)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Expense not found")
+    return updated
+
+
 @app.delete("/expenses/{expense_id}")
 def remove_expense(expense_id: int, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
     crud.delete_expense(db, expense_id)
+    return {"ok": True}
+
+
+@app.get("/projects/{project_id}/receipts", response_model=list[schemas.Receipt])
+def list_receipts(project_id: int, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
+    return crud.get_receipts(db, project_id)
+
+
+@app.post("/projects/{project_id}/receipts", response_model=schemas.Receipt)
+def add_receipt(project_id: int, rec: schemas.ReceiptCreate, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
+    return crud.create_receipt(db, project_id, rec)
+
+
+@app.put("/receipts/{receipt_id}", response_model=schemas.Receipt)
+def edit_receipt(receipt_id: int, rec: schemas.ReceiptCreate, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
+    updated = crud.update_receipt(db, receipt_id, rec)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Receipt not found")
+    return updated
+
+
+@app.delete("/receipts/{receipt_id}")
+def remove_receipt(receipt_id: int, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
+    crud.delete_receipt(db, receipt_id)
     return {"ok": True}
 
 

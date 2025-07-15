@@ -320,3 +320,42 @@ def update_expense(db: Session, expense_id: int, exp: schemas.ExpenseCreate) -> 
     db.commit()
     db.refresh(e)
     return e
+
+
+def get_receipts(db: Session, project_id: int) -> List[models.ProjectReceipt]:
+    return db.query(models.ProjectReceipt).filter(models.ProjectReceipt.project_id == project_id).all()
+
+
+def create_receipt(db: Session, project_id: int, rec: schemas.ReceiptCreate) -> models.ProjectReceipt:
+    r = models.ProjectReceipt(project_id=project_id, name=rec.name, amount=rec.amount, comment=rec.comment)
+    report = get_or_create_report(db, project_id)
+    report.receipts += rec.amount
+    db.add(r)
+    db.commit()
+    db.refresh(r)
+    db.refresh(report)
+    return r
+
+
+def delete_receipt(db: Session, receipt_id: int) -> None:
+    r = db.query(models.ProjectReceipt).filter(models.ProjectReceipt.id == receipt_id).first()
+    if r:
+        report = get_or_create_report(db, r.project_id)
+        report.receipts -= r.amount
+        db.delete(r)
+        db.commit()
+
+
+def update_receipt(db: Session, receipt_id: int, rec: schemas.ReceiptCreate) -> Optional[models.ProjectReceipt]:
+    r = db.query(models.ProjectReceipt).filter(models.ProjectReceipt.id == receipt_id).first()
+    if not r:
+        return None
+    report = get_or_create_report(db, r.project_id)
+    report.receipts += rec.amount - r.amount
+    r.name = rec.name
+    r.amount = rec.amount
+    r.comment = rec.comment
+    db.commit()
+    db.refresh(r)
+    db.refresh(report)
+    return r
