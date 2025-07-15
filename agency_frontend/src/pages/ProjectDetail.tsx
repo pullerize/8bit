@@ -251,8 +251,8 @@ function ProjectDetail() {
           {rows.map((p, idx) => (
             <tr
               key={p.id || `new-${idx}`}
-              className="text-center border-2"
-              style={{ borderColor: statusColors[p.status] }}
+              className="text-center"
+              style={{ border: `2px solid ${statusColors[p.status]}` }}
             >
               <td className="border px-2 py-1">
                 <input type="date" className="border p-1" value={p.date ? p.date.slice(0,10) : ''} onChange={e=>updatePost(idx, p, 'date', e.target.value)} />
