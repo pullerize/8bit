@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Text, Enum, Boolean
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Text, Enum, Boolean, UniqueConstraint
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import enum
@@ -105,11 +105,15 @@ class ProjectReport(Base):
     __tablename__ = "project_reports"
 
     id = Column(Integer, primary_key=True, index=True)
-    project_id = Column(Integer, ForeignKey("projects.id"), unique=True)
+    project_id = Column(Integer, ForeignKey("projects.id"))
+    month = Column(Integer, default=datetime.utcnow().month)
+    year = Column(Integer, default=datetime.utcnow().year)
     contract_amount = Column(Integer, default=0)
     receipts = Column(Integer, default=0)
 
     project = relationship("Project")
+
+    __table_args__ = (UniqueConstraint("project_id", "month", "year"),)
 
 
 class ProjectExpense(Base):

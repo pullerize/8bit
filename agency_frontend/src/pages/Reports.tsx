@@ -1,6 +1,21 @@
 import { useEffect, useState } from 'react'
 import { API_URL } from '../api'
 
+const MONTH_NAMES = [
+  'Январь',
+  'Февраль',
+  'Март',
+  'Апрель',
+  'Май',
+  'Июнь',
+  'Июль',
+  'Август',
+  'Сентябрь',
+  'Октябрь',
+  'Ноябрь',
+  'Декабрь',
+]
+
 interface Project { id: number; name: string }
 interface Expense { id: number; name: string; amount: number; comment?: string }
 interface Receipt { id: number; name: string; amount: number; comment?: string }
@@ -76,7 +91,7 @@ function Reports() {
 
   const submitField = async () => {
     if (!projectId || !modal) return
-    const res = await fetch(`${API_URL}/projects/${projectId}/report`, {
+    const res = await fetch(`${API_URL}/projects/${projectId}/report?month=${month}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ [modal]: parseNumber(fieldValue) })
@@ -304,8 +319,8 @@ function Reports() {
           {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
         </select>
         <select className="border p-2" value={month} onChange={e => setMonth(Number(e.target.value))}>
-          {Array.from({ length: 12 }, (_, i) => (
-            <option key={i + 1} value={i + 1}>{i + 1}</option>
+          {MONTH_NAMES.map((name, i) => (
+            <option key={i + 1} value={i + 1}>{name}</option>
           ))}
         </select>
       </div>

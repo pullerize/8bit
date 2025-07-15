@@ -266,22 +266,43 @@ def complete_shooting(
     return sh
 
 
-def get_or_create_report(db: Session, project_id: int) -> models.ProjectReport:
+def get_or_create_report(
+    db: Session, project_id: int, month: int | None = None, year: int | None = None
+) -> models.ProjectReport:
+    now = datetime.utcnow()
+    m = month or now.month
+    y = year or now.year
     report = (
         db.query(models.ProjectReport)
-        .filter(models.ProjectReport.project_id == project_id)
+        .filter(
+            models.ProjectReport.project_id == project_id,
+            models.ProjectReport.month == m,
+            models.ProjectReport.year == y,
+        )
         .first()
     )
     if not report:
-        report = models.ProjectReport(project_id=project_id, contract_amount=0, receipts=0)
+        report = models.ProjectReport(
+            project_id=project_id,
+            month=m,
+            year=y,
+            contract_amount=0,
+            receipts=0,
+        )
         db.add(report)
         db.commit()
         db.refresh(report)
     return report
 
 
-def update_report(db: Session, project_id: int, data: schemas.ProjectReportUpdate) -> models.ProjectReport:
-    report = get_or_create_report(db, project_id)
+def update_report(
+    db: Session,
+    project_id: int,
+    data: schemas.ProjectReportUpdate,
+    month: int | None = None,
+    year: int | None = None,
+) -> models.ProjectReport:
+    report = get_or_create_report(db, project_id, month, year)
     if data.contract_amount is not None:
         report.contract_amount = data.contract_amount
     if data.receipts is not None:
@@ -338,11 +359,12 @@ def get_receipts(db: Session, project_id: int, start: datetime | None = None, en
 
 def create_receipt(db: Session, project_id: int, rec: schemas.ReceiptCreate) -> models.ProjectReceipt:
     r = models.ProjectReceipt(project_id=project_id, name=rec.name, amount=rec.amount, comment=rec.comment)
-    report = get_or_create_report(db, project_id)
-    report.receipts += rec.amount
     db.add(r)
     db.commit()
     db.refresh(r)
+    report = get_or_create_report(db, project_id, r.created_at.month, r.created_at.year)
+    report.receipts += rec.amount
+    db.commit()
     db.refresh(report)
     return r
 
@@ -350,7 +372,7 @@ def create_receipt(db: Session, project_id: int, rec: schemas.ReceiptCreate) -> 
 def delete_receipt(db: Session, receipt_id: int) -> None:
     r = db.query(models.ProjectReceipt).filter(models.ProjectReceipt.id == receipt_id).first()
     if r:
-        report = get_or_create_report(db, r.project_id)
+        report = get_or_create_report(db, r.project_id, r.created_at.month, r.created_at.year)
         report.receipts -= r.amount
         db.delete(r)
         db.commit()
@@ -360,7 +382,7 @@ def update_receipt(db: Session, receipt_id: int, rec: schemas.ReceiptCreate) -> 
     r = db.query(models.ProjectReceipt).filter(models.ProjectReceipt.id == receipt_id).first()
     if not r:
         return None
-    report = get_or_create_report(db, r.project_id)
+    report = get_or_create_report(db, r.project_id, r.created_at.month, r.created_at.year)
     report.receipts += rec.amount - r.amount
     r.name = rec.name
     r.amount = rec.amount

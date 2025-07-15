@@ -206,7 +206,7 @@ def get_project_report(
         end_month = 1
         end_year += 1
     end = datetime(end_year, end_month, 1)
-    report = crud.get_or_create_report(db, project_id)
+    report = crud.get_or_create_report(db, project_id, m, today.year)
     expenses = crud.get_expenses(db, project_id, start, end)
     client_expenses = crud.get_client_expenses(db, project_id, start, end)
     receipts_list = crud.get_receipts(db, project_id, start, end)
@@ -247,7 +247,7 @@ def update_project_report(
         end_month = 1
         end_year += 1
     end = datetime(end_year, end_month, 1)
-    report = crud.update_report(db, project_id, data)
+    report = crud.update_report(db, project_id, data, m, today.year)
     expenses = crud.get_expenses(db, project_id, start, end)
     client_expenses = crud.get_client_expenses(db, project_id, start, end)
     receipts_list = crud.get_receipts(db, project_id, start, end)
