@@ -14,11 +14,25 @@ interface Report {
   expenses: Expense[]
 }
 
+function formatNumber(n: number) {
+  return n.toLocaleString('ru-RU')
+}
+
+function parseNumber(value: string) {
+  return parseFloat(value.replace(/\s+/g, '').replace(',', '.')) || 0
+}
+
 function Reports() {
   const token = localStorage.getItem('token')
   const [projects, setProjects] = useState<Project[]>([])
   const [projectId, setProjectId] = useState<number | ''>('')
   const [report, setReport] = useState<Report | null>(null)
+
+  const [modal, setModal] = useState<'' | 'contract_amount' | 'receipts' | 'expense'>('')
+  const [fieldValue, setFieldValue] = useState('')
+  const [expName, setExpName] = useState('')
+  const [expAmount, setExpAmount] = useState('')
+  const [expComment, setExpComment] = useState('')
 
   const loadProjects = async () => {
     const res = await fetch(`${API_URL}/projects/`, { headers: { Authorization: `Bearer ${token}` } })
@@ -33,32 +47,40 @@ function Reports() {
   useEffect(() => { loadProjects() }, [])
   useEffect(() => { if (projectId) loadReport(projectId as number) }, [projectId])
 
-  const editField = async (field: 'contract_amount' | 'receipts') => {
-    if (!projectId) return
-    const val = prompt('Введите сумму', String(report ? report[field] : 0))
-    if (val === null) return
+  const openEditField = (field: 'contract_amount' | 'receipts') => {
+    setFieldValue(report ? formatNumber(report[field]) : '')
+    setModal(field)
+  }
+
+  const submitField = async () => {
+    if (!projectId || !modal) return
     await fetch(`${API_URL}/projects/${projectId}/report`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ [field]: parseFloat(val) || 0 })
+      body: JSON.stringify({ [modal]: parseNumber(fieldValue) })
     })
+    setModal('')
     loadReport(projectId as number)
   }
 
-  const addExpense = async () => {
+  const openExpense = () => {
+    setExpName('')
+    setExpAmount('')
+    setExpComment('')
+    setModal('expense')
+  }
+
+  const submitExpense = async () => {
     if (!projectId) return
-    const name = prompt('Наименование расхода')
-    if (!name) return
-    const amountStr = prompt('Сумма')
-    if (!amountStr) return
-    const comment = prompt('Комментарий') || ''
     await fetch(`${API_URL}/projects/${projectId}/expenses`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ name, amount: parseFloat(amountStr), comment })
+      body: JSON.stringify({ name: expName, amount: parseNumber(expAmount), comment: expComment })
     })
+    setModal('')
     loadReport(projectId as number)
   }
+
 
   const deleteExpense = async (id: number) => {
     await fetch(`${API_URL}/expenses/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
@@ -75,34 +97,34 @@ function Reports() {
       {report && (
         <>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            <div className="p-2 border rounded cursor-pointer" onClick={() => editField('contract_amount')}>
+            <div className="p-2 border rounded bg-white cursor-pointer" onClick={() => openEditField('contract_amount')}>
               <div className="text-sm text-gray-500">Сумма контракта</div>
-              <div className="text-lg font-semibold">{report.contract_amount}</div>
+              <div className="text-lg font-semibold">{formatNumber(report.contract_amount)}</div>
             </div>
-            <div className="p-2 border rounded cursor-pointer" onClick={() => editField('receipts')}>
+            <div className="p-2 border rounded bg-white cursor-pointer" onClick={() => openEditField('receipts')}>
               <div className="text-sm text-gray-500">Поступления</div>
-              <div className="text-lg font-semibold">{report.receipts}</div>
+              <div className="text-lg font-semibold">{formatNumber(report.receipts)}</div>
             </div>
-            <div className="p-2 border rounded">
+            <div className="p-2 border rounded border-red-500 bg-gray-50">
               <div className="text-sm text-gray-500">Долг</div>
-              <div className="text-lg font-semibold">{report.debt}</div>
+              <div className="text-lg font-semibold">{formatNumber(report.debt)}</div>
             </div>
-            <div className="p-2 border rounded">
+            <div className="p-2 border rounded bg-gray-50">
               <div className="text-sm text-gray-500">Баланс после вычета налога</div>
-              <div className="text-lg font-semibold">{report.balance_after_tax}</div>
+              <div className="text-lg font-semibold">{formatNumber(report.balance_after_tax)}</div>
             </div>
-            <div className="p-2 border rounded">
+            <div className="p-2 border rounded bg-gray-50">
               <div className="text-sm text-gray-500">Общий расход</div>
-              <div className="text-lg font-semibold">{report.total_expenses}</div>
+              <div className="text-lg font-semibold">{formatNumber(report.total_expenses)}</div>
             </div>
-            <div className="p-2 border rounded">
+            <div className="p-2 border rounded border-green-500 bg-gray-50">
               <div className="text-sm text-gray-500">Положительный баланс</div>
-              <div className="text-lg font-semibold">{report.positive_balance}</div>
+              <div className="text-lg font-semibold">{formatNumber(report.positive_balance)}</div>
             </div>
           </div>
           <div className="flex justify-between items-center mt-4">
             <h2 className="text-xl">Расходы</h2>
-            <button className="bg-blue-500 text-white px-2 py-1 rounded" onClick={addExpense}>Добавить расходы</button>
+            <button className="bg-blue-500 text-white px-2 py-1 rounded" onClick={openExpense}>Добавить расходы</button>
           </div>
           <table className="min-w-full bg-white border">
             <thead>
@@ -117,7 +139,7 @@ function Reports() {
               {report.expenses.map(e => (
                 <tr key={e.id} className="text-center border-t">
                   <td className="px-4 py-2 border">{e.name}</td>
-                  <td className="px-4 py-2 border">{e.amount}</td>
+                  <td className="px-4 py-2 border">{formatNumber(e.amount)}</td>
                   <td className="px-4 py-2 border">{e.comment}</td>
                   <td className="px-4 py-2 border">
                     <button className="text-red-500" onClick={() => deleteExpense(e.id)}>Удалить</button>
@@ -126,6 +148,42 @@ function Reports() {
               ))}
             </tbody>
           </table>
+          {modal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+              <div className="bg-white p-4 rounded w-96 space-y-4">
+                {modal === 'expense' ? (
+                  <>
+                    <h2 className="text-lg font-semibold">Новый расход</h2>
+                    <label className="block">
+                      <span className="text-sm text-gray-500">Наименование</span>
+                      <input className="border p-2 w-full" value={expName} onChange={e => setExpName(e.target.value)} />
+                    </label>
+                    <label className="block">
+                      <span className="text-sm text-gray-500">Сумма</span>
+                      <input className="border p-2 w-full" value={expAmount} onChange={e => setExpAmount(e.target.value)} />
+                    </label>
+                    <label className="block">
+                      <span className="text-sm text-gray-500">Комментарий</span>
+                      <input className="border p-2 w-full" value={expComment} onChange={e => setExpComment(e.target.value)} />
+                    </label>
+                    <div className="flex justify-end space-x-2">
+                      <button className="px-3 py-1 border rounded" onClick={() => setModal('')}>Отмена</button>
+                      <button className="px-3 py-1 bg-blue-500 text-white rounded" onClick={submitExpense}>Сохранить</button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <h2 className="text-lg font-semibold">{modal === 'contract_amount' ? 'Сумма контракта' : 'Поступления'}</h2>
+                    <input className="border p-2 w-full" value={fieldValue} onChange={e => setFieldValue(e.target.value)} />
+                    <div className="flex justify-end space-x-2">
+                      <button className="px-3 py-1 border rounded" onClick={() => setModal('')}>Отмена</button>
+                      <button className="px-3 py-1 bg-blue-500 text-white rounded" onClick={submitField}>Сохранить</button>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
         </>
       )}
     </div>
