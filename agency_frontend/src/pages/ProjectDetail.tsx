@@ -82,7 +82,7 @@ function ProjectDetail() {
     setStartDate(startStr)
     setEndDate(endStr)
     setDrafts([])
-    updateInfo({ posts_count: 0, start_date: startStr, end_date: endStr })
+    updateInfo({ start_date: startStr, end_date: endStr })
   }, [month, year, loaded, initialized])
 
   const updateInfo = async (data: Partial<{name:string;posts_count:number;start_date:string;end_date:string}>) => {
@@ -156,39 +156,44 @@ function ProjectDetail() {
     }
   }
 
+  const addRow = () => {
+    setDrafts([...drafts, { id: 0, date: '', posts_per_day: 1, post_type: 'video', status: 'in_progress' }])
+  }
+
+  const removeRow = async (idx: number, post: Post) => {
+    if (post.id === 0) {
+      const copy = drafts.filter((_, i) => i !== idx - filteredPosts.length)
+      setDrafts(copy)
+    } else {
+      await fetch(`${API_URL}/project_posts/${post.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
+      setPosts(posts.filter(p => p.id !== post.id))
+    }
+  }
+
   const filteredPosts = posts.filter(p => {
     const d = new Date(p.date)
     return d.getFullYear() === year && d.getMonth() + 1 === month
   })
 
-  useEffect(() => {
-    if (!loaded) return
-    const relevant = posts.filter(p => {
+  const recalcPostsCount = async (list?: Post[], dr?: Post[]) => {
+    const relevant = (list || posts).filter(p => {
       const d = new Date(p.date)
       return d.getFullYear() === year && d.getMonth() + 1 === month
     })
     const totalExisting = relevant.reduce((sum, p) => sum + p.posts_per_day, 0)
-    let draftSum = drafts.reduce((sum, d) => sum + d.posts_per_day, 0)
-    let diff = postsCount - (totalExisting + draftSum)
-    if (diff > 0) {
-      setDrafts(drafts.concat(Array.from({ length: diff }, () => ({
-        id: 0,
-        date: '',
-        posts_per_day: 1,
-        post_type: 'video',
-        status: 'in_progress',
-      }))))
-    } else if (diff < 0) {
-      diff = -diff
-      const copy = [...drafts]
-      while (diff > 0 && copy.length) {
-        const last = copy[copy.length - 1]
-        diff -= last.posts_per_day
-        copy.pop()
-      }
-      setDrafts(copy)
-    }
-  }, [postsCount, posts, month, year, loaded, drafts])
+    const draftSum = (dr || drafts).reduce((sum, d) => sum + d.posts_per_day, 0)
+    const total = totalExisting + draftSum
+    setPostsCount(total)
+    await fetch(`${API_URL}/projects/${id}/info`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ posts_count: total })
+    })
+  }
+
+  useEffect(() => {
+    if (loaded) recalcPostsCount()
+  }, [posts, drafts, month, year, loaded])
 
   const rows = [...filteredPosts, ...drafts]
 
@@ -208,8 +213,8 @@ function ProjectDetail() {
             </thead>
             <tbody>
               <tr>
-                <td className="border px-2 py-1"><input className="border p-1 w-full" value={name} onChange={e=>setName(e.target.value)} onBlur={()=>updateInfo({name})} /></td>
-                <td className="border px-2 py-1"><input type="number" className="border p-1 w-full" value={postsCount} onChange={e=>setPostsCount(Number(e.target.value))} onBlur={e=>updateInfo({posts_count: Number(e.currentTarget.value)})} /></td>
+                <td className="border px-2 py-1">{name}</td>
+                <td className="border px-2 py-1">{postsCount}</td>
                 <td className="border px-2 py-1"><input type="date" className="border p-1 w-full" value={startDate} onChange={e=>setStartDate(e.target.value)} onBlur={()=>updateInfo({start_date:startDate})} /></td>
                 <td className="border px-2 py-1"><input type="date" className="border p-1 w-full" value={endDate} onChange={e=>setEndDate(e.target.value)} onBlur={()=>updateInfo({end_date:endDate})} /></td>
                 <td className="border px-2 py-1"></td>
@@ -238,7 +243,8 @@ function ProjectDetail() {
         </thead>
         <tbody>
           {rows.map((p, idx) => (
-            <tr key={p.id || `new-${idx}`} className="text-center border-t" style={{borderColor: statusColors[p.status], borderWidth: '2px'}}>
+            <tr key={p.id || `new-${idx}`} className="text-center border-t relative" style={{borderColor: statusColors[p.status], borderWidth: '2px'}}>
+              <button className="absolute right-1 top-1 text-xs" onClick={()=>removeRow(idx, p)}>-</button>
               <td className="border px-2 py-1">
                 <input type="date" className="border p-1" value={p.date ? p.date.slice(0,10) : ''} onChange={e=>updatePost(idx, p, 'date', e.target.value)} />
               </td>
@@ -262,6 +268,11 @@ function ProjectDetail() {
               </td>
             </tr>
           ))}
+          <tr>
+            <td colSpan={4} className="text-center border">
+              <button className="px-2 py-1 border rounded" onClick={addRow}>Добавить</button>
+            </td>
+          </tr>
         </tbody>
       </table>
     </div>
