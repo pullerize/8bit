@@ -59,13 +59,18 @@ function Reports() {
 
   const submitField = async () => {
     if (!projectId || !modal) return
-    await fetch(`${API_URL}/projects/${projectId}/report`, {
+    const res = await fetch(`${API_URL}/projects/${projectId}/report`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ [modal]: parseNumber(fieldValue) })
     })
     setModal('')
-    loadReport(projectId as number)
+    if (res.ok) {
+      const data = await res.json()
+      setReport(data)
+    } else {
+      loadReport(projectId as number)
+    }
   }
 
   const openExpense = () => {
@@ -77,13 +82,27 @@ function Reports() {
 
   const submitExpense = async () => {
     if (!projectId) return
-    await fetch(`${API_URL}/projects/${projectId}/expenses`, {
+    const res = await fetch(`${API_URL}/projects/${projectId}/expenses`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ name: expName, amount: parseNumber(expAmount), comment: expComment })
     })
     setModal('')
-    loadReport(projectId as number)
+    if (res.ok) {
+      const exp: Expense = await res.json()
+      setReport(r => {
+        if (!r) return r
+        const newTotal = r.total_expenses + exp.amount
+        return {
+          ...r,
+          expenses: [...r.expenses, exp],
+          total_expenses: newTotal,
+          positive_balance: r.balance_after_tax - newTotal
+        }
+      })
+    } else {
+      loadReport(projectId as number)
+    }
   }
 
 
