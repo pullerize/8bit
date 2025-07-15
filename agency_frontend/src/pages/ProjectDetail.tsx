@@ -38,6 +38,7 @@ function ProjectDetail() {
   const [endDate, setEndDate] = useState('')
 
   const [posts, setPosts] = useState<Post[]>([])
+  const [drafts, setDrafts] = useState<Post[]>([])
   const now = new Date()
   const [month, setMonth] = useState(now.getMonth() + 1)
   const [year, setYear] = useState(now.getFullYear())
@@ -58,6 +59,18 @@ function ProjectDetail() {
   }
 
   useEffect(() => { load() }, [id])
+
+  useEffect(() => {
+    const start = new Date(year, month - 1, 1)
+    const end = new Date(year, month, 1)
+    const startStr = start.toISOString().slice(0, 10)
+    const endStr = end.toISOString().slice(0, 10)
+    setPostsCount(0)
+    setStartDate(startStr)
+    setEndDate(endStr)
+    setDrafts([])
+    updateInfo({ posts_count: 0, start_date: startStr, end_date: endStr })
+  }, [month, year])
 
   const updateInfo = async (data: Partial<{name:string;posts_count:number;start_date:string;end_date:string}>) => {
     if ('name' in data) {
@@ -83,16 +96,16 @@ function ProjectDetail() {
 
   const updatePost = async (idx: number, post: Post, field: string, value: any) => {
     const updated = { ...post, [field]: value }
-    let newPosts = [...posts]
     if (post.id === 0) {
-      if (field === 'date' && !value) {
-        newPosts = posts
-      } else {
+      const draftsCopy = [...drafts]
+      draftsCopy[idx - filteredPosts.length] = updated
+      setDrafts(draftsCopy)
+      if (field === 'date' && value) {
         const res = await fetch(`${API_URL}/projects/${id}/posts`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
           body: JSON.stringify({
-            date: updated.date ? updated.date + 'T00:00:00' : new Date().toISOString(),
+            date: value + 'T00:00:00',
             posts_per_day: updated.posts_per_day,
             post_type: updated.post_type,
             status: updated.status,
@@ -100,8 +113,10 @@ function ProjectDetail() {
         })
         if (res.ok) {
           const created = await res.json()
-          newPosts.push(created)
-          updated.id = created.id
+          setPosts([...posts, created])
+          draftsCopy.splice(idx - filteredPosts.length, 1)
+          setDrafts(draftsCopy)
+          load()
         }
       }
     } else {
@@ -115,19 +130,34 @@ function ProjectDetail() {
           status: updated.status,
         })
       })
-      newPosts = posts.map(p => p.id === post.id ? updated : p)
+      setPosts(posts.map(p => p.id === post.id ? updated : p))
+      load()
     }
-    setPosts(newPosts)
   }
 
   const filteredPosts = posts.filter(p => {
     const d = new Date(p.date)
     return d.getFullYear() === year && d.getMonth() + 1 === month
   })
-  const rows = [...filteredPosts]
-  while (rows.length < postsCount) {
-    rows.push({ id: 0, date: '', posts_per_day: 1, post_type: 'video', status: 'in_progress' })
-  }
+
+  useEffect(() => {
+    const total = filteredPosts.reduce((sum, p) => sum + p.posts_per_day, 0)
+    let needed = postsCount - (total + drafts.reduce((s, d) => s + d.posts_per_day, 0))
+    setDrafts(prev => {
+      let arr = [...prev]
+      while (needed > 0) {
+        arr.push({ id: 0, date: '', posts_per_day: 1, post_type: 'video', status: 'in_progress' })
+        needed--
+      }
+      while (needed < 0 && arr.length) {
+        arr.pop()
+        needed++
+      }
+      return arr
+    })
+  }, [postsCount, filteredPosts])
+
+  const rows = [...filteredPosts, ...drafts]
 
   return (
     <div className="p-4 space-y-4">
