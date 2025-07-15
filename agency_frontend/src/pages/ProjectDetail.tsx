@@ -167,16 +167,28 @@ function ProjectDetail() {
       const d = new Date(p.date)
       return d.getFullYear() === year && d.getMonth() + 1 === month
     })
-    const total = relevant.reduce((sum, p) => sum + p.posts_per_day, 0)
-    const needed = Math.max(0, postsCount - total)
-    setDrafts(Array.from({ length: needed }, () => ({
-      id: 0,
-      date: '',
-      posts_per_day: 1,
-      post_type: 'video',
-      status: 'in_progress',
-    })))
-  }, [postsCount, posts, month, year, loaded])
+    const totalExisting = relevant.reduce((sum, p) => sum + p.posts_per_day, 0)
+    let draftSum = drafts.reduce((sum, d) => sum + d.posts_per_day, 0)
+    let diff = postsCount - (totalExisting + draftSum)
+    if (diff > 0) {
+      setDrafts(drafts.concat(Array.from({ length: diff }, () => ({
+        id: 0,
+        date: '',
+        posts_per_day: 1,
+        post_type: 'video',
+        status: 'in_progress',
+      }))))
+    } else if (diff < 0) {
+      diff = -diff
+      const copy = [...drafts]
+      while (diff > 0 && copy.length) {
+        const last = copy[copy.length - 1]
+        diff -= last.posts_per_day
+        copy.pop()
+      }
+      setDrafts(copy)
+    }
+  }, [postsCount, posts, month, year, loaded, drafts])
 
   const rows = [...filteredPosts, ...drafts]
 
@@ -197,7 +209,7 @@ function ProjectDetail() {
             <tbody>
               <tr>
                 <td className="border px-2 py-1"><input className="border p-1 w-full" value={name} onChange={e=>setName(e.target.value)} onBlur={()=>updateInfo({name})} /></td>
-                <td className="border px-2 py-1"><input type="number" className="border p-1 w-full" value={postsCount} onChange={e=>setPostsCount(Number(e.target.value))} onBlur={()=>updateInfo({posts_count: postsCount})} /></td>
+                <td className="border px-2 py-1"><input type="number" className="border p-1 w-full" value={postsCount} onChange={e=>setPostsCount(Number(e.target.value))} onBlur={e=>updateInfo({posts_count: Number(e.currentTarget.value)})} /></td>
                 <td className="border px-2 py-1"><input type="date" className="border p-1 w-full" value={startDate} onChange={e=>setStartDate(e.target.value)} onBlur={()=>updateInfo({start_date:startDate})} /></td>
                 <td className="border px-2 py-1"><input type="date" className="border p-1 w-full" value={endDate} onChange={e=>setEndDate(e.target.value)} onBlur={()=>updateInfo({end_date:endDate})} /></td>
                 <td className="border px-2 py-1"></td>
