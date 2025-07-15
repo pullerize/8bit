@@ -4,7 +4,6 @@ import Login from './pages/Login'
 import Tasks from './pages/Tasks'
 import Calendar from './pages/Calendar'
 import Reports from './pages/Reports'
-import Finance from './pages/Finance'
 import Users from './pages/Users'
 import Operators from './pages/Operators'
 import Projects from './pages/ProjectsOverview'
@@ -26,9 +25,6 @@ function App() {
         <Route
           path="/calendar"
           element={token ? <Calendar /> : <Navigate to="/login" />} />
-        <Route
-          path="/finance"
-          element={token ? <Finance /> : <Navigate to="/login" />} />
         <Route
           path="/reports"
           element={token ? <Reports /> : <Navigate to="/login" />} />

@@ -16,9 +16,8 @@ function Navbar() {
       <div className="space-x-4">
         <Link to="/tasks" className="hover:underline">Задачи</Link>
         <Link to="/calendar" className="hover:underline">Календарь съемок</Link>
-        <Link to="/finance" className="hover:underline">Финансы</Link>
-        <Link to="/reports" className="hover:underline">Отчеты</Link>
         <Link to="/projects" className="hover:underline">Проекты</Link>
+        <Link to="/reports" className="hover:underline">Отчеты</Link>
         {role === 'admin' && (
           <Link to="/admin" className="hover:underline">Админ панель</Link>
         )}

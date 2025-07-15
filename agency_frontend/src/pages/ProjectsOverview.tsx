@@ -56,13 +56,16 @@ function Projects() {
   useEffect(()=>{load()},[])
 
   return (
-    <div className="p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-      {projects.map(p=> (
-        <div key={p.id} className="border p-4 flex flex-col items-center cursor-pointer" onClick={()=>navigate(`/projects/${p.id}`)}>
-          <Donut stats={stats[p.id]||{in_progress:0,approved:0,cancelled:0,overdue:0}} />
-          <div className="mt-2 font-semibold">{p.name}</div>
-        </div>
-      ))}
+    <div className="p-4">
+      <h1 className="text-center text-xl mb-4">Общие показатели успеваемости по проектам</h1>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        {projects.map(p=> (
+          <div key={p.id} className="border p-4 flex flex-col items-center cursor-pointer" onClick={()=>navigate(`/projects/${p.id}`)}>
+            <Donut stats={stats[p.id]||{in_progress:0,approved:0,cancelled:0,overdue:0}} />
+            <div className="mt-2 font-semibold">{p.name}</div>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
