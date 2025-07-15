@@ -108,6 +108,7 @@ class ExpenseCreate(ExpenseBase):
 
 class Expense(ExpenseBase):
     id: int
+    created_at: datetime
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -123,6 +124,7 @@ class ClientExpenseCreate(ClientExpenseBase):
 
 class ClientExpense(ClientExpenseBase):
     id: int
+    created_at: datetime
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -143,6 +145,7 @@ class ReceiptCreate(ReceiptBase):
 
 class Receipt(ReceiptBase):
     id: int
+    created_at: datetime
     model_config = ConfigDict(from_attributes=True)
 
 

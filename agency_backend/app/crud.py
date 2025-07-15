@@ -291,8 +291,13 @@ def update_report(db: Session, project_id: int, data: schemas.ProjectReportUpdat
     return report
 
 
-def get_expenses(db: Session, project_id: int) -> List[models.ProjectExpense]:
-    return db.query(models.ProjectExpense).filter(models.ProjectExpense.project_id == project_id).all()
+def get_expenses(db: Session, project_id: int, start: datetime | None = None, end: datetime | None = None) -> List[models.ProjectExpense]:
+    q = db.query(models.ProjectExpense).filter(models.ProjectExpense.project_id == project_id)
+    if start:
+        q = q.filter(models.ProjectExpense.created_at >= start)
+    if end:
+        q = q.filter(models.ProjectExpense.created_at < end)
+    return q.all()
 
 
 def create_expense(db: Session, project_id: int, exp: schemas.ExpenseCreate) -> models.ProjectExpense:
@@ -322,8 +327,13 @@ def update_expense(db: Session, expense_id: int, exp: schemas.ExpenseCreate) -> 
     return e
 
 
-def get_receipts(db: Session, project_id: int) -> List[models.ProjectReceipt]:
-    return db.query(models.ProjectReceipt).filter(models.ProjectReceipt.project_id == project_id).all()
+def get_receipts(db: Session, project_id: int, start: datetime | None = None, end: datetime | None = None) -> List[models.ProjectReceipt]:
+    q = db.query(models.ProjectReceipt).filter(models.ProjectReceipt.project_id == project_id)
+    if start:
+        q = q.filter(models.ProjectReceipt.created_at >= start)
+    if end:
+        q = q.filter(models.ProjectReceipt.created_at < end)
+    return q.all()
 
 
 def create_receipt(db: Session, project_id: int, rec: schemas.ReceiptCreate) -> models.ProjectReceipt:
@@ -361,8 +371,13 @@ def update_receipt(db: Session, receipt_id: int, rec: schemas.ReceiptCreate) -> 
     return r
 
 
-def get_client_expenses(db: Session, project_id: int) -> List[models.ProjectClientExpense]:
-    return db.query(models.ProjectClientExpense).filter(models.ProjectClientExpense.project_id == project_id).all()
+def get_client_expenses(db: Session, project_id: int, start: datetime | None = None, end: datetime | None = None) -> List[models.ProjectClientExpense]:
+    q = db.query(models.ProjectClientExpense).filter(models.ProjectClientExpense.project_id == project_id)
+    if start:
+        q = q.filter(models.ProjectClientExpense.created_at >= start)
+    if end:
+        q = q.filter(models.ProjectClientExpense.created_at < end)
+    return q.all()
 
 
 def create_client_expense(db: Session, project_id: int, exp: schemas.ClientExpenseCreate) -> models.ProjectClientExpense:

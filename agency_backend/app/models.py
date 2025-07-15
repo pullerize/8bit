@@ -120,6 +120,7 @@ class ProjectExpense(Base):
     name = Column(String)
     amount = Column(Integer)
     comment = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
 
     project = relationship("Project")
 
@@ -132,6 +133,7 @@ class ProjectReceipt(Base):
     name = Column(String)
     amount = Column(Integer)
     comment = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
 
     project = relationship("Project")
 
@@ -144,5 +146,6 @@ class ProjectClientExpense(Base):
     name = Column(String)
     amount = Column(Integer)
     comment = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
 
     project = relationship("Project")

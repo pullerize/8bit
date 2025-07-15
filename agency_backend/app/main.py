@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from dotenv import load_dotenv
+from datetime import datetime
 
 from . import models, schemas, crud, auth
 from .database import engine, Base, SessionLocal
@@ -190,20 +191,35 @@ def delete_project(project_id: int, db: Session = Depends(auth.get_db), current:
 
 
 @app.get("/projects/{project_id}/report", response_model=schemas.ProjectReport)
-def get_project_report(project_id: int, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
+def get_project_report(
+    project_id: int,
+    month: int | None = None,
+    db: Session = Depends(auth.get_db),
+    current: models.User = Depends(auth.get_current_active_user),
+):
+    today = datetime.utcnow()
+    m = month or today.month
+    start = datetime(today.year, m, 1)
+    end_month = m + 1
+    end_year = today.year
+    if end_month > 12:
+        end_month = 1
+        end_year += 1
+    end = datetime(end_year, end_month, 1)
     report = crud.get_or_create_report(db, project_id)
-    expenses = crud.get_expenses(db, project_id)
-    client_expenses = crud.get_client_expenses(db, project_id)
-    receipts_list = crud.get_receipts(db, project_id)
+    expenses = crud.get_expenses(db, project_id, start, end)
+    client_expenses = crud.get_client_expenses(db, project_id, start, end)
+    receipts_list = crud.get_receipts(db, project_id, start, end)
+    receipts_sum = sum(r.amount for r in receipts_list)
     client_sum = sum(e.amount for e in client_expenses)
     total_expenses = sum(e.amount for e in expenses) + client_sum
-    balance_after_tax = report.receipts * 0.83
-    debt = report.contract_amount - report.receipts + client_sum
+    balance_after_tax = receipts_sum * 0.83
+    debt = report.contract_amount - receipts_sum + client_sum
     positive_balance = balance_after_tax - total_expenses
     return schemas.ProjectReport(
         project_id=project_id,
         contract_amount=report.contract_amount,
-        receipts=report.receipts,
+        receipts=receipts_sum,
         receipts_list=receipts_list,
         client_expenses=client_expenses,
         total_expenses=total_expenses,
@@ -215,20 +231,36 @@ def get_project_report(project_id: int, db: Session = Depends(auth.get_db), curr
 
 
 @app.put("/projects/{project_id}/report", response_model=schemas.ProjectReport)
-def update_project_report(project_id: int, data: schemas.ProjectReportUpdate, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
+def update_project_report(
+    project_id: int,
+    data: schemas.ProjectReportUpdate,
+    month: int | None = None,
+    db: Session = Depends(auth.get_db),
+    current: models.User = Depends(auth.get_current_active_user),
+):
+    today = datetime.utcnow()
+    m = month or today.month
+    start = datetime(today.year, m, 1)
+    end_month = m + 1
+    end_year = today.year
+    if end_month > 12:
+        end_month = 1
+        end_year += 1
+    end = datetime(end_year, end_month, 1)
     report = crud.update_report(db, project_id, data)
-    expenses = crud.get_expenses(db, project_id)
-    client_expenses = crud.get_client_expenses(db, project_id)
-    receipts_list = crud.get_receipts(db, project_id)
+    expenses = crud.get_expenses(db, project_id, start, end)
+    client_expenses = crud.get_client_expenses(db, project_id, start, end)
+    receipts_list = crud.get_receipts(db, project_id, start, end)
+    receipts_sum = sum(r.amount for r in receipts_list)
     client_sum = sum(e.amount for e in client_expenses)
     total_expenses = sum(e.amount for e in expenses) + client_sum
-    balance_after_tax = report.receipts * 0.83
-    debt = report.contract_amount - report.receipts + client_sum
+    balance_after_tax = receipts_sum * 0.83
+    debt = report.contract_amount - receipts_sum + client_sum
     positive_balance = balance_after_tax - total_expenses
     return schemas.ProjectReport(
         project_id=project_id,
         contract_amount=report.contract_amount,
-        receipts=report.receipts,
+        receipts=receipts_sum,
         receipts_list=receipts_list,
         client_expenses=client_expenses,
         total_expenses=total_expenses,
@@ -240,8 +272,22 @@ def update_project_report(project_id: int, data: schemas.ProjectReportUpdate, db
 
 
 @app.get("/projects/{project_id}/expenses", response_model=list[schemas.Expense])
-def list_expenses(project_id: int, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
-    return crud.get_expenses(db, project_id)
+def list_expenses(
+    project_id: int,
+    month: int | None = None,
+    db: Session = Depends(auth.get_db),
+    current: models.User = Depends(auth.get_current_active_user),
+):
+    today = datetime.utcnow()
+    m = month or today.month
+    start = datetime(today.year, m, 1)
+    end_month = m + 1
+    end_year = today.year
+    if end_month > 12:
+        end_month = 1
+        end_year += 1
+    end = datetime(end_year, end_month, 1)
+    return crud.get_expenses(db, project_id, start, end)
 
 
 @app.post("/projects/{project_id}/expenses", response_model=schemas.Expense)
@@ -264,8 +310,22 @@ def remove_expense(expense_id: int, db: Session = Depends(auth.get_db), current:
 
 
 @app.get("/projects/{project_id}/client_expenses", response_model=list[schemas.ClientExpense])
-def list_client_expenses(project_id: int, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
-    return crud.get_client_expenses(db, project_id)
+def list_client_expenses(
+    project_id: int,
+    month: int | None = None,
+    db: Session = Depends(auth.get_db),
+    current: models.User = Depends(auth.get_current_active_user),
+):
+    today = datetime.utcnow()
+    m = month or today.month
+    start = datetime(today.year, m, 1)
+    end_month = m + 1
+    end_year = today.year
+    if end_month > 12:
+        end_month = 1
+        end_year += 1
+    end = datetime(end_year, end_month, 1)
+    return crud.get_client_expenses(db, project_id, start, end)
 
 
 @app.post("/projects/{project_id}/client_expenses", response_model=schemas.ClientExpense)
@@ -293,8 +353,22 @@ def remove_client_expense(expense_id: int, db: Session = Depends(auth.get_db), c
 
 
 @app.get("/projects/{project_id}/receipts", response_model=list[schemas.Receipt])
-def list_receipts(project_id: int, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
-    return crud.get_receipts(db, project_id)
+def list_receipts(
+    project_id: int,
+    month: int | None = None,
+    db: Session = Depends(auth.get_db),
+    current: models.User = Depends(auth.get_current_active_user),
+):
+    today = datetime.utcnow()
+    m = month or today.month
+    start = datetime(today.year, m, 1)
+    end_month = m + 1
+    end_year = today.year
+    if end_month > 12:
+        end_month = 1
+        end_year += 1
+    end = datetime(end_year, end_month, 1)
+    return crud.get_receipts(db, project_id, start, end)
 
 
 @app.post("/projects/{project_id}/receipts", response_model=schemas.Receipt)
