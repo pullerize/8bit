@@ -4,6 +4,7 @@ import { API_URL } from '../api'
 interface Project { id: number; name: string }
 interface Expense { id: number; name: string; amount: number; comment?: string }
 interface Receipt { id: number; name: string; amount: number; comment?: string }
+interface ClientExpense { id: number; name: string; amount: number; comment?: string }
 interface Report {
   project_id: number
   contract_amount: number
@@ -14,6 +15,7 @@ interface Report {
   positive_balance: number
   expenses: Expense[]
   receipts_list: Receipt[]
+  client_expenses: ClientExpense[]
 }
 
 function formatCurrency(n: number) {
@@ -35,7 +37,7 @@ function Reports() {
   const [projectId, setProjectId] = useState<number | ''>('')
   const [report, setReport] = useState<Report | null>(null)
 
-  const [modal, setModal] = useState<'' | 'contract_amount' | 'expense' | 'receipt'>('')
+  const [modal, setModal] = useState<'' | 'contract_amount' | 'expense' | 'receipt' | 'client_expense' | 'close_client_expense'>('')
   const [fieldValue, setFieldValue] = useState('')
   const [expName, setExpName] = useState('')
   const [expAmount, setExpAmount] = useState('')
@@ -43,9 +45,15 @@ function Reports() {
   const [recName, setRecName] = useState('')
   const [recAmount, setRecAmount] = useState('')
   const [recComment, setRecComment] = useState('')
+  const [cExpName, setCExpName] = useState('')
+  const [cExpAmount, setCExpAmount] = useState('')
+  const [cExpComment, setCExpComment] = useState('')
+  const [closeAmount, setCloseAmount] = useState('')
+  const [closeComment, setCloseComment] = useState('')
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null)
   const [editingReceipt, setEditingReceipt] = useState<Receipt | null>(null)
-  const [tab, setTab] = useState<'expenses' | 'receipts'>('expenses')
+  const [editingClientExpense, setEditingClientExpense] = useState<ClientExpense | null>(null)
+  const [tab, setTab] = useState<'expenses' | 'receipts' | 'client_expenses'>('expenses')
 
   const loadProjects = async () => {
     const res = await fetch(`${API_URL}/projects/`, { headers: { Authorization: `Bearer ${token}` } })
@@ -109,6 +117,28 @@ function Reports() {
       setRecComment('')
     }
     setModal('receipt')
+  }
+
+  const openClientExpense = (e?: ClientExpense) => {
+    if (e) {
+      setEditingClientExpense(e)
+      setCExpName(e.name)
+      setCExpAmount(formatInput(String(e.amount)))
+      setCExpComment(e.comment || '')
+    } else {
+      setEditingClientExpense(null)
+      setCExpName('')
+      setCExpAmount('')
+      setCExpComment('')
+    }
+    setModal('client_expense')
+  }
+
+  const openCloseClientExpense = (e: ClientExpense) => {
+    setEditingClientExpense(e)
+    setCloseAmount(formatInput(String(e.amount)))
+    setCloseComment(e.comment || '')
+    setModal('close_client_expense')
   }
 
   const submitExpense = async () => {
@@ -181,6 +211,62 @@ function Reports() {
     }
   }
 
+  const submitClientExpense = async () => {
+    if (!projectId) return
+    const url = editingClientExpense ? `${API_URL}/client_expenses/${editingClientExpense.id}` : `${API_URL}/projects/${projectId}/client_expenses`
+    const method = editingClientExpense ? 'PUT' : 'POST'
+    const res = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ name: cExpName, amount: parseNumber(cExpAmount), comment: cExpComment })
+    })
+    setModal('')
+    if (res.ok) {
+      const item: ClientExpense = await res.json()
+      setReport(r => {
+        if (!r) return r
+        let list = r.client_expenses
+        if (editingClientExpense) {
+          list = list.map(x => x.id === item.id ? item : x)
+        } else {
+          list = [...list, item]
+        }
+        const debt = r.contract_amount - r.receipts + list.reduce((s,x)=>s+x.amount,0)
+        return { ...r, client_expenses: list, debt }
+      })
+      setEditingClientExpense(null)
+    } else {
+      loadReport(projectId as number)
+    }
+  }
+
+  const closeClientExpense = async () => {
+    if (!editingClientExpense) return
+    const res = await fetch(`${API_URL}/client_expenses/${editingClientExpense.id}/close`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ amount: parseNumber(closeAmount), comment: closeComment })
+    })
+    setModal('')
+    if (res.ok) {
+      const item = await res.json()
+      setReport(r => {
+        if (!r) return r
+        let list = r.client_expenses
+        if (item) {
+          list = list.map(x => x.id === item.id ? item : x)
+        } else {
+          list = list.filter(x => x.id !== editingClientExpense.id)
+        }
+        const debt = r.contract_amount - r.receipts + list.reduce((s,x)=>s+x.amount,0)
+        return { ...r, client_expenses: list, debt }
+      })
+      setEditingClientExpense(null)
+    } else {
+      loadReport(projectId as number)
+    }
+  }
+
 
   const deleteExpense = async (id: number) => {
     await fetch(`${API_URL}/expenses/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
@@ -189,6 +275,11 @@ function Reports() {
 
   const deleteReceipt = async (id: number) => {
     await fetch(`${API_URL}/receipts/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
+    if (projectId) loadReport(projectId as number)
+  }
+
+  const deleteClientExpense = async (id: number) => {
+    await fetch(`${API_URL}/client_expenses/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
     if (projectId) loadReport(projectId as number)
   }
 
@@ -230,6 +321,7 @@ function Reports() {
           <div className="mt-4 flex space-x-4">
             <button className={`px-2 py-1 border rounded ${tab==='receipts' ? 'bg-gray-200' : ''}`} onClick={()=>setTab('receipts')}>Поступления</button>
             <button className={`px-2 py-1 border rounded ${tab==='expenses' ? 'bg-gray-200' : ''}`} onClick={()=>setTab('expenses')}>Расходы</button>
+            <button className={`px-2 py-1 border rounded ${tab==='client_expenses' ? 'bg-gray-200' : ''}`} onClick={()=>setTab('client_expenses')}>Клиентские расходы</button>
           </div>
 
           {tab === 'expenses' && (
@@ -295,6 +387,39 @@ function Reports() {
               </table>
             </>
           )}
+
+          {tab === 'client_expenses' && (
+            <>
+              <div className="flex justify-between items-center mt-4">
+                <h2 className="text-xl">Клиентские расходы</h2>
+                <button className="bg-blue-500 text-white px-2 py-1 rounded" onClick={() => openClientExpense()}>Добавить</button>
+              </div>
+              <table className="min-w-full bg-white border">
+                <thead>
+                  <tr className="bg-gray-100">
+                    <th className="px-4 py-2 border">Название</th>
+                    <th className="px-4 py-2 border">Сумма</th>
+                    <th className="px-4 py-2 border">Комментарий</th>
+                    <th className="px-4 py-2 border"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {report.client_expenses.map(c => (
+                    <tr key={c.id} className="text-center border-t">
+                      <td className="px-4 py-2 border">{c.name}</td>
+                      <td className="px-4 py-2 border">{formatCurrency(c.amount)}</td>
+                      <td className="px-4 py-2 border">{c.comment}</td>
+                      <td className="px-4 py-2 border space-x-2">
+                        <button className="text-blue-500" onClick={() => openClientExpense(c)}>Редактировать</button>
+                        <button className="text-green-500" onClick={() => openCloseClientExpense(c)}>Закрыть</button>
+                        <button className="text-red-500" onClick={() => deleteClientExpense(c.id)}>Удалить</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </>
+          )}
           {modal && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
               <div className="bg-white p-4 rounded w-96 space-y-4">
@@ -336,6 +461,42 @@ function Reports() {
                     <div className="flex justify-end space-x-2">
                       <button className="px-3 py-1 border rounded" onClick={() => setModal('')}>Отмена</button>
                       <button className="px-3 py-1 bg-blue-500 text-white rounded" onClick={submitReceipt}>Сохранить</button>
+                    </div>
+                  </>
+                ) : modal === 'client_expense' ? (
+                  <>
+                    <h2 className="text-lg font-semibold">{editingClientExpense ? 'Редактировать клиентский расход' : 'Новый клиентский расход'}</h2>
+                    <label className="block">
+                      <span className="text-sm text-gray-500">Наименование</span>
+                      <input className="border p-2 w-full" value={cExpName} onChange={e => setCExpName(e.target.value)} />
+                    </label>
+                    <label className="block">
+                      <span className="text-sm text-gray-500">Сумма</span>
+                      <input className="border p-2 w-full" value={cExpAmount} onChange={e => setCExpAmount(formatInput(e.target.value))} />
+                    </label>
+                    <label className="block">
+                      <span className="text-sm text-gray-500">Комментарий</span>
+                      <input className="border p-2 w-full" value={cExpComment} onChange={e => setCExpComment(e.target.value)} />
+                    </label>
+                    <div className="flex justify-end space-x-2">
+                      <button className="px-3 py-1 border rounded" onClick={() => setModal('')}>Отмена</button>
+                      <button className="px-3 py-1 bg-blue-500 text-white rounded" onClick={submitClientExpense}>Сохранить</button>
+                    </div>
+                  </>
+                ) : modal === 'close_client_expense' ? (
+                  <>
+                    <h2 className="text-lg font-semibold">Закрыть расход</h2>
+                    <label className="block">
+                      <span className="text-sm text-gray-500">Сумма</span>
+                      <input className="border p-2 w-full" value={closeAmount} onChange={e => setCloseAmount(formatInput(e.target.value))} />
+                    </label>
+                    <label className="block">
+                      <span className="text-sm text-gray-500">Комментарий</span>
+                      <input className="border p-2 w-full" value={closeComment} onChange={e => setCloseComment(e.target.value)} />
+                    </label>
+                    <div className="flex justify-end space-x-2">
+                      <button className="px-3 py-1 border rounded" onClick={() => setModal('')}>Отмена</button>
+                      <button className="px-3 py-1 bg-blue-500 text-white rounded" onClick={closeClientExpense}>Сохранить</button>
                     </div>
                   </>
                 ) : (

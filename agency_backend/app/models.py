@@ -134,3 +134,15 @@ class ProjectReceipt(Base):
     comment = Column(String, nullable=True)
 
     project = relationship("Project")
+
+
+class ProjectClientExpense(Base):
+    __tablename__ = "project_client_expenses"
+
+    id = Column(Integer, primary_key=True, index=True)
+    project_id = Column(Integer, ForeignKey("projects.id"))
+    name = Column(String)
+    amount = Column(Integer)
+    comment = Column(String, nullable=True)
+
+    project = relationship("Project")

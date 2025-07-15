@@ -359,3 +359,50 @@ def update_receipt(db: Session, receipt_id: int, rec: schemas.ReceiptCreate) -> 
     db.refresh(r)
     db.refresh(report)
     return r
+
+
+def get_client_expenses(db: Session, project_id: int) -> List[models.ProjectClientExpense]:
+    return db.query(models.ProjectClientExpense).filter(models.ProjectClientExpense.project_id == project_id).all()
+
+
+def create_client_expense(db: Session, project_id: int, exp: schemas.ClientExpenseCreate) -> models.ProjectClientExpense:
+    e = models.ProjectClientExpense(project_id=project_id, name=exp.name, amount=exp.amount, comment=exp.comment)
+    db.add(e)
+    db.commit()
+    db.refresh(e)
+    return e
+
+
+def update_client_expense(db: Session, expense_id: int, exp: schemas.ClientExpenseCreate) -> Optional[models.ProjectClientExpense]:
+    e = db.query(models.ProjectClientExpense).filter(models.ProjectClientExpense.id == expense_id).first()
+    if not e:
+        return None
+    e.name = exp.name
+    e.amount = exp.amount
+    e.comment = exp.comment
+    db.commit()
+    db.refresh(e)
+    return e
+
+
+def delete_client_expense(db: Session, expense_id: int) -> None:
+    e = db.query(models.ProjectClientExpense).filter(models.ProjectClientExpense.id == expense_id).first()
+    if e:
+        db.delete(e)
+        db.commit()
+
+
+def close_client_expense(db: Session, expense_id: int, amount: float, comment: Optional[str] = None) -> Optional[models.ProjectClientExpense]:
+    e = db.query(models.ProjectClientExpense).filter(models.ProjectClientExpense.id == expense_id).first()
+    if not e:
+        return None
+    e.amount -= amount
+    if comment is not None:
+        e.comment = comment
+    if e.amount <= 0:
+        db.delete(e)
+        db.commit()
+        return None
+    db.commit()
+    db.refresh(e)
+    return e

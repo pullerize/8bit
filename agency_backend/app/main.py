@@ -193,16 +193,19 @@ def delete_project(project_id: int, db: Session = Depends(auth.get_db), current:
 def get_project_report(project_id: int, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
     report = crud.get_or_create_report(db, project_id)
     expenses = crud.get_expenses(db, project_id)
+    client_expenses = crud.get_client_expenses(db, project_id)
     receipts_list = crud.get_receipts(db, project_id)
     total_expenses = sum(e.amount for e in expenses)
+    client_debt = sum(e.amount for e in client_expenses)
     balance_after_tax = report.receipts * 0.83
-    debt = report.contract_amount - report.receipts
+    debt = report.contract_amount - report.receipts + client_debt
     positive_balance = balance_after_tax - total_expenses
     return schemas.ProjectReport(
         project_id=project_id,
         contract_amount=report.contract_amount,
         receipts=report.receipts,
         receipts_list=receipts_list,
+        client_expenses=client_expenses,
         total_expenses=total_expenses,
         debt=debt,
         balance_after_tax=balance_after_tax,
@@ -215,16 +218,19 @@ def get_project_report(project_id: int, db: Session = Depends(auth.get_db), curr
 def update_project_report(project_id: int, data: schemas.ProjectReportUpdate, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
     report = crud.update_report(db, project_id, data)
     expenses = crud.get_expenses(db, project_id)
+    client_expenses = crud.get_client_expenses(db, project_id)
     receipts_list = crud.get_receipts(db, project_id)
     total_expenses = sum(e.amount for e in expenses)
+    client_debt = sum(e.amount for e in client_expenses)
     balance_after_tax = report.receipts * 0.83
-    debt = report.contract_amount - report.receipts
+    debt = report.contract_amount - report.receipts + client_debt
     positive_balance = balance_after_tax - total_expenses
     return schemas.ProjectReport(
         project_id=project_id,
         contract_amount=report.contract_amount,
         receipts=report.receipts,
         receipts_list=receipts_list,
+        client_expenses=client_expenses,
         total_expenses=total_expenses,
         debt=debt,
         balance_after_tax=balance_after_tax,
@@ -254,6 +260,35 @@ def edit_expense(expense_id: int, exp: schemas.ExpenseCreate, db: Session = Depe
 @app.delete("/expenses/{expense_id}")
 def remove_expense(expense_id: int, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
     crud.delete_expense(db, expense_id)
+    return {"ok": True}
+
+
+@app.get("/projects/{project_id}/client_expenses", response_model=list[schemas.ClientExpense])
+def list_client_expenses(project_id: int, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
+    return crud.get_client_expenses(db, project_id)
+
+
+@app.post("/projects/{project_id}/client_expenses", response_model=schemas.ClientExpense)
+def add_client_expense(project_id: int, exp: schemas.ClientExpenseCreate, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
+    return crud.create_client_expense(db, project_id, exp)
+
+
+@app.put("/client_expenses/{expense_id}", response_model=schemas.ClientExpense)
+def edit_client_expense(expense_id: int, exp: schemas.ClientExpenseCreate, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
+    updated = crud.update_client_expense(db, expense_id, exp)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Client expense not found")
+    return updated
+
+
+@app.post("/client_expenses/{expense_id}/close", response_model=schemas.ClientExpense | None)
+def close_client_expense(expense_id: int, data: schemas.ClientExpenseClose, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
+    return crud.close_client_expense(db, expense_id, data.amount, data.comment)
+
+
+@app.delete("/client_expenses/{expense_id}")
+def remove_client_expense(expense_id: int, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
+    crud.delete_client_expense(db, expense_id)
     return {"ok": True}
 
 
