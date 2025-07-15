@@ -99,3 +99,26 @@ class Shooting(Base):
     completed_operators = Column(String, nullable=True)
 
     operator = relationship("Operator")
+
+
+class ProjectReport(Base):
+    __tablename__ = "project_reports"
+
+    id = Column(Integer, primary_key=True, index=True)
+    project_id = Column(Integer, ForeignKey("projects.id"), unique=True)
+    contract_amount = Column(Integer, default=0)
+    receipts = Column(Integer, default=0)
+
+    project = relationship("Project")
+
+
+class ProjectExpense(Base):
+    __tablename__ = "project_expenses"
+
+    id = Column(Integer, primary_key=True, index=True)
+    project_id = Column(Integer, ForeignKey("projects.id"))
+    name = Column(String)
+    amount = Column(Integer)
+    comment = Column(String, nullable=True)
+
+    project = relationship("Project")

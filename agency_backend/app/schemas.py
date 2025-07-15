@@ -104,3 +104,41 @@ class Shooting(ShootingBase):
 
     class Config:
         orm_mode = True
+
+
+class ExpenseBase(BaseModel):
+    name: str
+    amount: float
+    comment: Optional[str] = None
+
+
+class ExpenseCreate(ExpenseBase):
+    pass
+
+
+class Expense(ExpenseBase):
+    id: int
+
+    class Config:
+        orm_mode = True
+
+
+class ProjectReportBase(BaseModel):
+    contract_amount: Optional[float] = 0
+    receipts: Optional[float] = 0
+
+
+class ProjectReportUpdate(ProjectReportBase):
+    pass
+
+
+class ProjectReport(ProjectReportBase):
+    project_id: int
+    total_expenses: float
+    debt: float
+    balance_after_tax: float
+    positive_balance: float
+    expenses: List[Expense]
+
+    class Config:
+        orm_mode = True

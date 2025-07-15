@@ -264,3 +264,59 @@ def complete_shooting(
     db.commit()
     db.refresh(sh)
     return sh
+
+
+def get_or_create_report(db: Session, project_id: int) -> models.ProjectReport:
+    report = (
+        db.query(models.ProjectReport)
+        .filter(models.ProjectReport.project_id == project_id)
+        .first()
+    )
+    if not report:
+        report = models.ProjectReport(project_id=project_id, contract_amount=0, receipts=0)
+        db.add(report)
+        db.commit()
+        db.refresh(report)
+    return report
+
+
+def update_report(db: Session, project_id: int, data: schemas.ProjectReportUpdate) -> models.ProjectReport:
+    report = get_or_create_report(db, project_id)
+    if data.contract_amount is not None:
+        report.contract_amount = data.contract_amount
+    if data.receipts is not None:
+        report.receipts = data.receipts
+    db.commit()
+    db.refresh(report)
+    return report
+
+
+def get_expenses(db: Session, project_id: int) -> List[models.ProjectExpense]:
+    return db.query(models.ProjectExpense).filter(models.ProjectExpense.project_id == project_id).all()
+
+
+def create_expense(db: Session, project_id: int, exp: schemas.ExpenseCreate) -> models.ProjectExpense:
+    e = models.ProjectExpense(project_id=project_id, name=exp.name, amount=exp.amount, comment=exp.comment)
+    db.add(e)
+    db.commit()
+    db.refresh(e)
+    return e
+
+
+def delete_expense(db: Session, expense_id: int) -> None:
+    e = db.query(models.ProjectExpense).filter(models.ProjectExpense.id == expense_id).first()
+    if e:
+        db.delete(e)
+        db.commit()
+
+
+def update_expense(db: Session, expense_id: int, exp: schemas.ExpenseCreate) -> Optional[models.ProjectExpense]:
+    e = db.query(models.ProjectExpense).filter(models.ProjectExpense.id == expense_id).first()
+    if not e:
+        return None
+    e.name = exp.name
+    e.amount = exp.amount
+    e.comment = exp.comment
+    db.commit()
+    db.refresh(e)
+    return e

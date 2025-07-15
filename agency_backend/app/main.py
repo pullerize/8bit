@@ -189,6 +189,62 @@ def delete_project(project_id: int, db: Session = Depends(auth.get_db), current:
     return {"ok": True}
 
 
+@app.get("/projects/{project_id}/report", response_model=schemas.ProjectReport)
+def get_project_report(project_id: int, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
+    report = crud.get_or_create_report(db, project_id)
+    expenses = crud.get_expenses(db, project_id)
+    total_expenses = sum(e.amount for e in expenses)
+    balance_after_tax = report.receipts * 0.83
+    debt = report.contract_amount - report.receipts
+    positive_balance = balance_after_tax - total_expenses
+    return schemas.ProjectReport(
+        project_id=project_id,
+        contract_amount=report.contract_amount,
+        receipts=report.receipts,
+        total_expenses=total_expenses,
+        debt=debt,
+        balance_after_tax=balance_after_tax,
+        positive_balance=positive_balance,
+        expenses=expenses,
+    )
+
+
+@app.put("/projects/{project_id}/report", response_model=schemas.ProjectReport)
+def update_project_report(project_id: int, data: schemas.ProjectReportUpdate, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
+    report = crud.update_report(db, project_id, data)
+    expenses = crud.get_expenses(db, project_id)
+    total_expenses = sum(e.amount for e in expenses)
+    balance_after_tax = report.receipts * 0.83
+    debt = report.contract_amount - report.receipts
+    positive_balance = balance_after_tax - total_expenses
+    return schemas.ProjectReport(
+        project_id=project_id,
+        contract_amount=report.contract_amount,
+        receipts=report.receipts,
+        total_expenses=total_expenses,
+        debt=debt,
+        balance_after_tax=balance_after_tax,
+        positive_balance=positive_balance,
+        expenses=expenses,
+    )
+
+
+@app.get("/projects/{project_id}/expenses", response_model=list[schemas.Expense])
+def list_expenses(project_id: int, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
+    return crud.get_expenses(db, project_id)
+
+
+@app.post("/projects/{project_id}/expenses", response_model=schemas.Expense)
+def add_expense(project_id: int, exp: schemas.ExpenseCreate, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
+    return crud.create_expense(db, project_id, exp)
+
+
+@app.delete("/expenses/{expense_id}")
+def remove_expense(expense_id: int, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
+    crud.delete_expense(db, expense_id)
+    return {"ok": True}
+
+
 @app.get("/shootings/", response_model=list[schemas.Shooting])
 def list_shootings(db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
     return crud.get_shootings(db)
