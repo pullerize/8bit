@@ -118,31 +118,21 @@ function updateSubsystemOptions() {
 
   // Получаем значение ширины
   const width = +document.getElementById('width').value;
-  const openWidth = openWidthInput ? +openWidthInput.value : null;
+  const openWidth = openWidthInput ? +openWidthInput.value : NaN;
 
   Object.keys(subs).forEach(key => {
     const ss = subs[key];
-    let valid;
-    if(sys.extraField && !isNaN(openWidth)) {
-      // For systems that rely on the open width directly
-      valid = openWidth >= ss.min && openWidth <= ss.max;
-      if(valid && ss.params) {
-        if(ss.params.width_adjustment) {
-          valid = openWidth <= width - ss.params.width_adjustment;
-        } else if(ss.params.door_width_offset) {
-          valid = openWidth <= width - ss.params.door_width_offset;
-        }
-      }
+    const params = ss.params || {};
+    const offset = params.width_adjustment ?? params.door_width_offset ?? 0;
+    let valid = true;
+
+    if (!isNaN(openWidth) && openWidth > 0) {
+      // When user provided open width, compute required overall width
+      const requiredWidth = openWidth + offset;
+      valid = requiredWidth >= ss.min && requiredWidth <= ss.max && requiredWidth <= width;
     } else {
-      // Filter by total width
+      // Fallback to full width filtering only
       valid = width >= ss.min && width <= ss.max;
-      if(valid && !isNaN(openWidth) && ss.params){
-        if(ss.params.width_adjustment){
-          valid = openWidth <= width - ss.params.width_adjustment;
-        } else if(ss.params.door_width_offset){
-          valid = openWidth <= width - ss.params.door_width_offset;
-        }
-      }
     }
     if (!valid) return;
 
