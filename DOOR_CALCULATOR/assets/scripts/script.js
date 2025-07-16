@@ -14,6 +14,7 @@
 */
 
 import { componentNames } from '../data/componentNames.js';
+import { prices } from '../data/prices.js';
 import { loadSaved, saveIfNeeded } from '../utils/localStorage.js';
 import { formatPhone } from '../utils/phone.js';
 
