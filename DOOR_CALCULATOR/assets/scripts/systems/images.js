@@ -1,3 +1,6 @@
+// Define all image and video paths for systems, subsystems and options.
+// Expose them as a global variable so script.js (loaded as a module)
+// can access the data.
 const images = {
   systems: {
     angle: './assets/img/angle/2.webm',
@@ -115,3 +118,7 @@ const images = {
     }
   }
 };
+
+// Make available on the window object so module scripts can read it
+// without needing an import statement.
+window.images = images;
