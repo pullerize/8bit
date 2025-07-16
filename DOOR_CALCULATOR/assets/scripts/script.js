@@ -66,17 +66,6 @@ function applyTooltipImages(systemKey) {
   }
 }
 
-// При изменении поля "Ширина проема (открытая часть)"
-// нужно синхронизировать второе поле и сразу обновлять список подсистем
-document.getElementById('open-width').addEventListener('input', function() {
-  document.getElementById('open-range').value = this.value;
-  updateSubsystemOptions();
-});
-
-document.getElementById('open-range').addEventListener('input', function() {
-  document.getElementById('open-width').value = this.value;
-  updateSubsystemOptions();
-});
 function setWidthLimits(systemKey) {
   widthInput.min = systemsData[systemKey].minWidth;
   widthInput.max = systemsData[systemKey].maxWidth;
@@ -209,19 +198,21 @@ btn.addEventListener('click', ()=>{
 });
 
 // Синхронизация range/number полей
-function syncInputs(input1, input2) {
-  input1.addEventListener('input',()=>{ input2.value = input1.value; });
-  input2.addEventListener('input',()=>{ input1.value = input2.value; });
+function syncInputs(input1, input2, onInput) {
+  input1.addEventListener('input', () => {
+    input2.value = input1.value;
+    if (onInput) onInput();
+  });
+  input2.addEventListener('input', () => {
+    input1.value = input2.value;
+    if (onInput) onInput();
+  });
 }
-syncInputs(widthInput, widthRange);
+syncInputs(widthInput, widthRange, updateSubsystemOptions);
 syncInputs(heightInput, heightRange);
-if(openWidthInput && openRange) {
-  syncInputs(openWidthInput, openRange);
-  openWidthInput.addEventListener('input', updateSubsystemOptions);
-  openRange.addEventListener('input', updateSubsystemOptions);
+if (openWidthInput && openRange) {
+  syncInputs(openWidthInput, openRange, updateSubsystemOptions);
 }
-widthInput.addEventListener('input', updateSubsystemOptions);
-widthRange.addEventListener('input', updateSubsystemOptions);
 
 // Назад в меню
 backBtn.addEventListener('click', ()=>{
