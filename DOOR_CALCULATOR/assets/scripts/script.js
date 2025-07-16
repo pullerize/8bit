@@ -18,6 +18,10 @@ import { componentNames } from '../data/componentNames.js';
 import { loadSaved, saveIfNeeded } from '../utils/localStorage.js';
 import { formatPhone } from '../utils/phone.js';
 
+// images.js defines window.images for non-module scripts
+// expose it here for convenience
+const images = window.images || {};
+
 let currentSystem = null;
 let subsystem = null;
 let glass = null;
