@@ -66,15 +66,16 @@ function applyTooltipImages(systemKey) {
   }
 }
 
+// При изменении поля "Ширина проема (открытая часть)"
+// нужно синхронизировать второе поле и сразу обновлять список подсистем
 document.getElementById('open-width').addEventListener('input', function() {
-    document.getElementById('open-range').value = this.value;
-    // Вот здесь нужно вызвать:
-    updateSubsystemOptions();
+  document.getElementById('open-range').value = this.value;
+  updateSubsystemOptions();
 });
 
 document.getElementById('open-range').addEventListener('input', function() {
-    document.getElementById('open-width').value = this.value;
-    updateSubsystemOptions();
+  document.getElementById('open-width').value = this.value;
+  updateSubsystemOptions();
 });
 function setWidthLimits(systemKey) {
   widthInput.min = systemsData[systemKey].minWidth;
@@ -214,7 +215,11 @@ function syncInputs(input1, input2) {
 }
 syncInputs(widthInput, widthRange);
 syncInputs(heightInput, heightRange);
-if(openWidthInput && openRange) syncInputs(openWidthInput, openRange);
+if(openWidthInput && openRange) {
+  syncInputs(openWidthInput, openRange);
+  openWidthInput.addEventListener('input', updateSubsystemOptions);
+  openRange.addEventListener('input', updateSubsystemOptions);
+}
 widthInput.addEventListener('input', updateSubsystemOptions);
 widthRange.addEventListener('input', updateSubsystemOptions);
 
