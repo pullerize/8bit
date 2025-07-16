@@ -13,6 +13,11 @@
   Утилиты — utils/
 */
 
+import { calculateComponents } from '../logic/calculation.js';
+import { componentNames } from '../data/componentNames.js';
+import { loadSaved, saveIfNeeded } from '../utils/localStorage.js';
+import { formatPhone } from '../utils/phone.js';
+
 let currentSystem = null;
 let subsystem = null;
 let glass = null;
@@ -38,6 +43,30 @@ const step2 = document.getElementById('step2');
 const step3 = document.getElementById('step3');
 const step4 = document.getElementById('step4');
 const lines = document.querySelectorAll('.line');
+// Modal elements
+const modal = document.getElementById('modal');
+const modalContent = document.getElementById('modal-content');
+const modalForm = document.getElementById('modal-form');
+const modalResult = document.getElementById('modal-result');
+const nameInput = document.getElementById('user-name');
+const phoneInput = document.getElementById('user-phone');
+const saveBox = document.getElementById('save-info');
+const modalCalcBtn = document.getElementById('modal-calc');
+const closeModalBtn = document.getElementById('close-modal');
+const closeResultBtn = document.getElementById('close-result');
+const downloadResultBtn = document.getElementById('download-result');
+const modalError = document.getElementById('modal-error');
+const costTableBody = document.querySelector('#cost-table tbody');
+const doorWidthCell = document.getElementById('door-width');
+const totalCostCell = document.getElementById('total-cost');
+
+// Format phone and load saved data
+if (phoneInput) {
+  phoneInput.addEventListener('input', () => formatPhone(phoneInput));
+}
+if (nameInput && phoneInput && saveBox) {
+  loadSaved(nameInput, phoneInput, saveBox);
+}
 
 // Импортируем массивы с опциями из data/
 let glassOptions = window.glassOptions || [
@@ -89,13 +118,12 @@ function updateSubsystemOptions() {
 
   // Получаем значение ширины
   const width = +document.getElementById('width').value;
-  // Для систем без доп. поля игнорируем значение открыт. части
-  const openWidth = sys.extraField && openWidthInput ? +openWidthInput.value : null;
+  const openWidth = openWidthInput ? +openWidthInput.value : null;
 
   Object.keys(subs).forEach(key => {
     const ss = subs[key];
     let valid;
-    if(sys.extraField && openWidth !== null) {
+    if(sys.extraField && !isNaN(openWidth)) {
       // For systems that rely on the open width directly
       valid = openWidth >= ss.min && openWidth <= ss.max;
       if(valid && ss.params) {
@@ -108,7 +136,7 @@ function updateSubsystemOptions() {
     } else {
       // Filter by total width
       valid = width >= ss.min && width <= ss.max;
-      if(valid && openWidth !== null && ss.params){
+      if(valid && !isNaN(openWidth) && ss.params){
         if(ss.params.width_adjustment){
           valid = openWidth <= width - ss.params.width_adjustment;
         } else if(ss.params.door_width_offset){
@@ -258,32 +286,60 @@ function getParams(){
 }
 
 // === Кнопка расчет ===
-calcBtn.addEventListener('click', ()=>{
+calcBtn.addEventListener('click', () => {
   errorDiv.textContent = '';
-  if(!currentSystem || !subsystem || !glass || !shotlan){
+  if (!currentSystem || !subsystem || !glass || !shotlan) {
     errorDiv.textContent = 'Заполните все параметры';
     return;
   }
-  let params = getParams();
-  if(!params) {
-    errorDiv.textContent = 'Ошибка параметров';
+  modal.classList.remove('hidden');
+  modalForm.classList.remove('hidden');
+  modalResult.classList.add('hidden');
+  modalContent.classList.add('form-mode');
+  modalContent.classList.remove('result-mode');
+  loadSaved(nameInput, phoneInput, saveBox);
+});
+
+modalCalcBtn.addEventListener('click', () => {
+  modalError.textContent = '';
+  if (!nameInput.value.trim() || phoneInput.value.replace(/\D/g, '').length < 9) {
+    modalError.textContent = 'Заполните имя и телефон';
     return;
   }
-  // Передаем в calculation.js (если логика отделена)
-  if(typeof calculateSystem === 'function') {
-    let res = calculateSystem(params, {
-      width: +widthInput.value,
-      height: +heightInput.value,
-      openWidth: openWidthInput ? +openWidthInput.value : undefined,
-      glass,
-      shotlan,
-      system: currentSystem,
-      subsystem,
-    });
-    // здесь выводи результат в модальное окно, таблицу, alert, и т.д.
-    alert('Результат будет здесь. Параметры:\n' + JSON.stringify(res, null, 2));
-  } else {
-    // если calculation.js не подключен, просто параметры
-    alert('Параметры:\n' + JSON.stringify(params, null, 2));
-  }
+  saveIfNeeded(nameInput, phoneInput, saveBox);
+  const params = getParams();
+  const res = calculateComponents(
+    +widthInput.value,
+    +heightInput.value,
+    subsystem,
+    params,
+    glass,
+    shotlan
+  );
+  costTableBody.innerHTML = '';
+  res.components.forEach(c => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${componentNames[c.name] || c.name}</td><td>${c.qty}</td><td>${c.price}</td><td>${c.sum}</td>`;
+    costTableBody.appendChild(tr);
+  });
+  doorWidthCell.textContent = res.doorWidth;
+  totalCostCell.textContent = res.total;
+  modalForm.classList.add('hidden');
+  modalResult.classList.remove('hidden');
+  modalContent.classList.remove('form-mode');
+  modalContent.classList.add('result-mode');
 });
+
+closeModalBtn.addEventListener('click', () => {
+  modal.classList.add('hidden');
+});
+
+closeResultBtn.addEventListener('click', () => {
+  modal.classList.add('hidden');
+});
+
+if (downloadResultBtn) {
+  downloadResultBtn.addEventListener('click', () => {
+    html2pdf().from(document.getElementById('cost-table')).save();
+  });
+}
