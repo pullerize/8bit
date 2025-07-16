@@ -78,8 +78,8 @@ form{
 #calc-btn{margin-top:0;}
 #action-buttons{display:flex;gap:10px;margin-top:20px;justify-content:center;width:100%;align-items:center;}
 #action-buttons #error{color:red;margin-left:10px;}
-#back{background:none;border:1px solid #162832;color:#162832;}
-#back:hover{background:#f9f9f9;}
+#back,#back-top{background:none;border:1px solid #162832;color:#162832;}
+#back:hover,#back-top:hover{background:#f9f9f9;}
 .help{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:#162832;color:#fff;font-size:12px;cursor:pointer;position:relative;}
 .help .tooltip{display:none;position:absolute;top:20px;left:0;background:#fff;border:1px solid #ccc;padding:5px;z-index:10;}
 .help:hover .tooltip{display:block;}
@@ -250,7 +250,7 @@ footer.consult button:hover{background:#eef3f5;}
     width:90vw;
     height:auto;
     max-height:60vh;}
-  #back {
+  #back,#back-top {
     width: 100%;
   }
   footer.consult .footer-inner {

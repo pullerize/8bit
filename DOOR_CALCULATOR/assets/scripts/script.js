@@ -38,6 +38,7 @@ const extraField = document.getElementById('extra-field');
 const errorDiv = document.getElementById('error');
 const calcBtn = document.getElementById('calc-btn');
 const backBtn = document.getElementById('back');
+const backTopBtn = document.getElementById('back-top');
 const step1 = document.getElementById('step1');
 const step2 = document.getElementById('step2');
 const step3 = document.getElementById('step3');
@@ -116,12 +117,18 @@ function updateSubsystemOptions() {
   let sys = systemsData[currentSystem];
   let subs = sys.subsystems;
 
-  // Получаем значение ширины
+  // Получаем значения ширины
   const width = +document.getElementById('width').value;
+  const openWidth = openWidthInput ? +openWidthInput.value : null;
 
   Object.keys(subs).forEach(key => {
     const ss = subs[key];
-    const valid = width >= ss.min && width <= ss.max;
+    let valid = true;
+    if (sys.extraField && openWidth !== null) {
+      valid = openWidth >= ss.min && openWidth <= ss.max;
+    } else {
+      valid = width >= ss.min && width <= ss.max;
+    }
     if (!valid) return;
 
     const opt = document.createElement('div');
@@ -221,14 +228,16 @@ if (openWidthInput && openRange) {
   syncInputs(openWidthInput, openRange, updateSubsystemOptions);
 }
 
-// Назад в меню
-backBtn.addEventListener('click', ()=>{
+function goBack(){
   menuDiv.classList.remove('hidden');
   formContainer.classList.add('hidden');
   step1.textContent = '•'; step2.textContent = '•'; step3.textContent = '•'; step4.textContent = '•';
   step1.classList.remove('active'); step2.classList.remove('active'); step3.classList.remove('active'); step4.classList.remove('active');
   lines.forEach(l=>l.classList.remove('active'));
-});
+}
+
+backBtn.addEventListener('click', goBack);
+if (backTopBtn) backTopBtn.addEventListener('click', goBack);
 
 // Img/video viewer
 function openImgViewer(src, isVideo){
