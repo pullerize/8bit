@@ -1,47 +1,77 @@
 import { prices } from '../data/prices.js';
 
-export function calcDoorWidth(width, subsystem, params) {
-  if (!subsystem) {
-    const base = width / Math.max(1, params.num_doors || 1);
-    const dw = Math.floor(base);
-    return (base - dw > 0.4) ? dw + 1 : dw;
-  }
+export function calcDoorWidth(width, openWidth, subsystem, params, system) {
   let raw;
-  switch(subsystem){
-    case '3+0': raw = (width + 35) / params.num_doors; break;
-    case '4+0': raw = (width + 52) / params.num_doors; break;
-    case '5+0': raw = (width + 70) / params.num_doors; break;
-    case '6+0': raw = (width + 87) / params.num_doors; break;
-    case '7+0': raw = (width + 105) / params.num_doors; break;
-    case '8+0': raw = (width + 122) / params.num_doors; break;
-    case '3+0|3+0': raw = (width + 70 - 15) / params.num_doors; break;
-    case '4+0|4+0': raw = (width + 105 - 15) / params.num_doors; break;
-    case '5+0|5+0': raw = (width + 140 - 15) / params.num_doors; break;
-    case '6+0|6+0': raw = (width + 175 - 15) / params.num_doors; break;
-    case '7+0|7+0': raw = (width + 210 - 15) / params.num_doors; break;
-    case '8+0|8+0': raw = (width + 245 - 15) / params.num_doors; break;
-    default:
-      const clear = subsystem.replace(/[()+\s]/g, '');
-      switch(clear){
-        case '1':
-          raw = width / Math.max(1, params.num_doors); break;
-        case '11':
-          raw = (width + 16) / Math.max(1, params.num_doors); break;
-        case '111':
-          raw = (width + 32) / Math.max(1, params.num_doors); break;
-        case '1111':
-          raw = (width + 32 - 15) / Math.max(1, params.num_doors); break;
-        default:
-          raw = width / Math.max(1, params.num_doors);
-      }
+
+  // Systems that rely on open width
+  if (system === 'embedded-wall') {
+    switch (subsystem) {
+      case '2+0':
+        raw = (openWidth + 17.5 + 16) / params.num_doors; break;
+      case '2+0|2+0':
+        raw = (openWidth + 70 - 15 + 32) / params.num_doors; break;
+      case '1WPUSH':
+        raw = (openWidth - 6) / params.num_doors; break;
+      case '2WPUSH':
+        raw = (openWidth - 6 + 16) / params.num_doors; break;
+      default:
+        raw = openWidth / Math.max(1, params.num_doors || 1);
+    }
+  } else if (system === 'wall-mounted') {
+    switch (subsystem) {
+      case 'Система 1W':
+        raw = (openWidth + 16) / params.num_doors; break;
+      case 'Система 1W+1W':
+        raw = (openWidth + 32) / params.num_doors; break;
+      case 'Система 1SW+1SW':
+        raw = (openWidth + 32 - 15) / params.num_doors; break;
+      default:
+        raw = openWidth / Math.max(1, params.num_doors || 1);
+    }
+  } else {
+    // Cascading and other systems based on full width
+    switch(subsystem){
+      case '3+0': raw = (width + 35) / params.num_doors; break;
+      case '4+0': raw = (width + 52) / params.num_doors; break;
+      case '5+0': raw = (width + 70) / params.num_doors; break;
+      case '6+0': raw = (width + 87) / params.num_doors; break;
+      case '7+0': raw = (width + 105) / params.num_doors; break;
+      case '8+0': raw = (width + 122) / params.num_doors; break;
+      case '3+0|3+0': raw = (width + 70 - 15) / params.num_doors; break;
+      case '4+0|4+0': raw = (width + 105 - 15) / params.num_doors; break;
+      case '5+0|5+0': raw = (width + 140 - 15) / params.num_doors; break;
+      case '6+0|6+0': raw = (width + 175 - 15) / params.num_doors; break;
+      case '7+0|7+0': raw = (width + 210 - 15) / params.num_doors; break;
+      case '8+0|8+0': raw = (width + 245 - 15) / params.num_doors; break;
+      default:
+        const clear = subsystem.replace(/[()+\s]/g, '');
+        switch(clear){
+          case '1':
+            raw = width / Math.max(1, params.num_doors || 1); break;
+          case '11':
+            raw = (width + 16) / Math.max(1, params.num_doors || 1); break;
+          case '111':
+            raw = (width + 32) / Math.max(1, params.num_doors || 1); break;
+          case '1111':
+            raw = (width + 32 - 15) / Math.max(1, params.num_doors || 1); break;
+          default:
+            const adj = params.width_adjustment || params.door_width_offset || 0;
+            raw = (width + adj) / Math.max(1, params.num_doors || 1);
+        }
+    }
+  }
+
+  if (raw === undefined) {
+    const base = width / Math.max(1, params.num_doors || 1);
+    raw = base;
   }
   let dw = Math.floor(raw);
   if(raw - dw > 0.4) dw += 1;
   return dw;
 }
 
-export function calculateComponents(width, height, subsystem, params, glass, shotlan) {
-  const doorWidth = calcDoorWidth(width, subsystem, params);
+export function calculateComponents(width, height, openWidth, system, subsystem, params, glass, shotlan) {
+  const doorWidth = calcDoorWidth(width, openWidth, subsystem, params, system);
   const components = [];
   const add = (name, qty, formula) => {
     if (qty > 0) {

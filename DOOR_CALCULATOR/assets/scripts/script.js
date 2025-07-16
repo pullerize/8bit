@@ -161,7 +161,9 @@ function updateSubsystemOptions() {
     const ss = subs[key];
     let valid = true;
     if (sys.extraField && openWidth !== null) {
-      valid = openWidth >= ss.min && openWidth <= ss.max;
+      const offset = ss.params?.width_adjustment || ss.params?.door_width_offset || 0;
+      const checkWidth = openWidth + offset;
+      valid = checkWidth >= ss.min && checkWidth <= ss.max;
     } else {
       valid = width >= ss.min && width <= ss.max;
     }
@@ -337,6 +339,8 @@ modalCalcBtn.addEventListener('click', () => {
   const res = calculateComponents(
     +widthInput.value,
     +heightInput.value,
+    openWidthInput ? +openWidthInput.value : undefined,
+    currentSystem,
     subsystem,
     params,
     glass,
