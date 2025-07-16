@@ -159,7 +159,7 @@ function updateSubsystemOptions() {
 
   // Получаем значения ширины
   const width = +document.getElementById('width').value;
-  const openWidth = openWidthInput ? +openWidthInput.value : null;
+  const openWidth = openWidthInput && !isNaN(parseFloat(openWidthInput.value)) ? +openWidthInput.value : null;
 
   Object.keys(subs).forEach(key => {
     const ss = subs[key];
@@ -351,7 +351,18 @@ modalCalcBtn.addEventListener('click', () => {
     shotlan
   );
   costTableBody.innerHTML = '';
-  res.components.forEach(c => {
+  let comps = res.components;
+  if (currentSystem === 'sync') {
+    const allowed = [
+      'vertical_profile','cap_no_brush','cap_with_brush','profile_C_cap','profile_V_cap',
+      'horizontal_profile','glass_seal','bolts','handles','top_rail_rubber','door_brush_joint',
+      'top_rails_47','side_rail_caps_51','bottom_double_caps','bottom_single_caps',
+      'rail_to_rail_connectors','rail_to_cap_connectors','metal_rail_aligner','plastic_rail_aligner',
+      'moving_mechanism_ci','moving_mechanism_ct','fixed_mechanism','corner_rubber_joint','fixed_door_profile'
+    ];
+    comps = comps.filter(c => allowed.includes(c.name));
+  }
+  comps.forEach(c => {
     const tr = document.createElement('tr');
     tr.innerHTML = `<td>${componentNames[c.name] || c.name}</td><td>${c.qty}</td><td>${c.price}</td><td>${c.sum}</td>`;
     costTableBody.appendChild(tr);

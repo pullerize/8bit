@@ -93,15 +93,40 @@ export function calculateComponents(width, height, openWidth, system, subsystem,
   add('door_brush_joint', Math.ceil((params.door_brush||0)*params.num_doors*height/1000), `ceil((${params.door_brush||0})*${params.num_doors}*${height}/1000)`);
   const railMult = width<=3000?0.5:(width<=6000?1:(width<=9000?1.5:2));
   const capMult = width<=3000?1:(width<=6000?2:(width<=9000?3:4));
-  add('top_rails_41', railMult*params.num_rails, `${railMult}*${params.num_rails}`);
-  add('side_rail_caps_45', railMult*params.num_side_caps, `${railMult}*${params.num_side_caps}`);
+  // Determine which rail and cap types to use
+  let rails41 = params.num_rails_41 ?? 0;
+  let rails47 = params.num_rails_47 ?? 0;
+  let caps45 = params.num_side_caps_45 ?? 0;
+  let caps51 = params.num_side_caps_51 ?? 0;
+  // Older datasets use generic fields
+  if (rails41 === 0 && rails47 === 0) {
+    if (system === 'sync') {
+      rails47 = params.num_rails || 0;
+    } else {
+      rails41 = params.num_rails || 0;
+    }
+  }
+  if (caps45 === 0 && caps51 === 0) {
+    if (system === 'sync') {
+      caps51 = params.num_side_caps || 0;
+    } else {
+      caps45 = params.num_side_caps || 0;
+    }
+  }
+  add('top_rails_41', railMult*rails41, `${railMult}*${rails41}`);
+  add('top_rails_47', railMult*rails47, `${railMult}*${rails47}`);
+  add('side_rail_caps_45', railMult*caps45, `${railMult}*${caps45}`);
+  add('side_rail_caps_51', railMult*caps51, `${railMult}*${caps51}`);
   add('bottom_double_caps', capMult*params.num_bottom_double_caps, `${capMult}*${params.num_bottom_double_caps}`);
   add('bottom_single_caps', capMult*params.num_bottom_single_caps, `${capMult}*${params.num_bottom_single_caps}`);
   add('rail_to_rail_connectors', Math.ceil(width/300*(params.num_rail_to_rail_connectors||0)), `ceil(${width}/300*${params.num_rail_to_rail_connectors||0})`);
   add('rail_to_cap_connectors', Math.ceil(width/300*(params.num_rail_to_cap_connectors||0)), `ceil(${width}/300*${params.num_rail_to_cap_connectors||0})`);
   add('metal_rail_aligner', Math.ceil(width/500*params.num_rails), `ceil(${width}/500*${params.num_rails})`);
   add('plastic_rail_aligner', Math.ceil(width/500*params.num_rails*2), `ceil(${width}/500*${params.num_rails}*2)`);
-  add('moving_mechanism_ci', params.moving_mechanism_ci||0, `${params.moving_mechanism_ci||0}`);
+  const mCI = params.moving_mechanism_ci ?? params.n_ci ?? 0;
+  const mCT = params.moving_mechanism_ct ?? params.n_ct ?? params.moving_mechanism_tros ?? 0;
+  add('moving_mechanism_ci', mCI, `${mCI}`);
+  add('moving_mechanism_ct', mCT, `${mCT}`);
   add('belt_connector_mechanism', params.belt_connector_mechanism||0, `${params.belt_connector_mechanism||0}`);
   add('belt_adapter', params.belt_adapter||0, `${params.belt_adapter||0}`);
   add('bottom_rollers', params.bottom_rollers||0, `${params.bottom_rollers||0}`);
