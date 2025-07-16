@@ -105,8 +105,12 @@ function updateSubsystemOptions() {
     const ss = subs[key];
     // Только фильтрация по полной ширине проема
     let valid = width >= ss.min && width <= ss.max;
-    if(valid && openWidth !== null && ss.width_adjustment){
-      valid = openWidth >= width - ss.width_adjustment;
+    if(valid && openWidth !== null && ss.params){
+      if(ss.params.width_adjustment){
+        valid = openWidth >= width - ss.params.width_adjustment;
+      } else if(ss.params.door_width_offset){
+        valid = openWidth >= width - ss.params.door_width_offset;
+      }
     }
     if (!valid) return;
 
@@ -198,6 +202,8 @@ function syncInputs(input1, input2) {
 syncInputs(widthInput, widthRange);
 syncInputs(heightInput, heightRange);
 if(openWidthInput && openRange) syncInputs(openWidthInput, openRange);
+widthInput.addEventListener('input', updateSubsystemOptions);
+widthRange.addEventListener('input', updateSubsystemOptions);
 
 // Назад в меню
 backBtn.addEventListener('click', ()=>{
