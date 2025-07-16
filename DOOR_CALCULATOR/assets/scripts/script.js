@@ -89,7 +89,8 @@ function updateSubsystemOptions() {
 
   // Получаем значение ширины
   const width = +document.getElementById('width').value;
-  const openWidth = openWidthInput ? +openWidthInput.value : null;
+  // Для систем без доп. поля игнорируем значение открыт. части
+  const openWidth = sys.extraField && openWidthInput ? +openWidthInput.value : null;
 
   Object.keys(subs).forEach(key => {
     const ss = subs[key];
