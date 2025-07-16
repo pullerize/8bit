@@ -103,13 +103,26 @@ function updateSubsystemOptions() {
 
   Object.keys(subs).forEach(key => {
     const ss = subs[key];
-    // Только фильтрация по полной ширине проема
-    let valid = width >= ss.min && width <= ss.max;
-    if(valid && openWidth !== null && ss.params){
-      if(ss.params.width_adjustment){
-        valid = openWidth <= width - ss.params.width_adjustment;
-      } else if(ss.params.door_width_offset){
-        valid = openWidth <= width - ss.params.door_width_offset;
+    let valid;
+    if(sys.extraField && openWidth !== null) {
+      // For systems that rely on the open width directly
+      valid = openWidth >= ss.min && openWidth <= ss.max;
+      if(valid && ss.params) {
+        if(ss.params.width_adjustment) {
+          valid = openWidth <= width - ss.params.width_adjustment;
+        } else if(ss.params.door_width_offset) {
+          valid = openWidth <= width - ss.params.door_width_offset;
+        }
+      }
+    } else {
+      // Filter by total width
+      valid = width >= ss.min && width <= ss.max;
+      if(valid && openWidth !== null && ss.params){
+        if(ss.params.width_adjustment){
+          valid = openWidth <= width - ss.params.width_adjustment;
+        } else if(ss.params.door_width_offset){
+          valid = openWidth <= width - ss.params.door_width_offset;
+        }
       }
     }
     if (!valid) return;
