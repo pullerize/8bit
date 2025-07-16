@@ -130,7 +130,15 @@ export function calculateComponents(width, height, openWidth, system, subsystem,
   add('belt_connector_mechanism', params.belt_connector_mechanism||0, `${params.belt_connector_mechanism||0}`);
   add('belt_adapter', params.belt_adapter||0, `${params.belt_adapter||0}`);
   add('bottom_rollers', params.bottom_rollers||0, `${params.bottom_rollers||0}`);
-  add('corner_rubber_joint', Math.ceil(height*2/1000*(params.corner_rubber_joint||0)), `ceil(${height}*2/1000*${params.corner_rubber_joint||0})`);
+  let cornerQty, cornerFormula;
+  if (system === 'sync') {
+    cornerQty = height * 2 / 1000;
+    cornerFormula = `${height}*2/1000`;
+  } else {
+    cornerQty = Math.ceil(height * 2 / 1000 * (params.corner_rubber_joint || 0));
+    cornerFormula = `ceil(${height}*2/1000*${params.corner_rubber_joint||0})`;
+  }
+  add('corner_rubber_joint', cornerQty, cornerFormula);
   add('moving_mechanism', params.moving_mechanism||0, `${params.moving_mechanism||0}`);
   add('fixed_mechanism', params.fixed_mechanism||0, `${params.fixed_mechanism||0}`);
   add('fixed_door_profile', (doorWidth-12<=970?1:2)*(params.fixed_door_profile||0), `(${doorWidth}-12<=970?1:2)*${params.fixed_door_profile||0}`);
