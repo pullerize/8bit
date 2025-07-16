@@ -168,13 +168,9 @@ function updateSubsystemOptions() {
     const ss = subs[key];
     let valid;
     if (sys.extraField && openWidth !== null) {
-      const off = ss.params?.width_adjustment ?? ss.params?.door_width_offset ?? 0;
-      const value = openWidth + off;
-      valid = value >= ss.min && value <= ss.max;
+      valid = openWidth >= ss.min && openWidth <= ss.max;
     } else {
-      const off = ss.params?.width_adjustment ?? ss.params?.door_width_offset ?? 0;
-      const value = width + off;
-      valid = value >= ss.min && value <= ss.max;
+      valid = width >= ss.min && width <= ss.max;
     }
     if (!valid) return;
 
