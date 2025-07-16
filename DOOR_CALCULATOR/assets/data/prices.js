@@ -18,7 +18,7 @@ export const prices = {
   corner_cap: 30,
   belt_connector_mechanism: 75,
   top_rails: 75,
-  top_rails_47: 75,
+  top_rails_47: 70,
   rail_to_rail_connectors: 0.5,
   rail_to_cap_connectors: 0.5,
   metal_rail_aligner: 0.5,

@@ -159,12 +159,12 @@ function updateSubsystemOptions() {
 
   Object.keys(subs).forEach(key => {
     const ss = subs[key];
-    let valid = true;
+    let valid;
     if (sys.extraField && openWidth !== null) {
-      const offset = ss.params?.width_adjustment || ss.params?.door_width_offset || 0;
-      const checkWidth = openWidth + offset;
-      valid = checkWidth >= ss.min && checkWidth <= ss.max;
+      // For systems that rely on the open width, compare it directly
+      valid = openWidth >= ss.min && openWidth <= ss.max;
     } else {
+      // Otherwise use the total opening width
       valid = width >= ss.min && width <= ss.max;
     }
     if (!valid) return;
