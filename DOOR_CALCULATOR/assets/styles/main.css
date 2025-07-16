@@ -80,7 +80,7 @@ form{
 #action-buttons #error{color:red;margin-left:10px;}
 #back,#back-top{background:none;border:1px solid #162832;color:#162832;}
 #back:hover,#back-top:hover{background:#f9f9f9;}
-#back-top{position:absolute;left:10px;top:10px;font-size:0.8em;padding:4px 12px;}
+#back-top{position:absolute;left:10px;top:10px;}
 .help{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:#162832;color:#fff;font-size:12px;cursor:pointer;position:relative;}
 .help .tooltip{display:none;position:absolute;top:20px;left:0;background:#fff;border:1px solid #ccc;padding:5px;z-index:10;}
 .help:hover .tooltip{display:block;}
