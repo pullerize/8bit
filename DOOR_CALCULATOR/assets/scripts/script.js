@@ -141,8 +141,11 @@ function setWidthLimits(systemKey) {
     if (openWidthInput && openRange) {
       openWidthInput.min = systemsData[systemKey].minWidth;
       openWidthInput.max = systemsData[systemKey].maxWidth;
+      if(+openWidthInput.value < +openWidthInput.min) openWidthInput.value = openWidthInput.min;
+      if(+openWidthInput.value > +openWidthInput.max) openWidthInput.value = openWidthInput.max;
       openRange.min = openWidthInput.min;
       openRange.max = openWidthInput.max;
+      openRange.value = openWidthInput.value;
     }
   } else {
     extraField.classList.add('hidden');
@@ -165,11 +168,13 @@ function updateSubsystemOptions() {
     const ss = subs[key];
     let valid;
     if (sys.extraField && openWidth !== null) {
-      // For systems that rely on the open width, compare it directly
-      valid = openWidth >= ss.min && openWidth <= ss.max;
+      const off = ss.params?.width_adjustment ?? ss.params?.door_width_offset ?? 0;
+      const value = openWidth + off;
+      valid = value >= ss.min && value <= ss.max;
     } else {
-      // Otherwise use the total opening width
-      valid = width >= ss.min && width <= ss.max;
+      const off = ss.params?.width_adjustment ?? ss.params?.door_width_offset ?? 0;
+      const value = width + off;
+      valid = value >= ss.min && value <= ss.max;
     }
     if (!valid) return;
 
