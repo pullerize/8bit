@@ -96,6 +96,36 @@ function applyTooltipImages(systemKey) {
   }
 }
 
+function setDefaultValues(systemKey) {
+  if (!widthInput || !heightInput) return;
+  switch (systemKey) {
+    case 'angle':
+    case 'sync':
+    case 'cascade':
+      widthInput.value = widthRange.value = 2800;
+      heightInput.value = heightRange.value = 2800;
+      break;
+    case 'partition':
+      widthInput.value = widthRange.value = 4000;
+      heightInput.value = heightRange.value = 2800;
+      break;
+    case 'embedded-wall':
+    case 'wall-mounted':
+      widthInput.value = widthRange.value = 2000;
+      heightInput.value = heightRange.value = 2800;
+      if (openWidthInput && openRange) {
+        openWidthInput.value = openRange.value = 1000;
+      }
+      break;
+    case 'unlinked':
+      widthInput.value = widthRange.value = 2000;
+      heightInput.value = heightRange.value = 2800;
+      break;
+    default:
+      heightInput.value = heightRange.value = 2800;
+  }
+}
+
 function setWidthLimits(systemKey) {
   widthInput.min = systemsData[systemKey].minWidth;
   widthInput.max = systemsData[systemKey].maxWidth;
@@ -104,6 +134,12 @@ function setWidthLimits(systemKey) {
   // Если есть доп. поле
   if(systemsData[systemKey].extraField){
     extraField.classList.remove('hidden');
+    if (openWidthInput && openRange) {
+      openWidthInput.min = systemsData[systemKey].minWidth;
+      openWidthInput.max = systemsData[systemKey].maxWidth;
+      openRange.min = openWidthInput.min;
+      openRange.max = openWidthInput.max;
+    }
   } else {
     extraField.classList.add('hidden');
   }
@@ -198,7 +234,9 @@ btn.addEventListener('click', ()=>{
   currentSystem = sys;
   menuDiv.classList.add('hidden');
   formContainer.classList.remove('hidden');
+  if (backTopBtn) backTopBtn.classList.remove('hidden');
   setWidthLimits(currentSystem);
+  setDefaultValues(currentSystem);
   applyTooltipImages(currentSystem);
   updateSubsystemOptions();
   renderGlassOptions();
@@ -231,6 +269,7 @@ if (openWidthInput && openRange) {
 function goBack(){
   menuDiv.classList.remove('hidden');
   formContainer.classList.add('hidden');
+  if (backTopBtn) backTopBtn.classList.add('hidden');
   step1.textContent = '•'; step2.textContent = '•'; step3.textContent = '•'; step4.textContent = '•';
   step1.classList.remove('active'); step2.classList.remove('active'); step3.classList.remove('active'); step4.classList.remove('active');
   lines.forEach(l=>l.classList.remove('active'));
