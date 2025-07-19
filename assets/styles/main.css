@@ -257,8 +257,8 @@ input[type="range"].range-input::-moz-range-thumb {
 .section-title {
     color: var(--accent-color);
     text-align: left;
-    margin: 1.5rem 0 1rem;
-    font-size: 3rem;
+    margin: 3.5rem 0 2rem;
+    font-size: 2rem;
 }
 
 .next-btn {
