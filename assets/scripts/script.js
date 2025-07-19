@@ -1,6 +1,20 @@
 // Инициализация главной страницы
 window.addEventListener('DOMContentLoaded', () => {
     const container = document.getElementById('systems-container');
+    const viewer = document.getElementById('viewer');
+    const viewerContent = viewer.querySelector('.modal-content');
+    const showMedia = (type, src) => {
+        viewerContent.innerHTML = type === 'video'
+            ? `<video src="${src}" controls autoplay style="max-width:90vw;max-height:90vh"></video>`
+            : `<img src="${src}" style="max-width:90vw;max-height:90vh">`;
+        viewer.classList.remove('hidden');
+    };
+    viewer.addEventListener('click', e => {
+        if (e.target === viewer) {
+            viewer.classList.add('hidden');
+            viewerContent.innerHTML = '';
+        }
+    });
     const stepsBar = document.getElementById('steps-bar');
     const stepItems = [
         { key: 'system', title: 'Тип системы' },
@@ -35,6 +49,9 @@ window.addEventListener('DOMContentLoaded', () => {
             const video = block.querySelector('video');
             video.pause();
             video.style.display = 'none';
+        });
+        block.addEventListener('dblclick', () => {
+            showMedia('video', images.systems[code].src);
         });
         block.addEventListener('click', () => {
             window.location.href = `system.html?type=${code}`;

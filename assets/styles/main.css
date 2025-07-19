@@ -22,6 +22,9 @@ header {
     background: var(--accent-color);
     color: #fff;
     width: 100%;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
 }
 button {
     background: var(--accent-color);
@@ -118,8 +121,12 @@ select {
     position: static;
     background: none;
     color: var(--accent-color);
-    margin-top: 0.5rem;
+    margin-top: 1rem;
     text-align: left;
+}
+.glass-option .system-title,
+.shotlan-option .system-title {
+    text-align: center;
 }
 .steps-bar {
     display: flex;
@@ -290,8 +297,8 @@ input[type="range"].range-input::-moz-range-thumb {
 
 .next-btn,
 .back-btn {
-    padding: 1rem 4rem;
-    font-size: 1.2rem;
+    padding: 0.5rem 2rem;
+    font-size: 1rem;
     margin: 3rem 0;
 }
 

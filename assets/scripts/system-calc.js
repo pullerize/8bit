@@ -6,6 +6,20 @@ const systemType = urlParams.get('type');
 const stepsBar = document.getElementById('steps-bar');
 const container = document.getElementById('calc-container');
 const resultTable = document.getElementById('result-table');
+const viewer = document.getElementById('viewer');
+const viewerContent = viewer.querySelector('.modal-content');
+function showMedia(type, src) {
+    viewerContent.innerHTML = type === 'video'
+        ? `<video src="${src}" controls autoplay style="max-width:90vw;max-height:90vh"></video>`
+        : `<img src="${src}" style="max-width:90vw;max-height:90vh">`;
+    viewer.classList.remove('hidden');
+}
+viewer.addEventListener('click', e => {
+    if (e.target === viewer) {
+        viewer.classList.add('hidden');
+        viewerContent.innerHTML = '';
+    }
+});
 
 // Выбранные пользователем параметры
 let selected = {
@@ -452,6 +466,9 @@ function renderParams(stepIndex) {
                 v.pause();
                 v.style.display = 'none';
             });
+            block.addEventListener('dblclick', () => {
+                showMedia('video', images.subsystems[systemType][name]);
+            });
             block.addEventListener('click', () => {
                 selected.subsystem = name;
                 if (activeBlock) activeBlock.classList.remove('selected');
@@ -530,7 +547,7 @@ function renderDesign(stepIndex) {
         glassContainer.innerHTML = '';
         Object.keys(images.glass).forEach(name => {
             const block = document.createElement('div');
-            block.className = 'option-block';
+            block.className = 'option-block glass-option';
             block.innerHTML = `<img src="${images.glass[name]}" alt="${name}"><span class="system-title">${name}</span>`;
             block.addEventListener('click', () => {
                 selected.glass = name;
@@ -539,6 +556,9 @@ function renderDesign(stepIndex) {
                 activeGlass = block;
                 updateShotlans();
                 updateStepsBar();
+            });
+            block.addEventListener('dblclick', () => {
+                showMedia('image', images.glass[name]);
             });
             glassContainer.appendChild(block);
         });
@@ -553,7 +573,7 @@ function renderDesign(stepIndex) {
         activeShot = null;
         options.forEach(name => {
             const block = document.createElement('div');
-            block.className = 'option-block';
+            block.className = 'option-block shotlan-option';
             block.innerHTML = `<img src="${images.shotlan[name]}" alt="${name}"><span class="system-title">${name}</span>`;
             block.addEventListener('click', () => {
                 selected.shotlan = name;
@@ -561,6 +581,9 @@ function renderDesign(stepIndex) {
                 block.classList.add('selected');
                 activeShot = block;
                 updateStepsBar();
+            });
+            block.addEventListener('dblclick', () => {
+                showMedia('image', images.shotlan[name]);
             });
             shotlanContainer.appendChild(block);
         });
