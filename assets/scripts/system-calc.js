@@ -6,11 +6,7 @@ const systemType = urlParams.get('type');
 const backBtn = document.getElementById('back-button');
 const stepsBar = document.getElementById('steps-bar');
 const container = document.getElementById('calc-container');
-const modal = document.getElementById('result-modal');
-const userForm = document.getElementById('user-form');
 const resultTable = document.getElementById('result-table');
-const downloadBtn = document.getElementById('download-pdf');
-const closeModal = document.getElementById('close-modal');
 
 // Выбранные пользователем параметры
 let selected = {
@@ -297,6 +293,13 @@ function renderParams(stepIndex) {
         });
         subSelect.innerHTML = '<option value="">Выберите подсистему</option>' +
             subsArr.map(s => `<option value="${s}">${s}</option>`).join('');
+        if (subsArr.length === 1) {
+            subSelect.value = subsArr[0];
+            selected.subsystem = subsArr[0];
+        } else {
+            subSelect.value = '';
+            selected.subsystem = null;
+        }
     };
 
     updateSubs();
@@ -370,42 +373,13 @@ function renderCalcButton() {
     const btn = document.createElement('button');
     btn.textContent = 'Рассчитать';
     btn.addEventListener('click', () => {
-        showModal();
+        renderResult();
     });
     container.appendChild(btn);
 }
 
-// ----- Модальное окно -----
-function showModal() {
-    modal.classList.remove('hidden');
-    userForm.classList.remove('hidden');
-    resultTable.classList.add('hidden');
-    downloadBtn.classList.add('hidden');
-}
-
-closeModal.addEventListener('click', () => {
-    modal.classList.add('hidden');
-});
-
-userForm.addEventListener('submit', e => {
-    e.preventDefault();
-    const name = document.getElementById('user-name').value;
-    const phone = document.getElementById('user-phone').value;
-    if (document.getElementById('save-user').checked) {
-        localStorage.setItem('userName', name);
-        localStorage.setItem('userPhone', phone);
-    }
-    renderResult();
-});
-
-downloadBtn.addEventListener('click', () => {
-    html2pdf().from(resultTable).save();
-});
-
 function renderResult() {
-    userForm.classList.add('hidden');
     resultTable.classList.remove('hidden');
-    downloadBtn.classList.remove('hidden');
     const total = calculateTotal();
     let html = '<table><tr><th>Компонент</th><th>Кол-во</th><th>Цена</th><th>Сумма</th></tr>';
     lastCalculation.components.forEach(c => {
