@@ -41,6 +41,25 @@ const shotlanOptions = [
   'Очень много разделений'
 ];
 
+// Значения размеров по умолчанию для разных систем
+function getDefaultSizes(type) {
+    switch (type) {
+        case 'angle':
+        case 'sync':
+        case 'cascade':
+            return { fullWidth: 2800, openWidth: 2800, height: 2800 };
+        case 'partition':
+            return { fullWidth: 4000, height: 2800 };
+        case 'embedded-wall':
+        case 'wall-mounted':
+            return { fullWidth: 2000, openWidth: 1000, height: 2800 };
+        case 'unlinked':
+            return { fullWidth: 2000, height: 2800 };
+        default:
+            return { fullWidth: 2000, height: 2800 };
+    }
+}
+
 const hideWithRiffled = [
   '1шт по вертикали и 3шт по горизонтали',
   '1шт по вертикали и 4шт по горизонтали',
@@ -239,6 +258,7 @@ function showStep(index) {
 // ----- Рендеры шагов -----
 function renderParams(stepIndex) {
     const system = systemsData[systemType];
+    const defaults = getDefaultSizes(systemType);
     const titleChar = document.createElement('h2');
     titleChar.className = 'section-title';
     titleChar.textContent = 'Выберите характеристики';
@@ -246,7 +266,7 @@ function renderParams(stepIndex) {
     wFull.type = 'range';
     wFull.min = system.minWidth || 500;
     wFull.max = system.maxWidth || 6000;
-    wFull.value = wFull.min;
+    wFull.value = Math.min(Math.max(defaults.fullWidth || wFull.min, wFull.min), wFull.max);
     wFull.className = 'range-input';
     const wFullVal = document.createElement('span');
     wFullVal.className = 'range-value';
@@ -299,7 +319,7 @@ function renderParams(stepIndex) {
         wOpen.type = 'range';
         wOpen.min = system.minWidth || 500;
         wOpen.max = system.maxWidth || 6000;
-        wOpen.value = wOpen.min;
+        wOpen.value = Math.min(Math.max(defaults.openWidth || wOpen.min, wOpen.min), wOpen.max);
         wOpen.className = 'range-input';
         const wOpenVal = document.createElement('span');
         wOpenVal.className = 'range-value';
@@ -350,7 +370,7 @@ function renderParams(stepIndex) {
     h.type = 'range';
     h.min = 1800;
     h.max = 3500;
-    h.value = 2000;
+    h.value = Math.min(Math.max(defaults.height || h.min, h.min), h.max);
     h.className = 'range-input';
     const hVal = document.createElement('span');
     hVal.className = 'range-value';
@@ -411,6 +431,7 @@ function renderParams(stepIndex) {
         });
         subsContainer.innerHTML = '';
         activeBlock = null;
+        selected.subsystem = null;
         subsArr.forEach(name => {
             const block = document.createElement('div');
             block.className = 'system-block subsystem-block';
@@ -439,11 +460,7 @@ function renderParams(stepIndex) {
             });
             subsContainer.appendChild(block);
         });
-        if (subsArr.length === 1 && subsContainer.firstChild) {
-            subsContainer.firstChild.click();
-        } else {
-            selected.subsystem = null;
-        }
+        updateStepsBar();
     };
 
     updateSubs();
