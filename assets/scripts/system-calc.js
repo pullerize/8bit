@@ -74,7 +74,7 @@ function renderSubsystem(stepIndex) {
 }
 
 function renderGlass(stepIndex) {
-    const options = ['Прозрачное', 'Матовое', 'Рифлёное'];
+    const options = Object.keys(images.glass);
     const select = document.createElement('select');
     select.innerHTML = '<option value="">Выберите</option>' +
         options.map(o => `<option value="${o}">${o}</option>`).join('');
@@ -86,7 +86,7 @@ function renderGlass(stepIndex) {
 }
 
 function renderShotlan(stepIndex) {
-    const options = ['Нет', 'Тип 1', 'Тип 2'];
+    const options = Object.keys(images.shotlan);
     const select = document.createElement('select');
     select.innerHTML = '<option value="">Выберите</option>' +
         options.map(o => `<option value="${o}">${o}</option>`).join('');
