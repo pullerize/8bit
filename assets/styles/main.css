@@ -56,20 +56,24 @@ select {
 }
 
 .option-block {
+    position: relative;
+    margin: 0.5rem;
     cursor: pointer;
-    width: 120px;
-    text-align: center;
+    width: 300px;
+    height: auto;
+    background: #f0f0f0;
+    overflow: hidden;
+    text-align: left;
 }
 
 .option-block img {
     width: 100%;
-    height: 100px;
+    height: 240px;
     object-fit: cover;
     display: block;
-    border: 2px solid transparent;
 }
-.option-block.selected img {
-    border-color: var(--accent-color);
+.option-block.selected {
+    outline: 3px solid var(--accent-color);
 }
 .system-block {
     position: relative;
@@ -289,4 +293,27 @@ input[type="range"].range-input::-moz-range-thumb {
     padding: 1rem 4rem;
     font-size: 1.2rem;
     margin: 3rem 0;
+}
+
+.back-btn {
+    background: none;
+    border: 2px solid var(--accent-color);
+    color: var(--accent-color);
+}
+
+.next-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.button-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+}
+
+.hint {
+    color: var(--accent-color);
+    font-size: 0.9rem;
 }

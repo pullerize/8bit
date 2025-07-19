@@ -432,6 +432,7 @@ function renderParams(stepIndex) {
         subsContainer.innerHTML = '';
         activeBlock = null;
         selected.subsystem = null;
+        updateNextState();
         subsArr.forEach(name => {
             const block = document.createElement('div');
             block.className = 'system-block subsystem-block';
@@ -457,17 +458,25 @@ function renderParams(stepIndex) {
                 block.classList.add('selected');
                 activeBlock = block;
                 updateStepsBar();
+                updateNextState();
             });
             subsContainer.appendChild(block);
         });
         updateStepsBar();
     };
 
-    updateSubs();
-
     const nextBtn = document.createElement('button');
     nextBtn.textContent = 'Далее';
     nextBtn.className = 'next-btn';
+    nextBtn.disabled = true;
+    const hint = document.createElement('span');
+    hint.className = 'hint';
+    hint.textContent = 'Выберите подсистему';
+    const updateNextState = () => {
+        const ok = !!selected.subsystem;
+        nextBtn.disabled = !ok;
+        hint.style.display = ok ? 'none' : 'inline';
+    };
     nextBtn.addEventListener('click', () => {
         selected.fullWidth = wFull.value;
         if (system.extraField) selected.openWidth = wOpen.value;
@@ -484,13 +493,21 @@ function renderParams(stepIndex) {
         window.location.href = 'index.html';
     });
 
+    const btnRow = document.createElement('div');
+    btnRow.className = 'button-row';
+    btnRow.append(backBtn, nextBtn, hint);
+
+    updateNextState();
+
+    updateSubs();
+
     container.append(titleChar);
     if (system.extraField) {
         container.append(sizeBar2, sizeBar1);
     } else {
         container.append(sizeBar1);
     }
-    container.append(sizeBar3, subsTitle, subsContainer, backBtn, nextBtn);
+    container.append(sizeBar3, subsTitle, subsContainer, btnRow);
 }
 
 function renderDesign(stepIndex) {
