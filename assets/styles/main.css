@@ -43,6 +43,10 @@ select {
     gap: 3rem;
 }
 
+#systems-container {
+    justify-content: center;
+}
+
 .options-container {
     display: flex;
     flex-wrap: wrap;
@@ -84,6 +88,13 @@ select {
 }
 .subsystem-block {
     width: 300px;
+    height: auto;
+    overflow: visible;
+}
+
+.subsystem-block img,
+.subsystem-block video {
+    width: 100%;
     height: 240px;
 }
 .system-title {
