@@ -1,6 +1,20 @@
 // Инициализация главной страницы
 window.addEventListener('DOMContentLoaded', () => {
     const container = document.getElementById('systems-container');
+    const stepsBar = document.getElementById('steps-bar');
+    const stepItems = [
+        { key: 'system', title: 'Тип системы' },
+        { key: 'subsystem', title: 'Подсистема' },
+        { key: 'glass', title: 'Стекло' },
+        { key: 'shotlan', title: 'Шотланки' }
+    ];
+
+    stepItems.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'step';
+        div.innerHTML = `<span class="step-name">${item.title}</span><span class="step-value"></span>`;
+        stepsBar.appendChild(div);
+    });
     Object.keys(systemsData).forEach(code => {
         const data = systemsData[code];
         const block = document.createElement('div');
