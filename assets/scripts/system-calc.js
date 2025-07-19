@@ -237,10 +237,16 @@ function renderParams(stepIndex) {
     wFullHelp.appendChild(wFullImg);
     const sizeBar1 = document.createElement('div');
     sizeBar1.className = 'size-bar';
+    const header1 = document.createElement('div');
+    header1.className = 'size-bar-header';
     const wFullLabel = document.createElement('span');
     wFullLabel.className = 'range-label';
     wFullLabel.textContent = 'Полная ширина:';
-    sizeBar1.append(wFullLabel, wFullNum, wFullHelp, wFull, wFullVal);
+    header1.append(wFullLabel, wFullNum, wFullHelp);
+    const wrap1 = document.createElement('div');
+    wrap1.className = 'range-wrapper';
+    wrap1.append(wFull, wFullVal);
+    sizeBar1.append(header1, wrap1);
     wFull.addEventListener('input', () => {
         wFullVal.textContent = wFull.value;
         wFullNum.value = wFull.value;
@@ -284,10 +290,16 @@ function renderParams(stepIndex) {
         wOpenHelp.appendChild(wOpenImg);
         sizeBar2 = document.createElement('div');
         sizeBar2.className = 'size-bar';
+        const header2 = document.createElement('div');
+        header2.className = 'size-bar-header';
         const wOpenLabel = document.createElement('span');
         wOpenLabel.className = 'range-label';
         wOpenLabel.textContent = 'Ширина открытой части:';
-        sizeBar2.append(wOpenLabel, wOpenNum, wOpenHelp, wOpen, wOpenVal);
+        header2.append(wOpenLabel, wOpenNum, wOpenHelp);
+        const wrap2 = document.createElement('div');
+        wrap2.className = 'range-wrapper';
+        wrap2.append(wOpen, wOpenVal);
+        sizeBar2.append(header2, wrap2);
         wOpen.addEventListener('input', () => {
             wOpenVal.textContent = wOpen.value;
             wOpenNum.value = wOpen.value;
@@ -329,10 +341,16 @@ function renderParams(stepIndex) {
     hHelp.appendChild(hImg);
     const sizeBar3 = document.createElement('div');
     sizeBar3.className = 'size-bar';
+    const header3 = document.createElement('div');
+    header3.className = 'size-bar-header';
     const hLabel = document.createElement('span');
     hLabel.className = 'range-label';
     hLabel.textContent = 'Высота:';
-    sizeBar3.append(hLabel, hNum, hHelp, h, hVal);
+    header3.append(hLabel, hNum, hHelp);
+    const wrap3 = document.createElement('div');
+    wrap3.className = 'range-wrapper';
+    wrap3.append(h, hVal);
+    sizeBar3.append(header3, wrap3);
     h.addEventListener('input', () => {
         hVal.textContent = h.value;
         hNum.value = h.value;
