@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Калькулятор стоимости дверных систем</title>
+<link rel="stylesheet" href="./assets/styles/main.css">
+</head>
+<body>
+<div id="steps" class="steps-bar">
+  <div class="steps-inner">
+    <div class="step-wrap"><div class="step-label">Тип системы</div><span id="step1" class="step">•</span></div>
+    <span class="line"></span>
+    <div class="step-wrap"><div class="step-label">Подсистема</div><span id="step2" class="step">•</span></div>
+    <span class="line"></span>
+    <div class="step-wrap"><div class="step-label">Стекло</div><span id="step3" class="step">•</span></div>
+    <span class="line"></span>
+    <div class="step-wrap"><div class="step-label">Шотланки</div><span id="step4" class="step">•</span></div>
+  </div>
+</div>
+
+<div id="img-viewer" class="hidden">
+  <video id="viewer-video" controls class="hidden"></video>
+  <img id="viewer-img" src="" alt="fullscreen">
+</div>
+<div id="container">
+<div class="menu" id="menu">
+<h1>Выберите систему</h1>
+<div class="system-list">
+  <div class="system" data-system="angle"><video class="icon" muted playsinline preload="none" loading="lazy"></video><span>Двери с угловым примыканием</span></div>
+  <div class="system" data-system="embedded-wall"><video class="icon" muted playsinline preload="none" loading="lazy"></video><span>Врезанные в стену двери</span></div>
+  <div class="system" data-system="sync"><video class="icon" muted playsinline preload="none" loading="lazy"></video><span>Синхронные двери</span></div>
+  <div class="system" data-system="cascade"><video class="icon" muted playsinline preload="none" loading="lazy"></video><span>Каскадные двери</span></div>
+  <div class="system" data-system="unlinked"><video class="icon" muted playsinline preload="none" loading="lazy"></video><span>Не связанные двери</span></div>
+  <div class="system" data-system="wall-mounted"><video class="icon" muted playsinline preload="none" loading="lazy"></video><span>Настенные двери</span></div>
+  <div class="system" data-system="partition"><video class="icon" muted playsinline preload="none" loading="lazy"></video><span>Стена-перегородка</span></div>
+</div>
+</div>
+
+<div id="form-container" class="hidden">
+<form id="calc-form">
+<h3 class="section-title">Выберите параметры</h3>
+<div class="field hidden" id="extra-field">
+  <label class="label-row" for="open-range">Ширина проема (открытая часть)
+    <input type="number" id="open-width" min="500" max="3000" value="1000">
+    <span class="help">?
+      <div class="tooltip" id="open-tooltip"></div>
+    </span>
+  </label>
+  <input type="range" id="open-range" min="500" max="3000" value="1000">
+</div>
+<div class="field">
+  <label class="label-row" for="width-range">Ширина проема (полностью)
+    <input type="number" id="width" min="500" max="12000" value="1000" required>
+    <span class="help">?
+      <div class="tooltip" id="width-tooltip"></div>
+    </span>
+  </label>
+  <input type="range" id="width-range" min="500" max="12000" value="1000">
+</div>
+<div class="field">
+  <label class="label-row" for="height-range">Высота проема
+    <input type="number" id="height" min="500" max="6000" value="2000" required>
+    <span class="help">?
+      <div class="tooltip" id="height-tooltip"></div>
+    </span>
+  </label>
+  <input type="range" id="height-range" min="500" max="6000" value="2000">
+</div>
+<h3 class="section-title">Выберите подсистему</h3>
+<div class="field">
+  <div id="subsystems" class="subsystem-list"></div>
+</div>
+
+<h3 class="section-title">Выберите вариант стекла</h3>
+<div class="field">
+  <div id="glass-options" class="option-list"></div>
+</div>
+
+<h3 class="section-title">Выберите шотланки</h3>
+<div class="field">
+  <div id="shotlan-options" class="option-list"></div>
+</div>
+
+  <div id="action-buttons">
+    <button type="button" id="back">Вернуться назад</button>
+    <button type="button" id="calc-btn">Рассчитать</button>
+    <div id="error"></div>
+  </div>
+</form>
+</div>
+</div>
+
+<div id="modal" class="modal hidden">
+  <div id="modal-content" class="modal-content form-mode">
+    <button id="close-modal" class="close">×</button>
+    <div id="modal-form">
+      <div class="field"><label>Ваше Имя <input type="text" id="user-name" required></label></div>
+      <div class="field"><label>Ваш номер телефона <input type="tel" id="user-phone" required></label></div>
+      <div class="field checkbox"><label><input type="checkbox" id="save-info"> Сохранить мои данные</label></div>
+      <div id="modal-error" style="color:red;margin-top:10px;"></div>
+      <button type="button" id="modal-calc">Рассчитать</button>
+    </div>
+    <div id="modal-result" class="hidden">
+      <table class="result-table" id="cost-table">
+        <thead>
+          <tr><th>Компонент</th><th>Кол-во</th><th>Цена</th><th>Сумма</th></tr>
+        </thead>
+        <tbody></tbody>
+        <tfoot>
+          <tr class="summary"><td colspan="3">Ширина двери</td><td id="door-width"></td></tr>
+          <tr class="summary"><td colspan="3">Итоговая стоимость</td><td id="total-cost"></td></tr>
+        </tfoot>
+      </table>
+      <div class="result-buttons">
+        <button type="button" id="download-result">Скачать</button>
+        <button type="button" id="close-result">Закрыть</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<footer id="consult" class="consult">
+  <div class="footer-inner container">
+    <div class="footer-text">
+      <h2>Нужна консультация?</h2>
+      <p>Сомневаетесь, подойдет ли вам этот товар? Оставьте заявку, наш менеджер свяжется с вами в ближайшее время</p>
+    </div>
+    <form class="footer-form">
+      <div class="input-row">
+        <input type="text" placeholder="Ваше имя" required>
+        <input type="tel" placeholder="Ваш номер телефона" required>
+      </div>
+      <div class="footer-bottom">
+        <textarea placeholder="Сообщение" rows="3"></textarea>
+        <button type="button">Отправить заявку</button>
+      </div>
+    </form>
+  </div>
+</footer>
+
+<script src="./assets/scripts/systems/base.js"></script>
+<script src="./assets/scripts/systems/cascade.js"></script>
+<script src="./assets/scripts/systems/angle.js"></script>
+<script src="./assets/scripts/systems/embedded-wall.js"></script>
+<script src="./assets/scripts/systems/sync.js"></script>
+<script src="./assets/scripts/systems/unlinked.js"></script>
+<script src="./assets/scripts/systems/wall-mounted.js"></script>
+<script src="./assets/scripts/systems/partition.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+<script src="./assets/scripts/images.js"></script>
+<script src="./assets/scripts/script.js"></script>
+</body>
+</html>
