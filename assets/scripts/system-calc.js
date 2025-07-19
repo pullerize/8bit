@@ -210,6 +210,9 @@ function showStep(index) {
 // ----- Рендеры шагов -----
 function renderParams(stepIndex) {
     const system = systemsData[systemType];
+    const titleChar = document.createElement('h2');
+    titleChar.className = 'section-title';
+    titleChar.textContent = 'Выберите характеристики';
     const wFull = document.createElement('input');
     wFull.type = 'range';
     wFull.min = system.minWidth || 500;
@@ -279,6 +282,10 @@ function renderParams(stepIndex) {
         hVal.textContent = h.value;
     });
 
+    const subsTitle = document.createElement('h2');
+    subsTitle.className = 'section-title';
+    subsTitle.textContent = 'Выберите подсистему';
+
     const subsContainer = document.createElement('div');
     subsContainer.className = 'systems-container';
     let activeBlock = null;
@@ -339,12 +346,15 @@ function renderParams(stepIndex) {
         }
     });
 
-    container.append(sizeBar1);
+    container.append(titleChar, sizeBar1);
     if (system.extraField) container.append(sizeBar2);
-    container.append(sizeBar3, subsContainer, btn);
+    container.append(sizeBar3, subsTitle, subsContainer, btn);
 }
 
 function renderDesign(stepIndex) {
+    const glassTitle = document.createElement('h2');
+    glassTitle.className = 'section-title';
+    glassTitle.textContent = 'Выберите стекло';
     const glassSelect = document.createElement('select');
     const glassBar = document.createElement('div');
     glassBar.className = 'size-bar';
@@ -352,6 +362,10 @@ function renderDesign(stepIndex) {
     const glassOpts = Object.keys(images.glass);
     glassSelect.innerHTML = '<option value="">Выберите стекло</option>' +
         glassOpts.map(o => `<option value="${o}">${o}</option>`).join('');
+
+    const shotlanTitle = document.createElement('h2');
+    shotlanTitle.className = 'section-title';
+    shotlanTitle.textContent = 'Выберите шотланки';
 
     const shotlanSelect = document.createElement('select');
     const shotlanBar = document.createElement('div');
@@ -386,7 +400,7 @@ function renderDesign(stepIndex) {
         }
     });
 
-    container.append(glassBar, shotlanBar, btn);
+    container.append(glassTitle, glassBar, shotlanTitle, shotlanBar, btn);
 }
 
 function renderCalcButton() {
