@@ -222,18 +222,40 @@ function renderParams(stepIndex) {
     const wFullVal = document.createElement('span');
     wFullVal.className = 'range-value';
     wFullVal.textContent = wFull.value;
+    const wFullNum = document.createElement('input');
+    wFullNum.type = 'number';
+    wFullNum.className = 'number-input';
+    wFullNum.min = wFull.min;
+    wFullNum.max = wFull.max;
+    wFullNum.value = wFull.value;
+    const wFullHelp = document.createElement('span');
+    wFullHelp.className = 'help-icon';
+    wFullHelp.textContent = '?';
+    const wFullImg = document.createElement('img');
+    wFullImg.src = images.tooltips[systemType].width;
+    wFullImg.className = 'tooltip-img';
+    wFullHelp.appendChild(wFullImg);
     const sizeBar1 = document.createElement('div');
     sizeBar1.className = 'size-bar';
     const wFullLabel = document.createElement('span');
     wFullLabel.className = 'range-label';
     wFullLabel.textContent = 'Полная ширина:';
-    sizeBar1.appendChild(wFullLabel);
-    sizeBar1.appendChild(wFull);
-    sizeBar1.appendChild(wFullVal);
+    sizeBar1.append(wFullLabel, wFullNum, wFullHelp, wFull, wFullVal);
     wFull.addEventListener('input', () => {
         wFullVal.textContent = wFull.value;
+        wFullNum.value = wFull.value;
         updateSubs();
     });
+    const applyFullInput = () => {
+        let val = Number(wFullNum.value);
+        if (isNaN(val)) return;
+        val = Math.min(Math.max(val, wFull.min), wFull.max);
+        wFull.value = val;
+        wFullVal.textContent = val;
+        updateSubs();
+    };
+    wFullNum.addEventListener('blur', applyFullInput);
+    wFullNum.addEventListener('keydown', e => { if (e.key === 'Enter') { applyFullInput(); wFullNum.blur(); } });
 
     let wOpen;
     let sizeBar2;
@@ -247,18 +269,40 @@ function renderParams(stepIndex) {
         const wOpenVal = document.createElement('span');
         wOpenVal.className = 'range-value';
         wOpenVal.textContent = wOpen.value;
+        const wOpenNum = document.createElement('input');
+        wOpenNum.type = 'number';
+        wOpenNum.className = 'number-input';
+        wOpenNum.min = wOpen.min;
+        wOpenNum.max = wOpen.max;
+        wOpenNum.value = wOpen.value;
+        const wOpenHelp = document.createElement('span');
+        wOpenHelp.className = 'help-icon';
+        wOpenHelp.textContent = '?';
+        const wOpenImg = document.createElement('img');
+        wOpenImg.src = images.tooltips[systemType].open;
+        wOpenImg.className = 'tooltip-img';
+        wOpenHelp.appendChild(wOpenImg);
         sizeBar2 = document.createElement('div');
         sizeBar2.className = 'size-bar';
         const wOpenLabel = document.createElement('span');
         wOpenLabel.className = 'range-label';
         wOpenLabel.textContent = 'Ширина открытой части:';
-        sizeBar2.appendChild(wOpenLabel);
-        sizeBar2.appendChild(wOpen);
-        sizeBar2.appendChild(wOpenVal);
+        sizeBar2.append(wOpenLabel, wOpenNum, wOpenHelp, wOpen, wOpenVal);
         wOpen.addEventListener('input', () => {
             wOpenVal.textContent = wOpen.value;
+            wOpenNum.value = wOpen.value;
             updateSubs();
         });
+        const applyOpenInput = () => {
+            let val = Number(wOpenNum.value);
+            if (isNaN(val)) return;
+            val = Math.min(Math.max(val, wOpen.min), wOpen.max);
+            wOpen.value = val;
+            wOpenVal.textContent = val;
+            updateSubs();
+        };
+        wOpenNum.addEventListener('blur', applyOpenInput);
+        wOpenNum.addEventListener('keydown', e => { if (e.key === 'Enter') { applyOpenInput(); wOpenNum.blur(); } });
     }
 
     const h = document.createElement('input');
@@ -270,17 +314,38 @@ function renderParams(stepIndex) {
     const hVal = document.createElement('span');
     hVal.className = 'range-value';
     hVal.textContent = h.value;
+    const hNum = document.createElement('input');
+    hNum.type = 'number';
+    hNum.className = 'number-input';
+    hNum.min = h.min;
+    hNum.max = h.max;
+    hNum.value = h.value;
+    const hHelp = document.createElement('span');
+    hHelp.className = 'help-icon';
+    hHelp.textContent = '?';
+    const hImg = document.createElement('img');
+    hImg.src = images.tooltips[systemType].height;
+    hImg.className = 'tooltip-img';
+    hHelp.appendChild(hImg);
     const sizeBar3 = document.createElement('div');
     sizeBar3.className = 'size-bar';
     const hLabel = document.createElement('span');
     hLabel.className = 'range-label';
     hLabel.textContent = 'Высота:';
-    sizeBar3.appendChild(hLabel);
-    sizeBar3.appendChild(h);
-    sizeBar3.appendChild(hVal);
+    sizeBar3.append(hLabel, hNum, hHelp, h, hVal);
     h.addEventListener('input', () => {
         hVal.textContent = h.value;
+        hNum.value = h.value;
     });
+    const applyHInput = () => {
+        let val = Number(hNum.value);
+        if (isNaN(val)) return;
+        val = Math.min(Math.max(val, h.min), h.max);
+        h.value = val;
+        hVal.textContent = val;
+    };
+    hNum.addEventListener('blur', applyHInput);
+    hNum.addEventListener('keydown', e => { if (e.key === 'Enter') { applyHInput(); hNum.blur(); } });
 
     const subsTitle = document.createElement('h2');
     subsTitle.className = 'section-title';
@@ -346,8 +411,12 @@ function renderParams(stepIndex) {
         }
     });
 
-    container.append(titleChar, sizeBar1);
-    if (system.extraField) container.append(sizeBar2);
+    container.append(titleChar);
+    if (system.extraField) {
+        container.append(sizeBar2, sizeBar1);
+    } else {
+        container.append(sizeBar1);
+    }
     container.append(sizeBar3, subsTitle, subsContainer, btn);
 }
 
