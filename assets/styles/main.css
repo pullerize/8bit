@@ -38,9 +38,9 @@ select {
 .systems-container {
     display: flex;
     flex-wrap: wrap;
-    justify-content: flex-start;
+    justify-content: center;
     padding: 1rem;
-    gap: 1rem;
+    gap: 3rem;
 }
 
 .options-container {
@@ -259,6 +259,9 @@ input[type="range"].range-input::-moz-range-thumb {
     text-align: left;
     margin: 3.5rem 0 2rem;
     font-size: 2rem;
+}
+#main-title {
+    text-align: center;
 }
 
 .next-btn {
