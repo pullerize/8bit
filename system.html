@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Калькулятор системы</title>
+    <link rel="stylesheet" href="assets/styles/main.css">
+</head>
+<body>
+<header class="system-header">
+    <button id="back-button">Вернуться назад</button>
+    <div id="steps-bar" class="steps-bar"></div>
+</header>
+<main id="calc-container" class="calc-container">
+    <!-- Шаги калькулятора -->
+</main>
+<div id="result-modal" class="modal hidden">
+    <div class="modal-content">
+        <form id="user-form">
+            <label>Имя: <input type="text" id="user-name" required></label>
+            <label>Телефон: <input type="tel" id="user-phone" required></label>
+            <label><input type="checkbox" id="save-user"> Сохранить мои данные</label>
+            <button type="submit">Отправить</button>
+        </form>
+        <div id="result-table" class="hidden"></div>
+        <button id="download-pdf" class="hidden">Скачать PDF</button>
+        <button id="close-modal">Закрыть</button>
+    </div>
+</div>
+<footer>
+    <form id="feedback-form">
+        <label>Email: <input type="email" required></label>
+        <textarea placeholder="Ваше сообщение"></textarea>
+        <button type="submit">Отправить</button>
+    </form>
+</footer>
+<script src="assets/scripts/images.js"></script>
+<script src="assets/scripts/systems/systemsData.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+<script src="assets/scripts/system-calc.js"></script>
+</body>
+</html>
