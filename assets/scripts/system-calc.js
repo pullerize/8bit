@@ -32,6 +32,25 @@ let selected = {
     height: ''
 };
 
+// Возвращает стартовые размеры для каждой системы
+function getDefaultSizes(type) {
+    switch (type) {
+        case 'angle':
+        case 'sync':
+        case 'cascade':
+            return { fullWidth: 2800, openWidth: 0, height: 2800 };
+        case 'partition':
+            return { fullWidth: 4000, openWidth: 0, height: 2800 };
+        case 'embedded-wall':
+        case 'wall-mounted':
+            return { fullWidth: 2000, openWidth: 1000, height: 2800 };
+        case 'unlinked':
+            return { fullWidth: 2000, openWidth: 0, height: 2800 };
+        default:
+            return { fullWidth: 2800, openWidth: 0, height: 2800 };
+    }
+}
+
 
 let lastCalculation = null;
 // Экранные шаги калькулятора
