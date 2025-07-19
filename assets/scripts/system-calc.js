@@ -279,10 +279,9 @@ function renderParams(stepIndex) {
         hVal.textContent = h.value;
     });
 
-    const subSelect = document.createElement('select');
-    const subBar = document.createElement('div');
-    subBar.className = 'size-bar';
-    subBar.appendChild(subSelect);
+    const subsContainer = document.createElement('div');
+    subsContainer.className = 'systems-container';
+    let activeBlock = null;
 
     const updateSubs = () => {
         const widthVal = system.extraField ? Number(wOpen?.value) : Number(wFull.value);
@@ -291,22 +290,43 @@ function renderParams(stepIndex) {
             const lim = system.subsystems[k];
             return widthVal >= lim.min && widthVal <= lim.max;
         });
-        subSelect.innerHTML = '<option value="">Выберите подсистему</option>' +
-            subsArr.map(s => `<option value="${s}">${s}</option>`).join('');
-        if (subsArr.length === 1) {
-            subSelect.value = subsArr[0];
-            selected.subsystem = subsArr[0];
+        subsContainer.innerHTML = '';
+        activeBlock = null;
+        subsArr.forEach(name => {
+            const block = document.createElement('div');
+            block.className = 'system-block';
+            block.innerHTML = `
+                <img src="${images.subsystems_posters[systemType][name]}" alt="${name}">
+                <video muted loop preload="none" src="${images.subsystems[systemType][name]}"></video>
+                <span class="system-title">${name}</span>`;
+            block.addEventListener('mouseenter', () => {
+                if (window.innerWidth > 768) {
+                    const v = block.querySelector('video');
+                    v.style.display = 'block';
+                    v.play();
+                }
+            });
+            block.addEventListener('mouseleave', () => {
+                const v = block.querySelector('video');
+                v.pause();
+                v.style.display = 'none';
+            });
+            block.addEventListener('click', () => {
+                selected.subsystem = name;
+                if (activeBlock) activeBlock.classList.remove('selected');
+                block.classList.add('selected');
+                activeBlock = block;
+            });
+            subsContainer.appendChild(block);
+        });
+        if (subsArr.length === 1 && subsContainer.firstChild) {
+            subsContainer.firstChild.click();
         } else {
-            subSelect.value = '';
             selected.subsystem = null;
         }
     };
 
     updateSubs();
-
-    subSelect.addEventListener('change', e => {
-        selected.subsystem = e.target.value;
-    });
 
     const btn = document.createElement('button');
     btn.textContent = 'Далее';
@@ -321,7 +341,7 @@ function renderParams(stepIndex) {
 
     container.append(sizeBar1);
     if (system.extraField) container.append(sizeBar2);
-    container.append(sizeBar3, subBar, btn);
+    container.append(sizeBar3, subsContainer, btn);
 }
 
 function renderDesign(stepIndex) {
