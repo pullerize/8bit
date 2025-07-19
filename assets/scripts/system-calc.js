@@ -465,11 +465,10 @@ function renderParams(stepIndex) {
 
     updateSubs();
 
-    const btn = document.createElement('button');
-    btn.textContent = 'Далее';
-    btn.className = 'next-btn';
-    btn.className = 'next-btn';
-    btn.addEventListener('click', () => {
+    const nextBtn = document.createElement('button');
+    nextBtn.textContent = 'Далее';
+    nextBtn.className = 'next-btn';
+    nextBtn.addEventListener('click', () => {
         selected.fullWidth = wFull.value;
         if (system.extraField) selected.openWidth = wOpen.value;
         selected.height = h.value;
@@ -478,13 +477,20 @@ function renderParams(stepIndex) {
         }
     });
 
+    const backBtn = document.createElement('button');
+    backBtn.textContent = 'Вернуться назад';
+    backBtn.className = 'back-btn';
+    backBtn.addEventListener('click', () => {
+        window.location.href = 'index.html';
+    });
+
     container.append(titleChar);
     if (system.extraField) {
         container.append(sizeBar2, sizeBar1);
     } else {
         container.append(sizeBar1);
     }
-    container.append(sizeBar3, subsTitle, subsContainer, btn);
+    container.append(sizeBar3, subsTitle, subsContainer, backBtn, nextBtn);
 }
 
 function renderDesign(stepIndex) {
@@ -546,16 +552,23 @@ function renderDesign(stepIndex) {
     renderGlass();
     updateShotlans();
 
-    const btn = document.createElement('button');
-    btn.textContent = 'Далее';
-    btn.className = 'next-btn';
-    btn.addEventListener('click', () => {
+    const nextBtn = document.createElement('button');
+    nextBtn.textContent = 'Далее';
+    nextBtn.className = 'next-btn';
+    nextBtn.addEventListener('click', () => {
         if (selected.glass && selected.shotlan) {
             showStep(stepIndex + 1);
         }
     });
 
-    container.append(glassTitle, glassContainer, shotlanTitle, shotlanContainer, btn);
+    const backBtn = document.createElement('button');
+    backBtn.textContent = 'Вернуться назад';
+    backBtn.className = 'back-btn';
+    backBtn.addEventListener('click', () => {
+        showStep(stepIndex - 1);
+    });
+
+    container.append(glassTitle, glassContainer, shotlanTitle, shotlanContainer, backBtn, nextBtn);
 }
 
 function renderCalcButton() {
