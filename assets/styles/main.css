@@ -83,8 +83,8 @@ select {
     outline: 3px solid var(--accent-color);
 }
 .subsystem-block {
-    width: 200px;
-    height: 140px;
+    width: 300px;
+    height: 240px;
 }
 .system-title {
     display: block;
@@ -99,6 +99,7 @@ select {
     align-items: center;
     gap: 1rem;
     padding: 1rem 0;
+    width: 100%;
 }
 .step {
     color: #fff;
@@ -111,8 +112,8 @@ select {
 .step::before {
     content: '';
     display: block;
-    width: 20px;
-    height: 20px;
+    width: 10px;
+    height: 10px;
     border-radius: 50%;
     border: 2px solid #fff;
     margin: 0 auto 0.25rem;
@@ -123,17 +124,19 @@ select {
 .steps-bar .step:not(:last-child)::after {
     content: '';
     position: absolute;
-    top: 10px;
+    top: 5px;
     right: -1rem;
-    width: 40px;
+    width: 60px;
     height: 2px;
     background: #fff;
 }
 .step-name {
     font-size: 0.75rem;
+    display: block;
 }
 .step-value {
     font-size: 0.8rem;
+    display: block;
 }
 .step.active {
     text-decoration: underline;
