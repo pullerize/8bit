@@ -3,7 +3,6 @@ const urlParams = new URLSearchParams(window.location.search);
 const systemType = urlParams.get('type');
 
 // Элементы страницы
-const backBtn = document.getElementById('back-button');
 const stepsBar = document.getElementById('steps-bar');
 const container = document.getElementById('calc-container');
 const resultTable = document.getElementById('result-table');
@@ -184,9 +183,6 @@ const stepItems = [
 ];
 
 function init() {
-    backBtn.addEventListener('click', () => {
-        window.location.href = 'index.html';
-    });
     selected.systemName = systemsData[systemType]?.name || '';
     renderStepsBar();
     showStep(0);

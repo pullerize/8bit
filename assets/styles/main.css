@@ -101,7 +101,7 @@ select {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 1rem;
+    gap: 10rem;
     padding: 1rem 0;
     width: 100%;
     position: relative;
@@ -132,7 +132,7 @@ select {
     top: 50%;
     left: calc(100% + 0.5rem);
     transform: translateY(-50%);
-    width: 60px;
+    width: 160px;
     height: 2px;
     background: #fff;
 }
