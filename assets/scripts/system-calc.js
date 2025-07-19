@@ -222,6 +222,7 @@ function updateStepsBar() {
         const key = step.dataset.key;
         const span = step.querySelector('.step-value');
         if (span) span.textContent = values[key];
+        step.classList.toggle('completed', !!values[key]);
     });
 }
 
@@ -453,6 +454,8 @@ function renderParams(stepIndex) {
 
     const btn = document.createElement('button');
     btn.textContent = 'Далее';
+    btn.className = 'next-btn';
+    btn.className = 'next-btn';
     btn.addEventListener('click', () => {
         selected.fullWidth = wFull.value;
         if (system.extraField) selected.openWidth = wOpen.value;
@@ -475,54 +478,71 @@ function renderDesign(stepIndex) {
     const glassTitle = document.createElement('h2');
     glassTitle.className = 'section-title';
     glassTitle.textContent = 'Выберите стекло';
-    const glassSelect = document.createElement('select');
-    const glassBar = document.createElement('div');
-    glassBar.className = 'size-bar';
-    glassBar.appendChild(glassSelect);
-    const glassOpts = Object.keys(images.glass);
-    glassSelect.innerHTML = '<option value="">Выберите стекло</option>' +
-        glassOpts.map(o => `<option value="${o}">${o}</option>`).join('');
+    const glassContainer = document.createElement('div');
+    glassContainer.className = 'options-container';
 
     const shotlanTitle = document.createElement('h2');
     shotlanTitle.className = 'section-title';
     shotlanTitle.textContent = 'Выберите шотланки';
+    const shotlanContainer = document.createElement('div');
+    shotlanContainer.className = 'options-container';
 
-    const shotlanSelect = document.createElement('select');
-    const shotlanBar = document.createElement('div');
-    shotlanBar.className = 'size-bar';
-    shotlanBar.appendChild(shotlanSelect);
+    let activeGlass = null;
+    let activeShot = null;
+
+    const renderGlass = () => {
+        glassContainer.innerHTML = '';
+        Object.keys(images.glass).forEach(name => {
+            const block = document.createElement('div');
+            block.className = 'option-block';
+            block.innerHTML = `<img src="${images.glass[name]}" alt="${name}"><span class="system-title">${name}</span>`;
+            block.addEventListener('click', () => {
+                selected.glass = name;
+                if (activeGlass) activeGlass.classList.remove('selected');
+                block.classList.add('selected');
+                activeGlass = block;
+                updateShotlans();
+                updateStepsBar();
+            });
+            glassContainer.appendChild(block);
+        });
+    };
 
     const updateShotlans = () => {
         let options = Object.keys(images.shotlan);
-        if (glassSelect.value === 'Рифленое') {
+        if (selected.glass === 'Рифленое') {
             options = options.filter(o => !hideWithRiffled.includes(o));
         }
-        shotlanSelect.innerHTML = '<option value="">Выберите шотланки</option>' +
-            options.map(o => `<option value="${o}">${o}</option>`).join('');
+        shotlanContainer.innerHTML = '';
+        activeShot = null;
+        options.forEach(name => {
+            const block = document.createElement('div');
+            block.className = 'option-block';
+            block.innerHTML = `<img src="${images.shotlan[name]}" alt="${name}"><span class="system-title">${name}</span>`;
+            block.addEventListener('click', () => {
+                selected.shotlan = name;
+                if (activeShot) activeShot.classList.remove('selected');
+                block.classList.add('selected');
+                activeShot = block;
+                updateStepsBar();
+            });
+            shotlanContainer.appendChild(block);
+        });
     };
 
-    glassSelect.addEventListener('change', e => {
-        selected.glass = e.target.value;
-        updateShotlans();
-        updateStepsBar();
-    });
-
-    shotlanSelect.addEventListener('change', e => {
-        selected.shotlan = e.target.value;
-        updateStepsBar();
-    });
-
+    renderGlass();
     updateShotlans();
 
     const btn = document.createElement('button');
     btn.textContent = 'Далее';
+    btn.className = 'next-btn';
     btn.addEventListener('click', () => {
         if (selected.glass && selected.shotlan) {
             showStep(stepIndex + 1);
         }
     });
 
-    container.append(glassTitle, glassBar, shotlanTitle, shotlanBar, btn);
+    container.append(glassTitle, glassContainer, shotlanTitle, shotlanContainer, btn);
 }
 
 function renderCalcButton() {
