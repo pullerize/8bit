@@ -38,7 +38,7 @@ select {
 .systems-container {
     display: flex;
     flex-wrap: wrap;
-    justify-content: center;
+    justify-content: flex-start;
     padding: 1rem;
     gap: 3rem;
 }
@@ -46,7 +46,7 @@ select {
 .options-container {
     display: flex;
     flex-wrap: wrap;
-    justify-content: center;
+    justify-content: flex-start;
     gap: 1rem;
     margin-bottom: 1rem;
 }
@@ -96,6 +96,15 @@ select {
     font-size: 0.9rem;
     background: rgba(0, 0, 0, 0.5);
     color: #fff;
+}
+
+.option-block .system-title,
+.subsystem-block .system-title {
+    position: static;
+    background: none;
+    color: var(--accent-color);
+    margin-top: 0.5rem;
+    text-align: left;
 }
 .steps-bar {
     display: flex;
