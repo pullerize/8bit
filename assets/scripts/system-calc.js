@@ -12,11 +12,13 @@ const resultTable = document.getElementById('result-table');
 const downloadBtn = document.getElementById('download-pdf');
 const closeModal = document.getElementById('close-modal');
 
+// Выбранные пользователем параметры
 let selected = {
     subsystem: null,
     glass: null,
     shotlan: null,
-    width: '',
+    fullWidth: '',     // полная ширина проёма
+    openWidth: '',     // ширина открытой части (если требуется)
     height: ''
 };
 
@@ -171,11 +173,12 @@ const componentNames = {
 let lastCalculation = null;
 
 // Шаги расчёта
+// Сначала вводим размеры, чтобы отфильтровать доступные подсистемы
 const steps = [
+    {name: 'Размеры', render: renderSize},
     {name: 'Подсистема', render: renderSubsystem},
     {name: 'Стекло', render: renderGlass},
     {name: 'Шотланки', render: renderShotlan},
-    {name: 'Размеры', render: renderSize},
     {name: 'Рассчитать', render: renderCalcButton}
 ];
 
@@ -212,7 +215,12 @@ function showStep(index) {
 
 // ----- Рендеры шагов -----
 function renderSubsystem(stepIndex) {
-    const subs = systemsData[systemType].subsystems;
+    const system = systemsData[systemType];
+    const widthVal = system.extraField ? Number(selected.openWidth) : Number(selected.fullWidth);
+    const subs = Object.keys(system.subsystems).filter(key => {
+        const lim = system.subsystems[key];
+        return widthVal >= lim.min && widthVal <= lim.max;
+    });
     const select = document.createElement('select');
     select.innerHTML = '<option value="">Выберите</option>' +
         subs.map(s => `<option value="${s}">${s}</option>`).join('');
@@ -251,20 +259,31 @@ function renderShotlan(stepIndex) {
 }
 
 function renderSize(stepIndex) {
-    const w = document.createElement('input');
-    w.type = 'number';
-    w.placeholder = 'Ширина (мм)';
+    const system = systemsData[systemType];
+    const wFull = document.createElement('input');
+    wFull.type = 'number';
+    wFull.placeholder = 'Полная ширина проема (мм)';
+    const wOpen = document.createElement('input');
+    if (system.extraField) {
+        wOpen.type = 'number';
+        wOpen.placeholder = 'Ширина открытой части (мм)';
+    }
     const h = document.createElement('input');
     h.type = 'number';
     h.placeholder = 'Высота (мм)';
     const btn = document.createElement('button');
     btn.textContent = 'Далее';
     btn.addEventListener('click', () => {
-        selected.width = w.value;
+        selected.fullWidth = wFull.value;
+        if (system.extraField) selected.openWidth = wOpen.value;
         selected.height = h.value;
-        if (selected.width && selected.height) showStep(stepIndex + 1);
+        if (selected.fullWidth && selected.height && (!system.extraField || selected.openWidth)) {
+            showStep(stepIndex + 1);
+        }
     });
-    container.append(w, h, btn);
+    container.append(wFull);
+    if (system.extraField) container.append(wOpen);
+    container.append(h, btn);
 }
 
 function renderCalcButton() {
@@ -1198,28 +1217,29 @@ function calculateSyncComponents(widthFull, height, subsystem, params, glass, sh
 // --- другие расчётные функции опущены для краткости (partition, wall-mounted, angle, sync, embedded) ---
 
 function calculateTotal() {
-  const width = Number(selected.width);
+  const widthFull = Number(selected.fullWidth);
+  const openWidth = selected.openWidth ? Number(selected.openWidth) : widthFull;
   const height = Number(selected.height);
   const params = { num_doors: 1 };
   let res;
   switch (systemType) {
     case 'partition':
-      res = calculatePartitionComponents(width, height, selected.subsystem, params, selected.glass, selected.shotlan);
+      res = calculatePartitionComponents(widthFull, height, selected.subsystem, params, selected.glass, selected.shotlan);
       break;
     case 'wall-mounted':
-      res = calculateWallMountedComponents(width, width, height, selected.subsystem, params, selected.glass, selected.shotlan);
+      res = calculateWallMountedComponents(widthFull, openWidth, height, selected.subsystem, params, selected.glass, selected.shotlan);
       break;
     case 'angle':
-      res = calculateAngleComponents(width, height, selected.subsystem, params, selected.glass, selected.shotlan);
+      res = calculateAngleComponents(widthFull, height, selected.subsystem, params, selected.glass, selected.shotlan);
       break;
     case 'sync':
-      res = calculateSyncComponents(width, height, selected.subsystem, params, selected.glass, selected.shotlan);
+      res = calculateSyncComponents(widthFull, height, selected.subsystem, params, selected.glass, selected.shotlan);
       break;
     case 'embedded-wall':
-      res = calculateEmbeddedComponents(width, width, height, selected.subsystem, params, selected.glass, selected.shotlan);
+      res = calculateEmbeddedComponents(widthFull, openWidth, height, selected.subsystem, params, selected.glass, selected.shotlan);
       break;
     default:
-      res = calculateComponents(width, height, selected.subsystem, params, selected.glass, selected.shotlan);
+      res = calculateComponents(widthFull, height, selected.subsystem, params, selected.glass, selected.shotlan);
   }
   lastCalculation = res;
   return res.total;
