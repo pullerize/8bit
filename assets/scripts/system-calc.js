@@ -215,15 +215,16 @@ function showStep(index) {
 
 // ----- Рендеры шагов -----
 function renderSubsystem(stepIndex) {
-    const system = systemsData[systemType];
+    const system = systemsData[systemType] || {};
     const widthVal = system.extraField ? Number(selected.openWidth) : Number(selected.fullWidth);
-    const subs = Object.keys(system.subsystems).filter(key => {
-        const lim = system.subsystems[key];
+    const keys = Object.keys(system.subsystems || {});
+    const subsArr = keys.filter(k => {
+        const lim = system.subsystems[k];
         return widthVal >= lim.min && widthVal <= lim.max;
     });
     const select = document.createElement('select');
     select.innerHTML = '<option value="">Выберите</option>' +
-        subs.map(s => `<option value="${s}">${s}</option>`).join('');
+        subsArr.map(s => `<option value="${s}">${s}</option>`).join('');
     select.addEventListener('change', e => {
         selected.subsystem = e.target.value;
         if (selected.subsystem) showStep(stepIndex + 1);
