@@ -48,6 +48,9 @@ select {
 .system-block.selected {
     outline: 3px solid var(--accent-color);
 }
+.subsystem-block {
+    padding: 2rem;
+}
 .system-title {
     position: absolute;
     bottom: 0;
@@ -59,9 +62,33 @@ select {
     text-align: center;
     font-size: 0.9rem;
 }
-.steps-bar { display: flex; gap: 0.5rem; padding: 1rem; }
-.step { padding: 0.5rem 1rem; background: #eee; border-radius: 4px; }
-.step.active { background: var(--accent-color); color: #fff; }
+.steps-bar {
+    display: flex;
+    gap: 0.5rem;
+    padding: 1rem;
+}
+.step {
+    padding: 0.5rem 1rem;
+    background: #eee;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 110px;
+}
+.step-name {
+    font-size: 0.75rem;
+    color: #555;
+}
+.step-value {
+    color: var(--accent-color);
+    font-weight: bold;
+}
+.step.active {
+    background: var(--accent-color);
+    color: #fff;
+}
 .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; }
 .modal.hidden { display: none; }
 .modal-content { background: #fff; padding: 1rem; max-width: 90%; }

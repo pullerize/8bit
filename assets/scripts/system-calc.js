@@ -10,6 +10,7 @@ const resultTable = document.getElementById('result-table');
 
 // Выбранные пользователем параметры
 let selected = {
+    systemName: '',
     subsystem: null,
     glass: null,
     shotlan: null,
@@ -167,37 +168,67 @@ const componentNames = {
 };
 
 let lastCalculation = null;
-
-// Шаги расчёта
-// Размеры и подсистема на первом шаге, дизайн на втором
+// Экранные шаги калькулятора
 const steps = [
-    {name: 'Параметры', render: renderParams},
-    {name: 'Дизайн', render: renderDesign},
-    {name: 'Рассчитать', render: renderCalcButton}
+    {name: 'params', render: renderParams},
+    {name: 'design', render: renderDesign},
+    {name: 'calc', render: renderCalcButton}
+];
+
+// Шаги в хедере
+const stepItems = [
+    {key: 'system', title: 'Тип системы'},
+    {key: 'subsystem', title: 'Подсистема'},
+    {key: 'glass', title: 'Стекло'},
+    {key: 'shotlan', title: 'Шотланки'}
 ];
 
 function init() {
     backBtn.addEventListener('click', () => {
         window.location.href = 'index.html';
     });
+    selected.systemName = systemsData[systemType]?.name || '';
     renderStepsBar();
     showStep(0);
 }
 
 function renderStepsBar() {
     stepsBar.innerHTML = '';
-    steps.forEach((s, i) => {
+    stepItems.forEach(item => {
         const div = document.createElement('div');
         div.className = 'step';
-        if (i === 0) div.classList.add('active');
-        div.textContent = s.name;
+        div.dataset.key = item.key;
+        div.innerHTML = `<span class="step-name">${item.title}</span><span class="step-value"></span>`;
+        if (item.key === 'system') {
+            div.addEventListener('click', () => { window.location.href = 'index.html'; });
+        } else if (item.key === 'subsystem') {
+            div.addEventListener('click', () => { showStep(0); });
+        } else {
+            div.addEventListener('click', () => { showStep(1); });
+        }
         stepsBar.appendChild(div);
+    });
+    updateStepsBar();
+}
+
+function updateStepsBar() {
+    const values = {
+        system: selected.systemName,
+        subsystem: selected.subsystem || '',
+        glass: selected.glass || '',
+        shotlan: selected.shotlan || ''
+    };
+    [...stepsBar.children].forEach(step => {
+        const key = step.dataset.key;
+        const span = step.querySelector('.step-value');
+        if (span) span.textContent = values[key];
     });
 }
 
 function setActiveStep(index) {
-    [...stepsBar.children].forEach((el, i) => {
-        el.classList.toggle('active', i === index);
+    const key = index === 0 ? 'subsystem' : index === 1 ? 'glass' : 'shotlan';
+    [...stepsBar.children].forEach(el => {
+        el.classList.toggle('active', el.dataset.key === key);
     });
 }
 
@@ -205,6 +236,7 @@ function showStep(index) {
     container.innerHTML = '';
     setActiveStep(index);
     steps[index].render(index);
+    updateStepsBar();
 }
 
 // ----- Рендеры шагов -----
@@ -384,7 +416,7 @@ function renderParams(stepIndex) {
         activeBlock = null;
         subsArr.forEach(name => {
             const block = document.createElement('div');
-            block.className = 'system-block';
+            block.className = 'system-block subsystem-block';
             block.innerHTML = `
                 <img src="${images.subsystems_posters[systemType][name]}" alt="${name}">
                 <video muted loop preload="none" src="${images.subsystems[systemType][name]}"></video>
@@ -406,6 +438,7 @@ function renderParams(stepIndex) {
                 if (activeBlock) activeBlock.classList.remove('selected');
                 block.classList.add('selected');
                 activeBlock = block;
+                updateStepsBar();
             });
             subsContainer.appendChild(block);
         });
@@ -471,10 +504,12 @@ function renderDesign(stepIndex) {
     glassSelect.addEventListener('change', e => {
         selected.glass = e.target.value;
         updateShotlans();
+        updateStepsBar();
     });
 
     shotlanSelect.addEventListener('change', e => {
         selected.shotlan = e.target.value;
+        updateStepsBar();
     });
 
     updateShotlans();
