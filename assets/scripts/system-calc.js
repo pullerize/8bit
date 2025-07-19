@@ -173,12 +173,10 @@ const componentNames = {
 let lastCalculation = null;
 
 // Шаги расчёта
-// Сначала вводим размеры, чтобы отфильтровать доступные подсистемы
+// Размеры и подсистема на первом шаге, дизайн на втором
 const steps = [
-    {name: 'Размеры', render: renderSize},
-    {name: 'Подсистема', render: renderSubsystem},
-    {name: 'Стекло', render: renderGlass},
-    {name: 'Шотланки', render: renderShotlan},
+    {name: 'Параметры', render: renderParams},
+    {name: 'Дизайн', render: renderDesign},
     {name: 'Рассчитать', render: renderCalcButton}
 ];
 
@@ -214,77 +212,119 @@ function showStep(index) {
 }
 
 // ----- Рендеры шагов -----
-function renderSubsystem(stepIndex) {
-    const system = systemsData[systemType] || {};
-    const widthVal = system.extraField ? Number(selected.openWidth) : Number(selected.fullWidth);
-    const keys = Object.keys(system.subsystems || {});
-    const subsArr = keys.filter(k => {
-        const lim = system.subsystems[k];
-        return widthVal >= lim.min && widthVal <= lim.max;
-    });
-    const select = document.createElement('select');
-    select.innerHTML = '<option value="">Выберите</option>' +
-        subsArr.map(s => `<option value="${s}">${s}</option>`).join('');
-    select.addEventListener('change', e => {
-        selected.subsystem = e.target.value;
-        if (selected.subsystem) showStep(stepIndex + 1);
-    });
-    container.appendChild(select);
-}
-
-function renderGlass(stepIndex) {
-    const options = Object.keys(images.glass);
-    const select = document.createElement('select');
-    select.innerHTML = '<option value="">Выберите</option>' +
-        options.map(o => `<option value="${o}">${o}</option>`).join('');
-    select.addEventListener('change', e => {
-        selected.glass = e.target.value;
-        if (selected.glass) showStep(stepIndex + 1);
-    });
-    container.appendChild(select);
-}
-
-function renderShotlan(stepIndex) {
-    let options = Object.keys(images.shotlan);
-    if (selected.glass === 'Рифленое') {
-        options = options.filter(o => !hideWithRiffled.includes(o));
-    }
-    const select = document.createElement('select');
-    select.innerHTML = '<option value="">Выберите</option>' +
-        options.map(o => `<option value="${o}">${o}</option>`).join('');
-    select.addEventListener('change', e => {
-        selected.shotlan = e.target.value;
-        if (selected.shotlan) showStep(stepIndex + 1);
-    });
-    container.appendChild(select);
-}
-
-function renderSize(stepIndex) {
+function renderParams(stepIndex) {
     const system = systemsData[systemType];
     const wFull = document.createElement('input');
     wFull.type = 'number';
     wFull.placeholder = 'Полная ширина проема (мм)';
-    const wOpen = document.createElement('input');
+    wFull.className = 'size-input';
+    const sizeBar1 = document.createElement('div');
+    sizeBar1.className = 'size-bar';
+    sizeBar1.appendChild(wFull);
+
+    let wOpen;
+    let sizeBar2;
     if (system.extraField) {
+        wOpen = document.createElement('input');
         wOpen.type = 'number';
         wOpen.placeholder = 'Ширина открытой части (мм)';
+        wOpen.className = 'size-input';
+        sizeBar2 = document.createElement('div');
+        sizeBar2.className = 'size-bar';
+        sizeBar2.appendChild(wOpen);
     }
+
     const h = document.createElement('input');
     h.type = 'number';
     h.placeholder = 'Высота (мм)';
+    h.className = 'size-input';
+    const sizeBar3 = document.createElement('div');
+    sizeBar3.className = 'size-bar';
+    sizeBar3.appendChild(h);
+
+    const subSelect = document.createElement('select');
+    const subBar = document.createElement('div');
+    subBar.className = 'size-bar';
+    subBar.appendChild(subSelect);
+
+    const updateSubs = () => {
+        const widthVal = system.extraField ? Number(wOpen?.value) : Number(wFull.value);
+        const keys = Object.keys(system.subsystems || {});
+        const subsArr = keys.filter(k => {
+            const lim = system.subsystems[k];
+            return widthVal >= lim.min && widthVal <= lim.max;
+        });
+        subSelect.innerHTML = '<option value="">Выберите подсистему</option>' +
+            subsArr.map(s => `<option value="${s}">${s}</option>`).join('');
+    };
+
+    wFull.addEventListener('input', updateSubs);
+    if (wOpen) wOpen.addEventListener('input', updateSubs);
+    updateSubs();
+
+    subSelect.addEventListener('change', e => {
+        selected.subsystem = e.target.value;
+    });
+
     const btn = document.createElement('button');
     btn.textContent = 'Далее';
     btn.addEventListener('click', () => {
         selected.fullWidth = wFull.value;
         if (system.extraField) selected.openWidth = wOpen.value;
         selected.height = h.value;
-        if (selected.fullWidth && selected.height && (!system.extraField || selected.openWidth)) {
+        if (selected.fullWidth && selected.height && (!system.extraField || selected.openWidth) && selected.subsystem) {
             showStep(stepIndex + 1);
         }
     });
-    container.append(wFull);
-    if (system.extraField) container.append(wOpen);
-    container.append(h, btn);
+
+    container.append(sizeBar1);
+    if (system.extraField) container.append(sizeBar2);
+    container.append(sizeBar3, subBar, btn);
+}
+
+function renderDesign(stepIndex) {
+    const glassSelect = document.createElement('select');
+    const glassBar = document.createElement('div');
+    glassBar.className = 'size-bar';
+    glassBar.appendChild(glassSelect);
+    const glassOpts = Object.keys(images.glass);
+    glassSelect.innerHTML = '<option value="">Выберите стекло</option>' +
+        glassOpts.map(o => `<option value="${o}">${o}</option>`).join('');
+
+    const shotlanSelect = document.createElement('select');
+    const shotlanBar = document.createElement('div');
+    shotlanBar.className = 'size-bar';
+    shotlanBar.appendChild(shotlanSelect);
+
+    const updateShotlans = () => {
+        let options = Object.keys(images.shotlan);
+        if (glassSelect.value === 'Рифленое') {
+            options = options.filter(o => !hideWithRiffled.includes(o));
+        }
+        shotlanSelect.innerHTML = '<option value="">Выберите шотланки</option>' +
+            options.map(o => `<option value="${o}">${o}</option>`).join('');
+    };
+
+    glassSelect.addEventListener('change', e => {
+        selected.glass = e.target.value;
+        updateShotlans();
+    });
+
+    shotlanSelect.addEventListener('change', e => {
+        selected.shotlan = e.target.value;
+    });
+
+    updateShotlans();
+
+    const btn = document.createElement('button');
+    btn.textContent = 'Далее';
+    btn.addEventListener('click', () => {
+        if (selected.glass && selected.shotlan) {
+            showStep(stepIndex + 1);
+        }
+    });
+
+    container.append(glassBar, shotlanBar, btn);
 }
 
 function renderCalcButton() {
