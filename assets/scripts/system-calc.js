@@ -215,32 +215,73 @@ function showStep(index) {
 function renderParams(stepIndex) {
     const system = systemsData[systemType];
     const wFull = document.createElement('input');
-    wFull.type = 'number';
-    wFull.placeholder = 'Полная ширина проема (мм)';
-    wFull.className = 'size-input';
+    wFull.type = 'range';
+    wFull.min = system.minWidth || 500;
+    wFull.max = system.maxWidth || 6000;
+    wFull.value = wFull.min;
+    wFull.className = 'range-input';
+    const wFullVal = document.createElement('span');
+    wFullVal.className = 'range-value';
+    wFullVal.textContent = wFull.value;
     const sizeBar1 = document.createElement('div');
     sizeBar1.className = 'size-bar';
+    const wFullLabel = document.createElement('span');
+    wFullLabel.className = 'range-label';
+    wFullLabel.textContent = 'Полная ширина:';
+    sizeBar1.appendChild(wFullLabel);
     sizeBar1.appendChild(wFull);
+    sizeBar1.appendChild(wFullVal);
+    wFull.addEventListener('input', () => {
+        wFullVal.textContent = wFull.value;
+        updateSubs();
+    });
 
     let wOpen;
     let sizeBar2;
     if (system.extraField) {
         wOpen = document.createElement('input');
-        wOpen.type = 'number';
-        wOpen.placeholder = 'Ширина открытой части (мм)';
-        wOpen.className = 'size-input';
+        wOpen.type = 'range';
+        wOpen.min = system.minWidth || 500;
+        wOpen.max = system.maxWidth || 6000;
+        wOpen.value = wOpen.min;
+        wOpen.className = 'range-input';
+        const wOpenVal = document.createElement('span');
+        wOpenVal.className = 'range-value';
+        wOpenVal.textContent = wOpen.value;
         sizeBar2 = document.createElement('div');
         sizeBar2.className = 'size-bar';
+        const wOpenLabel = document.createElement('span');
+        wOpenLabel.className = 'range-label';
+        wOpenLabel.textContent = 'Ширина открытой части:';
+        sizeBar2.appendChild(wOpenLabel);
         sizeBar2.appendChild(wOpen);
+        sizeBar2.appendChild(wOpenVal);
+        wOpen.addEventListener('input', () => {
+            wOpenVal.textContent = wOpen.value;
+            updateSubs();
+        });
     }
 
     const h = document.createElement('input');
-    h.type = 'number';
-    h.placeholder = 'Высота (мм)';
-    h.className = 'size-input';
+    h.type = 'range';
+    h.min = 1800;
+    h.max = 3500;
+    h.value = 2000;
+    h.className = 'range-input';
+    const hVal = document.createElement('span');
+    hVal.className = 'range-value';
+    hVal.textContent = h.value;
     const sizeBar3 = document.createElement('div');
     sizeBar3.className = 'size-bar';
+    const hLabel = document.createElement('span');
+    hLabel.className = 'range-label';
+    hLabel.textContent = 'Высота:';
+    sizeBar3.appendChild(hLabel);
     sizeBar3.appendChild(h);
+    sizeBar3.appendChild(hVal);
+    h.addEventListener('input', () => {
+        hVal.textContent = h.value;
+    });
 
     const subSelect = document.createElement('select');
     const subBar = document.createElement('div');
@@ -258,8 +299,6 @@ function renderParams(stepIndex) {
             subsArr.map(s => `<option value="${s}">${s}</option>`).join('');
     };
 
-    wFull.addEventListener('input', updateSubs);
-    if (wOpen) wOpen.addEventListener('input', updateSubs);
     updateSubs();
 
     subSelect.addEventListener('change', e => {

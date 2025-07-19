@@ -58,3 +58,42 @@ footer { padding: 1rem; background: #eee; text-align: center; }
     color: #fff;
     text-align: center;
 }
+
+input[type="range"].range-input {
+    -webkit-appearance: none;
+    width: 220px;
+    height: 6px;
+    border-radius: 3px;
+    background: #ddd;
+    margin: 0 0.25rem;
+}
+input[type="range"].range-input::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--accent-color);
+    cursor: pointer;
+}
+input[type="range"].range-input::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--accent-color);
+    cursor: pointer;
+}
+
+.range-value {
+    color: var(--accent-color);
+    font-weight: bold;
+    margin-left: 0.5rem;
+    min-width: 60px;
+    text-align: left;
+}
+
+.range-label {
+    width: 170px;
+    text-align: right;
+    margin-right: 0.5rem;
+    color: var(--accent-color);
+}
