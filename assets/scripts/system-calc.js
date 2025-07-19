@@ -310,7 +310,7 @@ function renderParams(stepIndex) {
     header1.className = 'size-bar-header';
     const wFullLabel = document.createElement('span');
     wFullLabel.className = 'range-label';
-    wFullLabel.textContent = 'Полная ширина:';
+    wFullLabel.textContent = 'Полная ширина проема:';
     header1.append(wFullLabel, wFullNum, wFullHelp);
     const wrap1 = document.createElement('div');
     wrap1.className = 'range-wrapper';
@@ -426,7 +426,7 @@ function renderParams(stepIndex) {
     header3.className = 'size-bar-header';
     const hLabel = document.createElement('span');
     hLabel.className = 'range-label';
-    hLabel.textContent = 'Высота:';
+    hLabel.textContent = 'Высота проема:';
     header3.append(hLabel, hNum, hHelp);
     const wrap3 = document.createElement('div');
     wrap3.className = 'range-wrapper';
