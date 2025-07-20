@@ -495,7 +495,7 @@ function openCalcModal() {
     calcContent.innerHTML = `
         <form id="calc-form" class="calc-form">
             <label>Имя<input type="text" id="user-name" required></label>
-            <label>Телефон<input type="tel" id="user-phone" required></label>
+            <label>Телефон<input type="tel" id="user-phone" pattern="\+998\s\d{2}\s\d{3}\s\d{2}\s\d{2}" title="+998 99 999 99 99" required></label>
             <label><input type="checkbox" id="save-user"> Запомнить меня</label>
             <div class="modal-buttons">
                 <button type="button" class="calc-submit next-btn">Рассчитать</button>
@@ -504,9 +504,22 @@ function openCalcModal() {
         </form>`;
     const nameInput = document.getElementById('user-name');
     const phoneInput = document.getElementById('user-phone');
+    const formatPhone = () => {
+        let digits = phoneInput.value.replace(/\D/g, '');
+        if (!digits.startsWith('998')) digits = '998' + digits;
+        digits = digits.slice(0, 12);
+        let res = '+998';
+        if (digits.length > 3) res += ' ' + digits.slice(3,5); else { phoneInput.value = res; return; }
+        if (digits.length > 5) res += ' ' + digits.slice(5,8); else { phoneInput.value = res + ' ' + digits.slice(5); return; }
+        if (digits.length > 8) res += ' ' + digits.slice(8,10); else { phoneInput.value = res + ' ' + digits.slice(8); return; }
+        if (digits.length > 10) res += ' ' + digits.slice(10,12); else res += ' ' + digits.slice(10);
+        phoneInput.value = res;
+    };
     const saveCb = document.getElementById('save-user');
     nameInput.value = localStorage.getItem('calcName') || '';
-    phoneInput.value = localStorage.getItem('calcPhone') || '';
+    phoneInput.value = localStorage.getItem('calcPhone') || '+998 ';
+    formatPhone();
+    phoneInput.addEventListener('input', formatPhone);
     calcModal.classList.remove('hidden');
     calcContent.querySelector('.cancel-btn').addEventListener('click', () => {
         calcModal.classList.add('hidden');
