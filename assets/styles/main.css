@@ -437,4 +437,11 @@ input[type="range"].range-input::-moz-range-thumb {
     background: #fff;
     color: var(--accent-color);
     border: 2px solid var(--accent-color);
+    padding: 0.5rem 2rem;
+    font-size: 1rem;
+}
+
+.download-btn {
+    padding: 0.5rem 2rem;
+    font-size: 1rem;
 }

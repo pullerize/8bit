@@ -533,7 +533,11 @@ function openCalcModal() {
             localStorage.setItem('calcPhone', phoneInput.value);
         }
         const tableHtml = buildResultTable();
-        calcContent.innerHTML = `<div class="table-scroll">${tableHtml}</div><div class="modal-buttons"><button type="button" class="cancel-btn">Закрыть</button></div>`;
+        calcContent.innerHTML = `<div class="table-scroll">${tableHtml}</div><div class="modal-buttons"><button type="button" class="download-btn next-btn">Скачать</button><button type="button" class="cancel-btn">Закрыть</button></div>`;
+        const tableEl = calcContent.querySelector('.calc-table');
+        calcContent.querySelector('.download-btn').addEventListener('click', () => {
+            html2pdf().set({ filename: 'calculation.pdf', html2canvas: { scale: 2 } }).from(tableEl).save();
+        });
         calcContent.querySelector('.cancel-btn').addEventListener('click', () => {
             calcModal.classList.add('hidden');
             calcContent.innerHTML = '';
@@ -570,7 +574,7 @@ function buildResultTable() {
     let html = '<table class="calc-table">';
     html += '<tr><th>Компонент</th><th>Кол-во</th><th>Цена</th><th>Сумма</th></tr>';
     html += '<tr class="section-header"><td colspan="4">Компоненты</td></tr>';
-    base.forEach(c => { html += row(c); });
+    base.forEach(c => { html += row(c, true); });
     if (shot.length) {
         html += '<tr class="section-header"><td colspan="4">Шотланки</td></tr>';
         shot.forEach(c => { html += row(c, true); });
