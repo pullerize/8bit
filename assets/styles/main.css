@@ -422,15 +422,10 @@ input[type="range"].range-input::-moz-range-thumb {
     border-radius: 4px;
 }
 
-.modal-buttons {
-    display: flex;
-    justify-content: flex-start;
-    gap: 1rem;
-    margin-top: 1rem;
-}
+.modal-buttons {}
 
 .table-scroll {
-    max-height: 60vh;
+    max-height: 90vh;
     overflow-y: auto;
     overflow-x: auto;
 }
@@ -449,4 +444,8 @@ input[type="range"].range-input::-moz-range-thumb {
 .download-btn {
     padding: 0.5rem 2rem;
     font-size: 1rem;
+    margin-right: 1rem;
+}
+.calc-submit {
+    margin-right: 1rem;
 }
