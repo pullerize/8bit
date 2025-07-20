@@ -331,6 +331,22 @@ input[type="range"].range-input::-moz-range-thumb {
     gap: 2rem;
 }
 
+.calc-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+}
+.calc-table th,
+.calc-table td {
+    border: 1px solid #ccc;
+    padding: 0.25rem;
+}
+.calc-table .indent td:first-child {
+    padding-left: 2rem;
+}
+
+.hidden { display: none; }
+
 .hint {
     color: var(--accent-color);
     font-size: 0.9rem;

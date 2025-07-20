@@ -495,12 +495,28 @@ function renderCalcButton() {
 function renderResult() {
     resultTable.classList.remove('hidden');
     const total = calculateTotal();
-    let html = '<table><tr><th>Компонент</th><th>Кол-во</th><th>Цена</th><th>Сумма</th></tr>';
+    const shotlanNames = ['divider_profile','additional_glass_seal','bolts_extra','adhesive_profile','tape_33m'];
+    const lastNames = ['installation','logistics','glass'];
+    const base = [], shot = [], last = [];
     lastCalculation.components.forEach(c => {
-        const name = componentNames[c.name] || c.name;
-        html += `<tr><td>${name}</td><td>${c.qty}</td><td>${c.price}</td><td>${c.sum}</td></tr>`;
+        if (shotlanNames.includes(c.name)) shot.push(c);
+        else if (lastNames.includes(c.name)) last.push(c);
+        else base.push(c);
     });
-    html += `</table><p>Итоговая стоимость: ${total} руб.</p>`;
+
+    const row = (comp, indent=false) => {
+        const name = componentNames[comp.name] || comp.name;
+        const cls = indent ? ' class="indent"' : '';
+        return `<tr${cls}><td>${name}</td><td>${comp.qty}</td><td>${comp.price}</td><td>${comp.sum}</td></tr>`;
+    };
+
+    let html = '<table class="calc-table"><tr><th>Компонент</th><th>Кол-во</th><th>Цена</th><th>Сумма</th></tr>';
+    base.forEach(c => { html += row(c); });
+    shot.forEach(c => { html += row(c, true); });
+    last.forEach(c => { html += row(c, true); });
+    html += '</table>';
+    html += `<p>Ширина двери: ${lastCalculation.doorWidth} мм</p>`;
+    html += `<p>Итоговая стоимость: ${total} руб.</p>`;
     resultTable.innerHTML = html;
 }
 
