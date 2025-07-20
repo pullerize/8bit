@@ -510,13 +510,21 @@ function renderResult() {
         return `<tr${cls}><td>${name}</td><td>${comp.qty}</td><td>${comp.price}</td><td>${comp.sum}</td></tr>`;
     };
 
-    let html = '<table class="calc-table"><tr><th>Компонент</th><th>Кол-во</th><th>Цена</th><th>Сумма</th></tr>';
+    let html = '<table class="calc-table">';
+    html += '<tr><th>Компонент</th><th>Кол-во</th><th>Цена</th><th>Сумма</th></tr>';
+    html += '<tr class="section-header"><td colspan="4">Компоненты</td></tr>';
     base.forEach(c => { html += row(c); });
-    shot.forEach(c => { html += row(c, true); });
-    last.forEach(c => { html += row(c, true); });
+    if (shot.length) {
+        html += '<tr class="section-header"><td colspan="4">Шотланки</td></tr>';
+        shot.forEach(c => { html += row(c, true); });
+    }
+    if (last.length) {
+        html += '<tr class="section-header"><td colspan="4">Остальные расходы</td></tr>';
+        last.forEach(c => { html += row(c, true); });
+    }
+    html += `<tr class="summary"><td colspan="3">Ширина двери</td><td>${lastCalculation.doorWidth} мм</td></tr>`;
+    html += `<tr class="summary"><td colspan="3">Итоговая стоимость</td><td>${total} руб.</td></tr>`;
     html += '</table>';
-    html += `<p>Ширина двери: ${lastCalculation.doorWidth} мм</p>`;
-    html += `<p>Итоговая стоимость: ${total} руб.</p>`;
     resultTable.innerHTML = html;
 }
 
