@@ -18,11 +18,22 @@
 </div>
 <div id="viewer" class="modal hidden"><div class="modal-content"></div></div>
 <footer>
-    <form id="feedback-form">
-        <label>Email: <input type="email" required></label>
-        <textarea placeholder="Ваше сообщение"></textarea>
-        <button type="submit">Отправить</button>
-    </form>
+    <div class="container footer-inner">
+        <div class="footer-text">
+            <h3>Нужна консультация?</h3>
+            <p>Сомневаетесь, подойдет ли вам этот товар? Оставьте заявку, наш менеджер свяжется с вами в ближайшее время.</p>
+        </div>
+        <form id="feedback-form" class="footer-form">
+            <div class="row">
+                <input type="text" placeholder="Введите ваше имя" required>
+                <input type="tel" placeholder="Введите ваш номер телефона" required>
+            </div>
+            <div class="row">
+                <textarea placeholder="Описание"></textarea>
+                <button type="submit">Отправить</button>
+            </div>
+        </form>
+    </div>
 </footer>
 <script src="assets/scripts/images.js"></script>
 <script src="assets/scripts/systems/systemsData.js"></script>
