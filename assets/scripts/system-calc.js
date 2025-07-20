@@ -128,6 +128,7 @@ function showStep(index) {
     setActiveStep(index);
     steps[index].render(index);
     updateStepsBar();
+    window.scrollTo(0, 0);
 }
 
 // ----- Рендеры шагов -----
@@ -509,11 +510,11 @@ function openCalcModal() {
         if (!digits.startsWith('998')) digits = '998' + digits;
         digits = digits.slice(0, 12);
         let res = '+998';
-        if (digits.length > 3) res += ' ' + digits.slice(3,5); else { phoneInput.value = res; return; }
-        if (digits.length > 5) res += ' ' + digits.slice(5,8); else { phoneInput.value = res + ' ' + digits.slice(5); return; }
-        if (digits.length > 8) res += ' ' + digits.slice(8,10); else { phoneInput.value = res + ' ' + digits.slice(8); return; }
-        if (digits.length > 10) res += ' ' + digits.slice(10,12); else res += ' ' + digits.slice(10);
-        phoneInput.value = res;
+        if (digits.length > 3) res += ' ' + digits.slice(3,5);
+        if (digits.length > 5) res += ' ' + digits.slice(5,8);
+        if (digits.length > 8) res += ' ' + digits.slice(8,10);
+        if (digits.length > 10) res += ' ' + digits.slice(10,12);
+        phoneInput.value = res.trim();
     };
     const saveCb = document.getElementById('save-user');
     nameInput.value = localStorage.getItem('calcName') || '';
