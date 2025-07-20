@@ -509,7 +509,7 @@ function calculateTotal() {
   const widthFull = Number(selected.fullWidth);
   const openWidth = selected.openWidth ? Number(selected.openWidth) : widthFull;
   const height = Number(selected.height);
-  const params = { num_doors: 1 };
+  const params = systemsData[systemType]?.subsystems[selected.subsystem]?.params || { num_doors: 1 };
   let res;
   switch (systemType) {
     case 'partition':
