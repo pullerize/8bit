@@ -209,7 +209,7 @@ footer {
     flex-wrap: wrap;
     align-items: center;
 }
-.footer-text { max-width: 50%; text-align: left; }
+.footer-text { max-width: 60%; text-align: left; }
 .footer-text h3 { font-size: 2rem; }
 .footer-form { flex: 1; display: flex; flex-direction: column; gap: 0.5rem; }
 .footer-form .row { display: flex; gap: 0.5rem; }
@@ -223,7 +223,7 @@ footer {
     background: #fff;
     color: var(--accent-color);
     border: none;
-    padding: 0.5rem 4rem;
+    padding: 0.5rem 2rem;
     border-radius: 4px;
     cursor: pointer;
 }
@@ -425,8 +425,6 @@ input[type="range"].range-input::-moz-range-thumb {
 .modal-buttons {}
 
 .table-scroll {
-    max-height: 90vh;
-    overflow-y: auto;
     overflow-x: auto;
 }
 

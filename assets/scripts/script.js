@@ -58,4 +58,22 @@ window.addEventListener('DOMContentLoaded', () => {
         });
         container.appendChild(block);
     });
+
+    const phoneInput = document.querySelector('#feedback-form input[type="tel"]');
+    if (phoneInput) {
+        const formatPhone = () => {
+            let digits = phoneInput.value.replace(/\D/g, '');
+            if (!digits.startsWith('998')) digits = '998' + digits;
+            digits = digits.slice(0, 12);
+            let res = '+998';
+            if (digits.length > 3) res += ' ' + digits.slice(3,5);
+            if (digits.length > 5) res += ' ' + digits.slice(5,8);
+            if (digits.length > 8) res += ' ' + digits.slice(8,10);
+            if (digits.length > 10) res += ' ' + digits.slice(10,12);
+            phoneInput.value = res.trim();
+        };
+        phoneInput.value = '+998 ';
+        formatPhone();
+        phoneInput.addEventListener('input', formatPhone);
+    }
 });
