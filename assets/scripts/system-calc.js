@@ -496,7 +496,7 @@ function openCalcModal() {
         <form id="calc-form" class="calc-form">
             <label>Имя<input type="text" id="user-name" required></label>
             <label>Телефон<input type="tel" id="user-phone" pattern="\+998\s\d{2}\s\d{3}\s\d{2}\s\d{2}" title="+998 99 999 99 99" required></label>
-            <label><input type="checkbox" id="save-user"> Запомнить меня</label>
+            <label class="checkbox-label"><input type="checkbox" id="save-user"> Запомнить меня</label>
             <div class="modal-buttons">
                 <button type="button" class="calc-submit next-btn">Рассчитать</button>
                 <button type="button" class="cancel-btn">Отмена</button>
@@ -533,7 +533,7 @@ function openCalcModal() {
             localStorage.setItem('calcPhone', phoneInput.value);
         }
         const tableHtml = buildResultTable();
-        calcContent.innerHTML = `${tableHtml}<div class="modal-buttons"><button type="button" class="cancel-btn">Закрыть</button></div>`;
+        calcContent.innerHTML = `<div class="table-scroll">${tableHtml}</div><div class="modal-buttons"><button type="button" class="cancel-btn">Закрыть</button></div>`;
         calcContent.querySelector('.cancel-btn').addEventListener('click', () => {
             calcModal.classList.add('hidden');
             calcContent.innerHTML = '';
