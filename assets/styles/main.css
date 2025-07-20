@@ -387,3 +387,40 @@ input[type="range"].range-input::-moz-range-thumb {
     color: var(--accent-color);
     font-size: 0.9rem;
 }
+
+#calc-modal .modal-content {
+    max-width: 600px;
+}
+
+.calc-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.calc-form label {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    color: var(--accent-color);
+}
+
+.calc-form input[type="text"],
+.calc-form input[type="tel"] {
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.modal-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.cancel-btn {
+    background: #fff;
+    color: var(--accent-color);
+    border: 2px solid var(--accent-color);
+}

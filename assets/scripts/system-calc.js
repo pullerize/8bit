@@ -8,6 +8,8 @@ const container = document.getElementById('calc-container');
 const resultTable = document.getElementById('result-table');
 const viewer = document.getElementById('viewer');
 const viewerContent = viewer.querySelector('.modal-content');
+const calcModal = document.getElementById('calc-modal');
+const calcContent = calcModal.querySelector('.modal-content');
 function showMedia(type, src) {
     viewerContent.innerHTML = type === 'video'
         ? `<video src="${src}" controls autoplay style="max-width:90vw;max-height:90vh"></video>`
@@ -18,6 +20,13 @@ viewer.addEventListener('click', e => {
     if (e.target === viewer) {
         viewer.classList.add('hidden');
         viewerContent.innerHTML = '';
+    }
+});
+
+calcModal.addEventListener('click', e => {
+    if (e.target === calcModal) {
+        calcModal.classList.add('hidden');
+        calcContent.innerHTML = '';
     }
 });
 
@@ -56,8 +65,7 @@ let lastCalculation = null;
 // Экранные шаги калькулятора
 const steps = [
     {name: 'params', render: renderParams},
-    {name: 'design', render: renderDesign},
-    {name: 'calc', render: renderCalcButton}
+    {name: 'design', render: renderDesign}
 ];
 
 // Шаги в хедере
@@ -468,7 +476,7 @@ function renderDesign(stepIndex) {
     nextBtn.className = 'next-btn';
     nextBtn.addEventListener('click', () => {
         if (selected.glass && selected.shotlan) {
-            renderResult();
+            openCalcModal();
         }
     });
 
@@ -483,6 +491,43 @@ function renderDesign(stepIndex) {
     container.append(glassTitle, glassContainer, shotlanTitle, shotlanContainer, backBtn, nextBtn);
 }
 
+function openCalcModal() {
+    calcContent.innerHTML = `
+        <form id="calc-form" class="calc-form">
+            <label>Имя<input type="text" id="user-name" required></label>
+            <label>Телефон<input type="tel" id="user-phone" required></label>
+            <label><input type="checkbox" id="save-user"> Запомнить меня</label>
+            <div class="modal-buttons">
+                <button type="button" class="calc-submit next-btn">Рассчитать</button>
+                <button type="button" class="cancel-btn">Отмена</button>
+            </div>
+        </form>`;
+    const nameInput = document.getElementById('user-name');
+    const phoneInput = document.getElementById('user-phone');
+    const saveCb = document.getElementById('save-user');
+    nameInput.value = localStorage.getItem('calcName') || '';
+    phoneInput.value = localStorage.getItem('calcPhone') || '';
+    calcModal.classList.remove('hidden');
+    calcContent.querySelector('.cancel-btn').addEventListener('click', () => {
+        calcModal.classList.add('hidden');
+        calcContent.innerHTML = '';
+    });
+    calcContent.querySelector('.calc-submit').addEventListener('click', () => {
+        const form = document.getElementById('calc-form');
+        if (!form.checkValidity()) { form.reportValidity(); return; }
+        if (saveCb.checked) {
+            localStorage.setItem('calcName', nameInput.value);
+            localStorage.setItem('calcPhone', phoneInput.value);
+        }
+        const tableHtml = buildResultTable();
+        calcContent.innerHTML = `${tableHtml}<div class="modal-buttons"><button type="button" class="cancel-btn">Закрыть</button></div>`;
+        calcContent.querySelector('.cancel-btn').addEventListener('click', () => {
+            calcModal.classList.add('hidden');
+            calcContent.innerHTML = '';
+        });
+    });
+}
+
 function renderCalcButton() {
     const btn = document.createElement('button');
     btn.textContent = 'Рассчитать';
@@ -492,8 +537,7 @@ function renderCalcButton() {
     container.appendChild(btn);
 }
 
-function renderResult() {
-    resultTable.classList.remove('hidden');
+function buildResultTable() {
     const total = calculateTotal();
     const shotlanNames = ['divider_profile','additional_glass_seal','bolts_extra','adhesive_profile','tape_33m'];
     const lastNames = ['installation','logistics','glass'];
@@ -525,7 +569,7 @@ function renderResult() {
     html += `<tr class="summary"><td colspan="3">Ширина двери</td><td>${lastCalculation.doorWidth} мм</td></tr>`;
     html += `<tr class="summary"><td colspan="3">Итоговая стоимость</td><td>${total} руб.</td></tr>`;
     html += '</table>';
-    resultTable.innerHTML = html;
+    return html;
 }
 
 
