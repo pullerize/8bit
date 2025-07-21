@@ -229,7 +229,8 @@ footer {
     cursor: pointer;
 }
 @media (max-width: 600px) {
-    .systems-container { flex-direction: column; align-items: flex-start; }
+    .container { padding: 0; }
+    .systems-container { align-items: flex-start; }
     .system-block { width: 90%; height: 240px; }
     .subsystem-block,
     .option-block { width: 90%; }
