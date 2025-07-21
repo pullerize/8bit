@@ -525,7 +525,7 @@ function openCalcModal() {
                 filename: 'calculation.pdf',
                 html2canvas: { scale: 2, useCORS: true }
             };
-            html2pdf().set(opt).from(tableWrapper).save();
+            html2pdf().from(tableWrapper).set(opt).save();
         });
         calcContent.querySelector('.cancel-btn').addEventListener('click', () => {
             calcModal.classList.add('hidden');
