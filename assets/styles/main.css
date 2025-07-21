@@ -122,12 +122,14 @@ select {
     position: absolute;
     bottom: 0;
     left: 0;
+    right: 0;
     width: 100%;
     padding: 0.25rem 0;
     text-align: center;
     font-size: 0.9rem;
     background: rgba(0, 0, 0, 0.5);
     color: #fff;
+    box-sizing: border-box;
 }
 
 .option-block .system-title,
@@ -136,7 +138,14 @@ select {
     background: none;
     color: var(--accent-color);
     margin-top: 1rem;
+}
+
+.option-block .system-title {
     text-align: left;
+}
+
+.subsystem-block .system-title {
+    text-align: center;
 }
 .glass-option .system-title,
 .shotlan-option .system-title {
