@@ -399,6 +399,7 @@ h1, h2, h3, h4, h5, h6,
 .hint {
     color: var(--accent-color);
     font-size: 0.9rem;
+    margin-bottom: 2rem;
 }
 
 #calc-modal .modal-content {
