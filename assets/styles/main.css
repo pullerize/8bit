@@ -197,7 +197,7 @@ select {
 .modal.hidden { display: none; }
 .modal-content { background: #fff; padding: 1rem; max-width: 90%; }
 footer {
-    padding: 8rem 0;
+    padding: 2rem 0;
     background: var(--accent-color);
     color: #fff;
     margin-top: auto;
@@ -230,6 +230,10 @@ footer {
 @media (max-width: 600px) {
     .systems-container { flex-direction: column; align-items: flex-start; }
     .system-block { width: 90%; height: 240px; }
+    .subsystem-block,
+    .option-block { width: 90%; }
+    .steps-bar { gap: 2rem; }
+    .steps-bar .step:not(:last-child)::after { width: 60px; }
     .number-input,
     input[type="range"].range-input { width: 90%; }
     .help-icon .tooltip-img { width: 250px; height: 250px; }
