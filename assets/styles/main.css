@@ -252,6 +252,12 @@ footer {
     .range-wrapper { justify-content: center; }
     .button-row { flex-direction: column; gap: 1rem; }
     .button-row button { width: 100%; }
+    .next-btn,
+    .back-btn {
+        padding: 1.5rem 2rem;
+        font-size: 1rem;
+        margin: 0 0 1rem;
+    }
     .mobile-next { display: block; }
 }
 
@@ -331,14 +337,14 @@ input[type="range"].range-input::-moz-range-thumb {
 }
 
 
-.section-title {
-    color: var(--accent-color);
-    text-align: left;
-    margin: 3.5rem 0 2rem;
-    font-size: 2rem;
-}
+h1, h2, h3, h4, h5, h6,
 #main-title {
     text-align: center;
+}
+.section-title {
+    color: var(--accent-color);
+    margin: 3.5rem 0 2rem;
+    font-size: 2rem;
 }
 
 .next-btn,
