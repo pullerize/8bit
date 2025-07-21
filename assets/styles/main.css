@@ -269,7 +269,7 @@ footer {
     .calc-form { gap: 1rem; }
     .calc-table { margin: 0; }
     .calc-table th,
-    .calc-table td { padding: 0; }
+    .calc-table td { padding: 0.25rem 0.5rem; }
     .mobile-next { display: block; }
 }
 
@@ -395,7 +395,7 @@ h1, h2, h3, h4, h5, h6,
 .calc-table th,
 .calc-table td {
     border: 1px solid #ccc;
-    padding: 0;
+    padding: 0.25rem 0.5rem;
 }
 .calc-table .indent td:first-child {
     padding-left: 0;
