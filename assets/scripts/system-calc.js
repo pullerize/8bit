@@ -463,12 +463,15 @@ function renderDesign(stepIndex) {
     const backBtn = document.createElement('button');
     backBtn.textContent = 'Вернуться назад';
     backBtn.className = 'back-btn';
-    backBtn.style.marginRight = '2rem';
     backBtn.addEventListener('click', () => {
         showStep(stepIndex - 1);
     });
 
-    container.append(glassTitle, glassContainer, shotlanTitle, shotlanContainer, backBtn, nextBtn);
+    const btnRow = document.createElement('div');
+    btnRow.className = 'button-row';
+    btnRow.append(backBtn, nextBtn);
+
+    container.append(glassTitle, glassContainer, shotlanTitle, shotlanContainer, btnRow);
 }
 
 function openCalcModal() {
