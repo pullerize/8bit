@@ -156,16 +156,9 @@ function renderParams(stepIndex) {
     const wFullHelp = document.createElement('span');
     wFullHelp.className = 'help-icon';
     wFullHelp.textContent = '?';
-    const wFullImg = document.createElement('img');
-    wFullImg.src = images.tooltips[systemType].width;
-    wFullImg.className = 'tooltip-img';
-    wFullHelp.appendChild(wFullImg);
-    wFullHelp.addEventListener('mouseenter', () => {
-        wFullImg.style.display = 'block';
+    wFullHelp.addEventListener('click', () => {
+        showMedia('image', images.tooltips[systemType].width);
     });
-    const hideFull = () => { wFullImg.style.display = 'none'; };
-    wFullHelp.addEventListener('mouseleave', hideFull);
-    wFullImg.addEventListener('mouseenter', hideFull);
     const sizeBar1 = document.createElement('div');
     sizeBar1.className = 'size-bar';
     const header1 = document.createElement('div');
@@ -215,16 +208,9 @@ function renderParams(stepIndex) {
         const wOpenHelp = document.createElement('span');
         wOpenHelp.className = 'help-icon';
         wOpenHelp.textContent = '?';
-        const wOpenImg = document.createElement('img');
-        wOpenImg.src = images.tooltips[systemType].open;
-        wOpenImg.className = 'tooltip-img';
-        wOpenHelp.appendChild(wOpenImg);
-        wOpenHelp.addEventListener('mouseenter', () => {
-            wOpenImg.style.display = 'block';
+        wOpenHelp.addEventListener('click', () => {
+            showMedia('image', images.tooltips[systemType].open);
         });
-        const hideOpen = () => { wOpenImg.style.display = 'none'; };
-        wOpenHelp.addEventListener('mouseleave', hideOpen);
-        wOpenImg.addEventListener('mouseenter', hideOpen);
         sizeBar2 = document.createElement('div');
         sizeBar2.className = 'size-bar';
         const header2 = document.createElement('div');
@@ -272,16 +258,9 @@ function renderParams(stepIndex) {
     const hHelp = document.createElement('span');
     hHelp.className = 'help-icon';
     hHelp.textContent = '?';
-    const hImg = document.createElement('img');
-    hImg.src = images.tooltips[systemType].height;
-    hImg.className = 'tooltip-img';
-    hHelp.appendChild(hImg);
-    hHelp.addEventListener('mouseenter', () => {
-        hImg.style.display = 'block';
+    hHelp.addEventListener('click', () => {
+        showMedia('image', images.tooltips[systemType].height);
     });
-    const hideHeight = () => { hImg.style.display = 'none'; };
-    hHelp.addEventListener('mouseleave', hideHeight);
-    hImg.addEventListener('mouseenter', hideHeight);
     const sizeBar3 = document.createElement('div');
     sizeBar3.className = 'size-bar';
     const header3 = document.createElement('div');
