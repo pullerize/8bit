@@ -294,7 +294,7 @@ const cascadeParams = {
 const systemsData = {
   angle: {
     name: 'Двери с угловым примыканием',
-    extraField: true,
+    // Для угловых дверей требуется только полная ширина и высота
     minWidth: 1615,
     maxWidth: 6000,
     subsystems: {

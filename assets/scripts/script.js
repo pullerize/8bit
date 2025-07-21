@@ -29,8 +29,10 @@ window.addEventListener('DOMContentLoaded', () => {
         div.innerHTML = `<span class="step-name">${item.title}</span><span class="step-value"></span>`;
         stepsBar.appendChild(div);
     });
-    Object.keys(systemsData).forEach(code => {
+    const systemOrder = ['cascade','sync','unlinked','embedded-wall','partition','wall-mounted','angle'];
+    systemOrder.forEach(code => {
         const data = systemsData[code];
+        if (!data) return;
         const block = document.createElement('div');
         block.className = 'system-block';
         block.innerHTML = `
