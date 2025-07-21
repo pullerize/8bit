@@ -515,4 +515,8 @@ h1, h2, h3, h4, h5, h6,
     .calc-table {
         width: auto;
     }
+    .calc-table th,
+    .calc-table td {
+        padding: 0.5rem 1rem;
+    }
 }
