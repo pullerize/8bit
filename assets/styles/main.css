@@ -73,7 +73,7 @@ select {
 .option-block img {
     width: 100%;
     height: 240px;
-    object-fit: cover;
+    object-fit: contain;
     display: block;
     margin-bottom: 1rem;
 }
@@ -92,7 +92,7 @@ select {
 .system-block img {
     width: 100%;
     height: 240px;
-    object-fit: cover;
+    object-fit: contain;
     display: block;
 }
 .system-block video {
@@ -101,7 +101,7 @@ select {
     left: 0;
     width: 100%;
     height: 240px;
-    object-fit: cover;
+    object-fit: contain;
     display: none;
 }
 .system-block:hover video { display: block; }
