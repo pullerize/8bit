@@ -76,7 +76,10 @@ window.addEventListener('DOMContentLoaded', () => {
                 activeVideo = video;
                 activeBlock = block;
                 selectedSystem = code;
-                if (nextBtn) nextBtn.disabled = false;
+                if (nextBtn) {
+                    nextBtn.disabled = false;
+                    nextBtn.style.display = 'block';
+                }
             });
         }
         container.appendChild(block);
