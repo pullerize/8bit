@@ -10,6 +10,7 @@ const viewer = document.getElementById('viewer');
 const viewerContent = viewer.querySelector('.modal-content');
 const calcModal = document.getElementById('calc-modal');
 const calcContent = calcModal.querySelector('.modal-content');
+const isMobile = window.innerWidth <= 600;
 function showMedia(type, src) {
     viewerContent.innerHTML = type === 'video'
         ? `<video src="${src}" controls autoplay style="max-width:90vw;max-height:90vh"></video>`
@@ -329,6 +330,16 @@ function renderParams(stepIndex) {
                 showMedia('video', images.subsystems[systemType][name]);
             });
             block.addEventListener('click', () => {
+                if (isMobile) {
+                    const vid = block.querySelector('video');
+                    if (activeBlock && activeBlock !== block) {
+                        const prev = activeBlock.querySelector('video');
+                        prev.pause();
+                        prev.style.display = 'none';
+                    }
+                    vid.style.display = 'block';
+                    vid.play();
+                }
                 selected.subsystem = name;
                 if (activeBlock) activeBlock.classList.remove('selected');
                 block.classList.add('selected');
@@ -405,9 +416,10 @@ function renderDesign(stepIndex) {
     const renderGlass = () => {
         glassContainer.innerHTML = '';
         Object.keys(images.glass).forEach(name => {
+            const imgSrc = isMobile && images.glass_mobile[name] ? images.glass_mobile[name] : images.glass[name];
             const block = document.createElement('div');
             block.className = 'option-block glass-option';
-            block.innerHTML = `<img src="${images.glass[name]}" alt="${name}"><span class="system-title">${name}</span>`;
+            block.innerHTML = `<img src="${imgSrc}" alt="${name}"><span class="system-title">${name}</span>`;
             block.addEventListener('click', () => {
                 selected.glass = name;
                 if (activeGlass) activeGlass.classList.remove('selected');
@@ -431,9 +443,10 @@ function renderDesign(stepIndex) {
         shotlanContainer.innerHTML = '';
         activeShot = null;
         options.forEach(name => {
+            const imgSrc = isMobile && images.shotlan_mobile[name] ? images.shotlan_mobile[name] : images.shotlan[name];
             const block = document.createElement('div');
             block.className = 'option-block shotlan-option';
-            block.innerHTML = `<img src="${images.shotlan[name]}" alt="${name}"><span class="system-title">${name}</span>`;
+            block.innerHTML = `<img src="${imgSrc}" alt="${name}"><span class="system-title">${name}</span>`;
             block.addEventListener('click', () => {
                 selected.shotlan = name;
                 if (activeShot) activeShot.classList.remove('selected');
