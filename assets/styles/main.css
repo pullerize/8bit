@@ -499,3 +499,20 @@ h1, h2, h3, h4, h5, h6,
     opacity: 0.5;
     cursor: not-allowed;
 }
+
+@media (min-width: 601px) {
+    .next-btn,
+    .back-btn,
+    .download-btn,
+    .calc-submit,
+    .cancel-btn {
+        padding: 0.75rem 2rem;
+    }
+    #calc-modal .modal-content {
+        width: 600px;
+        max-width: 100%;
+    }
+    .calc-table {
+        width: auto;
+    }
+}
