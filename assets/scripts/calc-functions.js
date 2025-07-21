@@ -244,7 +244,8 @@ function calculatePartitionComponents(widthFull, height, subsystem, params, glas
   add('plastic_rail_aligner', Math.ceil(widthFull / 500 * numRails * 2), `ceil(${widthFull}/500*${numRails}*2)`);
   add('moving_mechanism', movMech, `${movMech}`);
   add('fixed_mechanism', fixMech, `${fixMech}`);
-  add('fixed_door_profile', fixProf, `${fixProf}`);
+  add('fixed_door_profile', (doorWidth - 12 <= 970 ? 1 : 2) * fixProf,
+      `(${doorWidth}-12<=970?1:2)*${fixProf}`);
   add('corner_rubber_joint', Math.ceil(height * 2 / 1000), `ceil(${height}*2/1000)`);
 
   const area = widthFull * height / 1000000;
