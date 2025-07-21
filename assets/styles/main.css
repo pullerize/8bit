@@ -257,6 +257,19 @@ footer {
         padding: 1.5rem 2rem;
         font-size: 1rem;
     }
+    .download-btn,
+    .calc-submit { margin-right: 0; }
+    .modal-buttons {
+        flex-direction: column;
+    }
+    .modal-buttons button {
+        width: 100%;
+    }
+    #calc-modal .modal-content { max-height: 95vh; }
+    .calc-form { gap: 1rem; }
+    .calc-table { margin: 0; }
+    .calc-table th,
+    .calc-table td { padding: 0; }
     .mobile-next { display: block; }
 }
 
@@ -376,19 +389,19 @@ h1, h2, h3, h4, h5, h6,
 .calc-table {
     width: 100%;
     border-collapse: collapse;
-    margin: 1rem 0;
+    margin: 0;
     text-align: left;
 }
 .calc-table th,
 .calc-table td {
     border: 1px solid #ccc;
-    padding: 0.25rem;
+    padding: 0;
 }
 .calc-table .indent td:first-child {
-    padding-left: 2rem;
+    padding-left: 0;
 }
 .calc-table .section-header td {
-    padding-top: 1rem;
+    padding-top: 0;
     font-weight: bold;
 }
 .calc-table .summary td {
@@ -408,14 +421,14 @@ h1, h2, h3, h4, h5, h6,
     width: calc(100% - 2rem);
     margin: 0 1rem;
     text-align: left;
-    max-height: 90vh;
+    max-height: 95vh;
     overflow-y: auto;
 }
 
 .calc-form {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 1rem;
 }
 
 .calc-form label {
@@ -437,7 +450,11 @@ h1, h2, h3, h4, h5, h6,
     border-radius: 4px;
 }
 
-.modal-buttons {}
+.modal-buttons {
+    display: flex;
+    justify-content: flex-start;
+    gap: 1rem;
+}
 
 .table-scroll {
     overflow-x: auto;
