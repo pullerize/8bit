@@ -478,7 +478,7 @@ function openCalcModal() {
     calcContent.innerHTML = `
         <form id="calc-form" class="calc-form">
             <label>Имя<input type="text" id="user-name" required></label>
-            <label>Телефон<input type="tel" id="user-phone" pattern="\+998\s\d{2}\s\d{3}\s\d{2}\s\d{2}" title="+998 99 999 99 99" required></label>
+            <label>Телефон<input type="tel" id="user-phone" pattern="\\+998\\s\\d{2}\\s\\d{3}\\s\\d{2}\\s\\d{2}" title="+998 99 999 99 99" required></label>
             <label class="checkbox-label"><input type="checkbox" id="save-user"> Запомнить меня</label>
             <div class="modal-buttons">
                 <button type="button" class="calc-submit next-btn">Рассчитать</button>
