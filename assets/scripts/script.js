@@ -3,6 +3,11 @@ window.addEventListener('DOMContentLoaded', () => {
     const container = document.getElementById('systems-container');
     const viewer = document.getElementById('viewer');
     const viewerContent = viewer.querySelector('.modal-content');
+    const nextBtn = document.getElementById('next-btn');
+    const isMobile = window.innerWidth <= 600;
+    let selectedSystem = null;
+    let activeVideo = null;
+    let activeBlock = null;
     const showMedia = (type, src) => {
         viewerContent.innerHTML = type === 'video'
             ? `<video src="${src}" controls autoplay style="max-width:90vw;max-height:90vh"></video>`
@@ -40,26 +45,50 @@ window.addEventListener('DOMContentLoaded', () => {
             <video muted loop preload="none" src="${images.systems[code].src}"></video>
             <span class="system-title">${data.name}</span>
         `;
-        block.addEventListener('mouseenter', () => {
-            if (window.innerWidth > 768) {
-                const video = block.querySelector('video');
+        const video = block.querySelector('video');
+        if (!isMobile) {
+            block.addEventListener('mouseenter', () => {
+                const v = block.querySelector('video');
+                v.style.display = 'block';
+                v.play();
+            });
+            block.addEventListener('mouseleave', () => {
+                const v = block.querySelector('video');
+                v.pause();
+                v.style.display = 'none';
+            });
+            block.addEventListener('dblclick', () => {
+                showMedia('video', images.systems[code].src);
+            });
+            block.addEventListener('click', () => {
+                window.location.href = `system.html?type=${code}`;
+            });
+        } else {
+            block.addEventListener('click', () => {
+                if (activeVideo && activeVideo !== video) {
+                    activeVideo.pause();
+                    activeVideo.style.display = 'none';
+                    if (activeBlock) activeBlock.classList.remove('selected');
+                }
                 video.style.display = 'block';
                 video.play();
-            }
-        });
-        block.addEventListener('mouseleave', () => {
-            const video = block.querySelector('video');
-            video.pause();
-            video.style.display = 'none';
-        });
-        block.addEventListener('dblclick', () => {
-            showMedia('video', images.systems[code].src);
-        });
-        block.addEventListener('click', () => {
-            window.location.href = `system.html?type=${code}`;
-        });
+                block.classList.add('selected');
+                activeVideo = video;
+                activeBlock = block;
+                selectedSystem = code;
+                if (nextBtn) nextBtn.disabled = false;
+            });
+        }
         container.appendChild(block);
     });
+
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+            if (selectedSystem) {
+                window.location.href = `system.html?type=${selectedSystem}`;
+            }
+        });
+    }
 
     const phoneInput = document.querySelector('#feedback-form input[type="tel"]');
     if (phoneInput) {
