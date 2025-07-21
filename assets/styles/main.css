@@ -16,6 +16,7 @@ body {
     text-align: center;
     width: 100%;
     flex: 1;
+    padding: 0 1rem;
 }
 header {
     padding: 1rem;
@@ -461,11 +462,11 @@ input[type="range"].range-input::-moz-range-thumb {
     left: 0;
     right: 0;
     width: 100%;
-    padding: 1rem;
+    padding: 1.5rem;
     background: var(--accent-color);
     color: #fff;
     border: none;
-    font-size: 1rem;
+    font-size: 1.2rem;
     z-index: 1500;
 }
 
