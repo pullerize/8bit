@@ -520,12 +520,22 @@ function openCalcModal() {
         const tableWrapper = calcContent.querySelector('.table-scroll');
         const downloadBtn = calcContent.querySelector('.download-btn');
         downloadBtn.addEventListener('click', () => {
-            if (!tableWrapper || typeof html2pdf === 'undefined') return;
-            const opt = {
-                filename: 'calculation.pdf',
-                html2canvas: { scale: 2, useCORS: true }
-            };
-            html2pdf().from(tableWrapper).set(opt).save();
+            if (!tableWrapper) return;
+            const style = `.calc-table{width:100%;border-collapse:collapse;margin:0;text-align:left;}\n` +
+                `.calc-table th,.calc-table td{border:1px solid #ccc;padding:0.25rem 0.5rem;}\n` +
+                `.calc-table .indent td:first-child{padding-left:0;}\n` +
+                `.calc-table .section-header td{padding-top:0;font-weight:bold;}\n` +
+                `.calc-table .summary td{font-weight:bold;border-top:2px solid #ccc;}`;
+            const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${style}</style></head><body>${tableWrapper.innerHTML}</body></html>`;
+            const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'calculation.doc';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         });
         calcContent.querySelector('.cancel-btn').addEventListener('click', () => {
             calcModal.classList.add('hidden');
