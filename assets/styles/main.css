@@ -256,7 +256,6 @@ footer {
     .back-btn {
         padding: 1.5rem 2rem;
         font-size: 1rem;
-        margin: 0 0 1rem;
     }
     .mobile-next { display: block; }
 }
@@ -320,6 +319,7 @@ input[type="range"].range-input::-moz-range-thumb {
     text-align: left;
     color: var(--accent-color);
     width: 160px;
+    margin: 1rem;
 }
 
 .range-wrapper {
@@ -349,9 +349,8 @@ h1, h2, h3, h4, h5, h6,
 
 .next-btn,
 .back-btn {
-    padding: 0.5rem 2rem;
+    padding: 1.5rem 2rem;
     font-size: 1rem;
-    margin: 3rem 0;
 }
 
 .back-btn {
