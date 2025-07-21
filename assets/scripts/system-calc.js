@@ -517,10 +517,15 @@ function openCalcModal() {
         }
         const tableHtml = buildResultTable();
         calcContent.innerHTML = `<div class="table-scroll">${tableHtml}</div><div class="modal-buttons"><button type="button" class="download-btn next-btn">Скачать</button><button type="button" class="cancel-btn">Закрыть</button></div>`;
-        const tableEl = calcContent.querySelector('.calc-table');
-        calcContent.querySelector('.download-btn').addEventListener('click', () => {
-            const opt = { filename: 'calculation.pdf', html2canvas: { scale: 2, useCORS: true } };
-            html2pdf().set(opt).from(tableEl).save();
+        const tableWrapper = calcContent.querySelector('.table-scroll');
+        const downloadBtn = calcContent.querySelector('.download-btn');
+        downloadBtn.addEventListener('click', () => {
+            if (!tableWrapper || typeof html2pdf === 'undefined') return;
+            const opt = {
+                filename: 'calculation.pdf',
+                html2canvas: { scale: 2, useCORS: true }
+            };
+            html2pdf().set(opt).from(tableWrapper).save();
         });
         calcContent.querySelector('.cancel-btn').addEventListener('click', () => {
             calcModal.classList.add('hidden');
