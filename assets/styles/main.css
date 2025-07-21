@@ -230,7 +230,10 @@ footer {
 }
 @media (max-width: 600px) {
     .container { padding: 0; }
-    .systems-container { align-items: flex-start; }
+    .systems-container {
+        align-items: flex-start;
+        margin-bottom: 6rem;
+    }
     .system-block { width: 90%; height: 240px; }
     .subsystem-block,
     .option-block { width: 90%; }
