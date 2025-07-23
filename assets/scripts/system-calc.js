@@ -600,8 +600,9 @@ function buildResultTable() {
         last.forEach(c => { html += row(c, true); });
     }
     html += `<tr class="summary"><td colspan="3">Ширина двери</td><td>${lastCalculation.doorWidth} мм</td></tr>`;
-    html += `<tr class="summary"><td colspan="3">Итоговая стоимость</td><td>${total} руб.</td></tr>`;
+    html += `<tr class="summary"><td colspan="3">Итоговая стоимость</td><td>${total} у.е.</td></tr>`;
     html += '</table>';
+    html += '<div class="currency-note">Оплата производиться по курсу цб в день оформления заказа</div>';
     return html;
 }
 
