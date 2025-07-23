@@ -10,7 +10,7 @@ window.addEventListener('DOMContentLoaded', () => {
     let activeBlock = null;
     const showMedia = (type, src) => {
         viewerContent.innerHTML = type === 'video'
-            ? `<video src="${src}" controls autoplay style="max-width:90vw;max-height:90vh"></video>`
+            ? `<video src="${src}" controls autoplay muted playsinline style="max-width:90vw;max-height:90vh"></video>`
             : `<img src="${src}" style="max-width:90vw;max-height:90vh">`;
         viewer.classList.remove('hidden');
     };
@@ -42,7 +42,7 @@ window.addEventListener('DOMContentLoaded', () => {
         block.className = 'system-block';
         block.innerHTML = `
             <img src="${images.systems[code].poster}" alt="${data.name}">
-            <video muted loop preload="none" src="${images.systems[code].src}"></video>
+            <video muted loop preload="none" playsinline src="${images.systems[code].src}"></video>
             <span class="system-title">${data.name}</span>
         `;
         const video = block.querySelector('video');
@@ -50,6 +50,8 @@ window.addEventListener('DOMContentLoaded', () => {
             block.addEventListener('mouseenter', () => {
                 const v = block.querySelector('video');
                 v.style.display = 'block';
+                v.load();
+                v.currentTime = 0;
                 v.play();
             });
             block.addEventListener('mouseleave', () => {
@@ -71,6 +73,8 @@ window.addEventListener('DOMContentLoaded', () => {
                     if (activeBlock) activeBlock.classList.remove('selected');
                 }
                 video.style.display = 'block';
+                video.load();
+                video.currentTime = 0;
                 video.play();
                 block.classList.add('selected');
                 activeVideo = video;

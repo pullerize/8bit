@@ -13,7 +13,7 @@ const calcContent = calcModal.querySelector('.modal-content');
 const isMobile = window.innerWidth <= 600;
 function showMedia(type, src) {
     viewerContent.innerHTML = type === 'video'
-        ? `<video src="${src}" controls autoplay style="max-width:90vw;max-height:90vh"></video>`
+        ? `<video src="${src}" controls autoplay muted playsinline style="max-width:90vw;max-height:90vh"></video>`
         : `<img src="${src}" style="max-width:90vw;max-height:90vh">`;
     viewer.classList.remove('hidden');
 }
@@ -312,12 +312,14 @@ function renderParams(stepIndex) {
             block.className = 'system-block subsystem-block';
             block.innerHTML = `
                 <img src="${images.subsystems_posters[systemType][name]}" alt="${name}">
-                <video muted loop preload="none" src="${images.subsystems[systemType][name]}"></video>
+                <video muted loop preload="none" playsinline src="${images.subsystems[systemType][name]}"></video>
                 <span class="system-title">${name}</span>`;
             block.addEventListener('mouseenter', () => {
                 if (window.innerWidth > 768) {
                     const v = block.querySelector('video');
                     v.style.display = 'block';
+                    v.load();
+                    v.currentTime = 0;
                     v.play();
                 }
             });
@@ -338,6 +340,8 @@ function renderParams(stepIndex) {
                         prev.style.display = 'none';
                     }
                     vid.style.display = 'block';
+                    vid.load();
+                    vid.currentTime = 0;
                     vid.play();
                 }
                 selected.subsystem = name;
