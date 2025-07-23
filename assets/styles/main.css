@@ -282,6 +282,7 @@ footer {
     .calc-table th,
     .calc-table td { padding: 0.25rem 0.5rem; }
     .mobile-next { display: block; }
+    .currency-note { text-align: center; }
 }
 
 .size-bar {
@@ -421,7 +422,7 @@ h1, h2, h3, h4, h5, h6,
 }
 .currency-note {
     font-size: 0.8rem;
-    margin-top: 0.5rem;
+    margin: 1rem 0;
 }
 
 .hidden { display: none; }
