@@ -571,7 +571,7 @@ function renderCalcButton() {
 }
 
 function buildResultTable() {
-    const total = calculateTotal();
+    const total = Math.ceil(calculateTotal());
     const shotlanNames = ['divider_profile','additional_glass_seal','bolts_extra','adhesive_profile','tape_33m'];
     const lastNames = ['installation','logistics','glass'];
     const base = [], shot = [], last = [];
