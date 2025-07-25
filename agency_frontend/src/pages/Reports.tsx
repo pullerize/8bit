@@ -182,11 +182,12 @@ function Reports() {
           expenses = [...expenses, exp]
           total = total + exp.amount
         }
+        const positive_balance = r.contract_amount * 0.83 - total
         return {
           ...r,
           expenses,
           total_expenses: total,
-          positive_balance: r.balance_after_tax - total
+          positive_balance,
         }
       })
       setEditingExpense(null)
@@ -221,7 +222,7 @@ function Reports() {
           sum = sum + item.amount
         }
        const balance_after_tax = sum * 0.83
-        const positive_balance = balance_after_tax - r.total_expenses
+        const positive_balance = r.contract_amount * 0.83 - r.total_expenses
         const clientSum = r.client_expenses.reduce((s,x)=>s+x.amount,0)
         const debt = r.contract_amount - sum + clientSum
         return { ...r, receipts: sum, receipts_list: list, balance_after_tax, positive_balance, debt }
@@ -259,7 +260,7 @@ function Reports() {
         }
         const clientSum = list.reduce((s,x)=>s+x.amount,0)
         const debt = r.contract_amount - r.receipts + clientSum
-        const positive_balance = r.balance_after_tax - total
+        const positive_balance = r.contract_amount * 0.83 - total
         return { ...r, client_expenses: list, debt, total_expenses: total, positive_balance }
       })
       setEditingClientExpense(null)
@@ -291,7 +292,7 @@ function Reports() {
         }
         const clientSum = list.reduce((s,x)=>s+x.amount,0)
         const debt = r.contract_amount - r.receipts + clientSum
-        const positive_balance = r.balance_after_tax - total
+        const positive_balance = r.contract_amount * 0.83 - total
         return { ...r, client_expenses: list, debt, total_expenses: total, positive_balance }
       })
       setEditingClientExpense(null)
