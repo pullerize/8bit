@@ -20,14 +20,10 @@ interface Project {
 
 // Row border colors based on post status
 const statusColors: Record<string, string> = {
-  // dark yellow
-  in_progress: '#b8860b',
-  // grey for cancelled
-  cancelled: '#808080',
-  // green for approved
-  approved: '#008000',
-  // red for overdue
-  overdue: '#ff0000',
+  in_progress: '#ffd700', // yellow
+  cancelled: '#808080',   // grey
+  approved: '#008000',    // green
+  overdue: '#ff0000',     // red
 }
 
 const MONTHS = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь']
@@ -44,11 +40,7 @@ function ProjectDetail() {
 
   const [posts, setPosts] = useState<Post[]>([])
   const [drafts, setDrafts] = useState<Post[]>([])
-  const now = new Date()
-  const [month, setMonth] = useState(now.getMonth() + 1)
-  const [year, setYear] = useState(now.getFullYear())
   const [loaded, setLoaded] = useState(false)
-  const [initialized, setInitialized] = useState(false)
 
 
   const load = async () => {
@@ -60,11 +52,6 @@ function ProjectDetail() {
       setPostsCount(data.posts_count)
       setStartDate(data.start_date?.slice(0, 10) || '')
       setEndDate(data.end_date?.slice(0, 10) || '')
-      if (data.start_date) {
-        const d = new Date(data.start_date)
-        setMonth(d.getMonth() + 1)
-        setYear(d.getFullYear())
-      }
     }
     const r = await fetch(`${API_URL}/projects/${id}/posts`, { headers: { Authorization: `Bearer ${token}` } })
     if (r.ok) setPosts(await r.json())
@@ -73,22 +60,7 @@ function ProjectDetail() {
 
   useEffect(() => { load() }, [id])
 
-  useEffect(() => {
-    if (!loaded) return
-    if (!initialized) {
-      setInitialized(true)
-      return
-    }
-    const start = new Date(Date.UTC(year, month - 1, 1))
-    const end = new Date(Date.UTC(year, month, 1))
-    const startStr = start.toISOString().slice(0, 10)
-    const endStr = end.toISOString().slice(0, 10)
-    setPostsCount(0)
-    setStartDate(startStr)
-    setEndDate(endStr)
-    setDrafts([])
-    updateInfo({ start_date: startStr, end_date: endStr })
-  }, [month, year, loaded, initialized])
+  // month/year selectors no longer reset start and end dates automatically
 
   const updateInfo = async (data: Partial<{name:string;posts_count:number;start_date:string;end_date:string}>) => {
     if ('name' in data) {
@@ -177,13 +149,21 @@ function ProjectDetail() {
 
   const filteredPosts = posts.filter(p => {
     const d = new Date(p.date)
-    return d.getFullYear() === year && d.getMonth() + 1 === month
+    const sd = startDate ? new Date(startDate) : null
+    const ed = endDate ? new Date(endDate) : null
+    if (sd && d < sd) return false
+    if (ed && d >= ed) return false
+    return true
   })
 
   const recalcPostsCount = async (list?: Post[], dr?: Post[]) => {
+    const sd = startDate ? new Date(startDate) : null
+    const ed = endDate ? new Date(endDate) : null
     const relevant = (list || posts).filter(p => {
       const d = new Date(p.date)
-      return d.getFullYear() === year && d.getMonth() + 1 === month
+      if (sd && d < sd) return false
+      if (ed && d >= ed) return false
+      return true
     })
     const totalExisting = relevant.reduce((sum, p) => sum + p.posts_per_day, 0)
     const draftSum = (dr || drafts).reduce((sum, d) => sum + d.posts_per_day, 0)
@@ -198,7 +178,7 @@ function ProjectDetail() {
 
   useEffect(() => {
     if (loaded) recalcPostsCount()
-  }, [posts, drafts, month, year, loaded])
+  }, [posts, drafts, startDate, endDate, loaded])
 
   const rows = [...filteredPosts, ...drafts]
 
@@ -226,14 +206,9 @@ function ProjectDetail() {
               </tr>
             </tbody>
           </table>
-          <div className="flex items-center gap-2 mb-2">
-            <select className="border p-1" value={month} onChange={e=>setMonth(Number(e.target.value))}>
-              {MONTHS.map((m,idx)=>(<option key={idx+1} value={idx+1}>{m}</option>))}
-            </select>
-            <select className="border p-1" value={year} onChange={e=>setYear(Number(e.target.value))}>
-              {Array.from({length:5},(_,i)=>now.getFullYear()-2+i).map(y=>(<option key={y} value={y}>{y}</option>))}
-            </select>
-          </div>
+          {/* Month and year selectors were previously used to reset dates
+              automatically. They have been removed to keep the manually
+              chosen start and end dates intact. */}
         </div>
       )}
 
