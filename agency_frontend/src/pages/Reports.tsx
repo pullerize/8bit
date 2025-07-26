@@ -182,7 +182,7 @@ function Reports() {
           expenses = [...expenses, exp]
           total = total + exp.amount
         }
-        const positive_balance = r.contract_amount * 0.83 - total
+        const positive_balance = r.contract_amount - total
         return {
           ...r,
           expenses,
@@ -222,7 +222,7 @@ function Reports() {
           sum = sum + item.amount
         }
        const balance_after_tax = sum * 0.83
-        const positive_balance = r.contract_amount * 0.83 - r.total_expenses
+        const positive_balance = r.contract_amount - r.total_expenses
         const clientSum = r.client_expenses.reduce((s,x)=>s+x.amount,0)
         const debt = r.contract_amount - sum + clientSum
         return { ...r, receipts: sum, receipts_list: list, balance_after_tax, positive_balance, debt }
@@ -260,7 +260,7 @@ function Reports() {
         }
         const clientSum = list.reduce((s,x)=>s+x.amount,0)
         const debt = r.contract_amount - r.receipts + clientSum
-        const positive_balance = r.contract_amount * 0.83 - total
+        const positive_balance = r.contract_amount - total
         return { ...r, client_expenses: list, debt, total_expenses: total, positive_balance }
       })
       setEditingClientExpense(null)
@@ -292,7 +292,7 @@ function Reports() {
         }
         const clientSum = list.reduce((s,x)=>s+x.amount,0)
         const debt = r.contract_amount - r.receipts + clientSum
-        const positive_balance = r.contract_amount * 0.83 - total
+        const positive_balance = r.contract_amount - total
         return { ...r, client_expenses: list, debt, total_expenses: total, positive_balance }
       })
       setEditingClientExpense(null)
@@ -445,7 +445,6 @@ function Reports() {
                   <tr className="bg-gray-100">
                     <th className="px-4 py-2 border">Название</th>
                     <th className="px-4 py-2 border">Сумма</th>
-                    <th className="px-4 py-2 border">Сумма с учетом НДС</th>
                     <th className="px-4 py-2 border">Комментарий</th>
                     <th className="px-4 py-2 border">Действия</th>
                   </tr>
@@ -455,7 +454,6 @@ function Reports() {
                     <tr key={c.id} className="text-center border-t">
                       <td className="px-4 py-2 border">{c.name}</td>
                       <td className="px-4 py-2 border">{formatCurrency(c.amount)}</td>
-                      <td className="px-4 py-2 border">{formatCurrency(Math.round(c.amount * 0.82))}</td>
                       <td className="px-4 py-2 border">{c.comment}</td>
                       <td className="px-4 py-2 border space-x-2">
                         <button className="text-blue-500" onClick={() => openClientExpense(c)}>Редактировать</button>
@@ -523,10 +521,6 @@ function Reports() {
                       <input className="border p-2 w-full" value={cExpAmount} onChange={e => setCExpAmount(formatInput(e.target.value))} />
                     </label>
                     <label className="block">
-                      <span className="text-sm text-gray-500">Сумма с учетом НДС</span>
-                      <input className="border p-2 w-full bg-gray-50" value={formatInput(String(Math.round(parseNumber(cExpAmount) * 0.82)))} readOnly />
-                    </label>
-                    <label className="block">
                       <span className="text-sm text-gray-500">Комментарий</span>
                       <input className="border p-2 w-full" value={cExpComment} onChange={e => setCExpComment(e.target.value)} />
                     </label>
@@ -541,10 +535,6 @@ function Reports() {
                     <label className="block">
                       <span className="text-sm text-gray-500">Сумма</span>
                       <input className="border p-2 w-full" value={closeAmount} onChange={e => setCloseAmount(formatInput(e.target.value))} />
-                    </label>
-                    <label className="block">
-                      <span className="text-sm text-gray-500">Сумма с учетом НДС</span>
-                      <input className="border p-2 w-full bg-gray-50" value={formatInput(String(Math.round(parseNumber(closeAmount) * 0.82)))} readOnly />
                     </label>
                     <label className="block">
                       <span className="text-sm text-gray-500">Комментарий</span>

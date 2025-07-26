@@ -231,7 +231,7 @@ def get_project_report(
     total_expenses = sum(e.amount for e in expenses) + client_sum
     balance_after_tax = receipts_sum * 0.83
     debt = report.contract_amount - receipts_sum + client_sum
-    positive_balance = report.contract_amount * 0.83 - total_expenses
+    positive_balance = report.contract_amount - total_expenses
     return schemas.ProjectReport(
         project_id=project_id,
         contract_amount=report.contract_amount,
@@ -272,7 +272,7 @@ def update_project_report(
     total_expenses = sum(e.amount for e in expenses) + client_sum
     balance_after_tax = receipts_sum * 0.83
     debt = report.contract_amount - receipts_sum + client_sum
-    positive_balance = report.contract_amount * 0.83 - total_expenses
+    positive_balance = report.contract_amount - total_expenses
     return schemas.ProjectReport(
         project_id=project_id,
         contract_amount=report.contract_amount,
