@@ -46,6 +46,12 @@ function parseNumber(value: string) {
   return parseFloat(value.replace(/[^0-9.,]/g, '').replace(/\s+/g, '').replace(',', '.')) || 0
 }
 
+const VAT_MULTIPLIER = 1.18
+
+function addVat(amount: number) {
+  return amount * VAT_MULTIPLIER
+}
+
 function Reports() {
   const token = localStorage.getItem('token')
   const [projects, setProjects] = useState<Project[]>([])
@@ -445,6 +451,7 @@ function Reports() {
                   <tr className="bg-gray-100">
                     <th className="px-4 py-2 border">Название</th>
                     <th className="px-4 py-2 border">Сумма</th>
+                    <th className="px-4 py-2 border">Сумма с НДС</th>
                     <th className="px-4 py-2 border">Комментарий</th>
                     <th className="px-4 py-2 border">Действия</th>
                   </tr>
@@ -454,6 +461,7 @@ function Reports() {
                     <tr key={c.id} className="text-center border-t">
                       <td className="px-4 py-2 border">{c.name}</td>
                       <td className="px-4 py-2 border">{formatCurrency(c.amount)}</td>
+                      <td className="px-4 py-2 border">{formatCurrency(addVat(c.amount))}</td>
                       <td className="px-4 py-2 border">{c.comment}</td>
                       <td className="px-4 py-2 border space-x-2">
                         <button className="text-blue-500" onClick={() => openClientExpense(c)}>Редактировать</button>
@@ -521,6 +529,10 @@ function Reports() {
                       <input className="border p-2 w-full" value={cExpAmount} onChange={e => setCExpAmount(formatInput(e.target.value))} />
                     </label>
                     <label className="block">
+                      <span className="text-sm text-gray-500">Сумма с НДС</span>
+                      <input className="border p-2 w-full" value={formatInput(String(addVat(parseNumber(cExpAmount))))} disabled />
+                    </label>
+                    <label className="block">
                       <span className="text-sm text-gray-500">Комментарий</span>
                       <input className="border p-2 w-full" value={cExpComment} onChange={e => setCExpComment(e.target.value)} />
                     </label>
@@ -535,6 +547,10 @@ function Reports() {
                     <label className="block">
                       <span className="text-sm text-gray-500">Сумма</span>
                       <input className="border p-2 w-full" value={closeAmount} onChange={e => setCloseAmount(formatInput(e.target.value))} />
+                    </label>
+                    <label className="block">
+                      <span className="text-sm text-gray-500">Сумма с НДС</span>
+                      <input className="border p-2 w-full" value={formatInput(String(addVat(parseNumber(closeAmount))))} disabled />
                     </label>
                     <label className="block">
                       <span className="text-sm text-gray-500">Комментарий</span>
