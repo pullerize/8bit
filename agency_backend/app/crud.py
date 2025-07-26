@@ -297,11 +297,18 @@ def get_or_create_report(
         .first()
     )
     if not report:
+        last = (
+            db.query(models.ProjectReport)
+            .filter(models.ProjectReport.project_id == project_id)
+            .order_by(models.ProjectReport.year.desc(), models.ProjectReport.month.desc())
+            .first()
+        )
+        contract_amount = last.contract_amount if last else 0
         report = models.ProjectReport(
             project_id=project_id,
             month=m,
             year=y,
-            contract_amount=0,
+            contract_amount=contract_amount,
             receipts=0,
         )
         db.add(report)
