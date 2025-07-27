@@ -18,8 +18,9 @@ function ExpensesReport(){
   const [projectId,setProjectId] = useState<number|''>('')
   const [month,setMonth] = useState(new Date().getMonth()+1)
   const year = new Date().getFullYear()
+  const lastDay = (y:number,m:number) => fmt(new Date(y, m, 0))
   const [start,setStart] = useState(fmt(new Date(year, month-1,1)))
-  const [end,setEnd] = useState(fmt(new Date(year, month,1)))
+  const [end,setEnd] = useState(lastDay(year, month))
   const [rows,setRows] = useState<Row[]>([])
 
   const loadProjects = async () => {
@@ -30,7 +31,9 @@ function ExpensesReport(){
   const loadReport = async () => {
     const params = new URLSearchParams()
     params.append('start', start)
-    params.append('end', end)
+    const endDate = new Date(end)
+    endDate.setDate(endDate.getDate() + 1)
+    params.append('end', fmt(endDate))
     if(projectId) params.append('project_id', String(projectId))
     const res = await fetch(`${API_URL}/expenses/report?${params}`, { headers:{Authorization:`Bearer ${token}`}})
     if(res.ok) setRows(await res.json())
@@ -40,7 +43,7 @@ function ExpensesReport(){
   useEffect(()=>{
     const y = new Date().getFullYear()
     setStart(fmt(new Date(y, month-1,1)))
-    setEnd(fmt(new Date(y, month,1)))
+    setEnd(lastDay(y, month))
   },[month])
   useEffect(()=>{ loadReport() },[start,end,projectId])
 
