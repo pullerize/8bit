@@ -120,6 +120,14 @@ class Shooting(Base):
     operator = relationship("Operator")
 
 
+class ExpenseItem(Base):
+    __tablename__ = "expense_items"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, unique=True)
+
+
+
 class ProjectReport(Base):
     __tablename__ = "project_reports"
 

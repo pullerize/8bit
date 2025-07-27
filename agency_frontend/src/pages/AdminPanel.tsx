@@ -2,9 +2,10 @@ import { useState } from 'react'
 import Users from './Users'
 import Operators from './Operators'
 import Projects from './ProjectsAdmin'
+import ExpensesAdmin from './ExpensesAdmin'
 
 function AdminPanel() {
-  const [tab, setTab] = useState<'users'|'operators'|'projects'>('users')
+  const [tab, setTab] = useState<'users'|'operators'|'projects'|'expenses'>('users')
 
   return (
     <div className="p-4 space-y-4">
@@ -12,10 +13,12 @@ function AdminPanel() {
         <button className={`px-2 py-1 border rounded ${tab==='users'&&'bg-gray-200'}`} onClick={()=>setTab('users')}>Пользователи</button>
         <button className={`px-2 py-1 border rounded ${tab==='operators'&&'bg-gray-200'}`} onClick={()=>setTab('operators')}>Операторы</button>
         <button className={`px-2 py-1 border rounded ${tab==='projects'&&'bg-gray-200'}`} onClick={()=>setTab('projects')}>Проекты</button>
+        <button className={`px-2 py-1 border rounded ${tab==='expenses'&&'bg-gray-200'}`} onClick={()=>setTab('expenses')}>Расходы</button>
       </div>
       {tab === 'users' && <Users />}
       {tab === 'operators' && <Operators />}
       {tab === 'projects' && <Projects />}
+      {tab === 'expenses' && <ExpensesAdmin />}
     </div>
   )
 }

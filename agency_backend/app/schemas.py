@@ -159,6 +159,25 @@ class ClientExpenseClose(BaseModel):
     comment: Optional[str] = None
 
 
+class ExpenseItemBase(BaseModel):
+    name: str
+
+
+class ExpenseItemCreate(ExpenseItemBase):
+    pass
+
+
+class ExpenseItem(ExpenseItemBase):
+    id: int
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ExpenseReportRow(BaseModel):
+    name: str
+    quantity: int
+    unit_avg: float
+
+
 class ReceiptBase(BaseModel):
     name: str
     amount: float

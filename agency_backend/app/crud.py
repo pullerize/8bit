@@ -563,3 +563,54 @@ def delete_project_post(db: Session, post_id: int) -> None:
     if post:
         db.delete(post)
         db.commit()
+
+
+def get_expense_items(db: Session) -> List[models.ExpenseItem]:
+    return db.query(models.ExpenseItem).all()
+
+
+def create_expense_item(db: Session, name: str) -> models.ExpenseItem:
+    item = models.ExpenseItem(name=name)
+    db.add(item)
+    db.commit()
+    db.refresh(item)
+    return item
+
+
+def update_expense_item(db: Session, item_id: int, name: str) -> Optional[models.ExpenseItem]:
+    item = db.query(models.ExpenseItem).filter(models.ExpenseItem.id == item_id).first()
+    if not item:
+        return None
+    item.name = name
+    db.commit()
+    db.refresh(item)
+    return item
+
+
+def delete_expense_item(db: Session, item_id: int) -> None:
+    item = db.query(models.ExpenseItem).filter(models.ExpenseItem.id == item_id).first()
+    if item:
+        db.delete(item)
+        db.commit()
+
+
+def get_expenses_report(
+    db: Session,
+    start: datetime,
+    end: datetime,
+    project_id: int | None = None,
+) -> List[tuple[str, int, float]]:
+    q = db.query(models.ProjectExpense)
+    if project_id:
+        q = q.filter(models.ProjectExpense.project_id == project_id)
+    q = q.filter(models.ProjectExpense.created_at >= start).filter(models.ProjectExpense.created_at < end)
+    rows = {}
+    for e in q.all():
+        rows.setdefault(e.name, []).append(e.amount)
+    result = []
+    for name, amounts in rows.items():
+        qty = len(amounts)
+        total = sum(amounts)
+        avg = total / qty if qty else 0
+        result.append((name, qty, avg))
+    return result

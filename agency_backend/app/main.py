@@ -4,6 +4,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from dotenv import load_dotenv
 from datetime import datetime
+from typing import List, Optional
 
 from . import models, schemas, crud, auth
 from .database import engine, Base, SessionLocal
@@ -425,6 +426,60 @@ def edit_receipt(receipt_id: int, rec: schemas.ReceiptCreate, db: Session = Depe
 def remove_receipt(receipt_id: int, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
     crud.delete_receipt(db, receipt_id)
     return {"ok": True}
+
+
+@app.get("/expense_items/", response_model=list[schemas.ExpenseItem])
+def list_expense_items(db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
+    return crud.get_expense_items(db)
+
+
+@app.post("/expense_items/", response_model=schemas.ExpenseItem)
+def create_expense_item(item: schemas.ExpenseItemCreate, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
+    if current.role != models.RoleEnum.admin:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    return crud.create_expense_item(db, item.name)
+
+
+@app.put("/expense_items/{item_id}", response_model=schemas.ExpenseItem)
+def update_expense_item(item_id: int, item: schemas.ExpenseItemCreate, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
+    if current.role != models.RoleEnum.admin:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    updated = crud.update_expense_item(db, item_id, item.name)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Expense item not found")
+    return updated
+
+
+@app.delete("/expense_items/{item_id}")
+def delete_expense_item(item_id: int, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
+    if current.role != models.RoleEnum.admin:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    crud.delete_expense_item(db, item_id)
+    return {"ok": True}
+
+
+@app.get("/expenses/report", response_model=list[schemas.ExpenseReportRow])
+def expenses_report(
+    start: str | None = None,
+    end: str | None = None,
+    project_id: int | None = None,
+    db: Session = Depends(auth.get_db),
+    current: models.User = Depends(auth.get_current_active_user),
+):
+    now = datetime.utcnow()
+    if not start or not end:
+        start_dt = datetime(now.year, now.month, 1)
+        next_month = now.month + 1
+        next_year = now.year
+        if next_month > 12:
+            next_month = 1
+            next_year += 1
+        end_dt = datetime(next_year, next_month, 1)
+    else:
+        start_dt = datetime.fromisoformat(start)
+        end_dt = datetime.fromisoformat(end)
+    rows = crud.get_expenses_report(db, start_dt, end_dt, project_id)
+    return [schemas.ExpenseReportRow(name=n, quantity=q, unit_avg=a) for n, q, a in rows]
 
 
 @app.get("/projects/{project_id}/posts", response_model=list[schemas.ProjectPost])
