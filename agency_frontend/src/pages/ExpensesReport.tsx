@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { API_URL } from '../api'
 
 const MONTH_NAMES = [
@@ -45,6 +46,10 @@ function ExpensesReport(){
 
   return (
     <div className="p-4 space-y-4">
+      <div className="space-x-2 mb-4">
+        <Link to="/reports" className="px-2 py-1 border rounded">Отчеты по проектам</Link>
+        <button className="px-2 py-1 border rounded bg-blue-500 text-white">Отчет по расходам</button>
+      </div>
       <h1 className="text-2xl mb-4">Отчет по расходам</h1>
       <div className="flex space-x-2">
         <select className="border p-2" value={month} onChange={e=>setMonth(Number(e.target.value))}>
