@@ -18,9 +18,15 @@ function ExpensesReport(){
   const [projectId,setProjectId] = useState<number|''>('')
   const [month,setMonth] = useState(new Date().getMonth()+1)
   const year = new Date().getFullYear()
-  const lastDay = (y:number,m:number) => fmt(new Date(y, m, 0))
-  const [start,setStart] = useState(fmt(new Date(year, month-1,1)))
-  const [end,setEnd] = useState(lastDay(year, month))
+
+  const monthRange = (y:number,m:number) => {
+    const first = new Date(y, m-1, 1)
+    const last = new Date(y, m, 0)
+    return [fmt(first), fmt(last)] as const
+  }
+
+  const [start,setStart] = useState(() => monthRange(year, month)[0])
+  const [end,setEnd] = useState(() => monthRange(year, month)[1])
   const [rows,setRows] = useState<Row[]>([])
 
   const loadProjects = async () => {
@@ -41,9 +47,9 @@ function ExpensesReport(){
 
   useEffect(()=>{ loadProjects() },[])
   useEffect(()=>{
-    const y = new Date().getFullYear()
-    setStart(fmt(new Date(y, month-1,1)))
-    setEnd(lastDay(y, month))
+    const [s,e] = monthRange(year, month)
+    setStart(s)
+    setEnd(e)
   },[month])
   useEffect(()=>{ loadReport() },[start,end,projectId])
 
