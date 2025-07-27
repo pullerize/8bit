@@ -524,7 +524,9 @@ def get_project_posts(db: Session, project_id: int, start: datetime | None = Non
     posts = q.all()
     today = datetime.utcnow().date()
     for p in posts:
-        if p.status == models.PostStatus.in_progress and p.date.date() < today:
+        if p.date.date() == today and p.status == models.PostStatus.overdue:
+            p.status = models.PostStatus.in_progress
+        elif p.status == models.PostStatus.in_progress and p.date.date() < today:
             p.status = models.PostStatus.overdue
     return posts
 

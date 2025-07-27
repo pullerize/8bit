@@ -116,6 +116,10 @@ function ProjectDetail() {
       } else if (ed && d >= ed) {
         setMonth(m => (m === 12 ? 1 : m + 1))
       }
+      const today = new Date().toISOString().slice(0,10)
+      if (value === today) {
+        updated.status = 'in_progress'
+      }
     }
     if (post.id === 0) {
       const draftsCopy = [...drafts]
@@ -263,22 +267,21 @@ function ProjectDetail() {
             <tr
               key={p.id || `new-${idx}`}
               className="text-center"
-              style={{ border: `2px solid ${statusColors[p.status]}` }}
             >
-              <td className="border px-2 py-1">
+              <td className="border px-2 py-1" style={{borderColor: statusColors[p.status]}}>
                 <input type="date" className="border p-1" value={p.date ? p.date.slice(0,10) : ''} onChange={e=>updatePost(idx, p, 'date', e.target.value)} />
               </td>
-              <td className="border px-2 py-1">
+              <td className="border px-2 py-1" style={{borderColor: statusColors[p.status]}}>
                 <input type="number" className="border p-1 w-16" value={p.posts_per_day} onChange={e=>updatePost(idx, p, 'posts_per_day', Number(e.target.value))} />
               </td>
-              <td className="border px-2 py-1">
+              <td className="border px-2 py-1" style={{borderColor: statusColors[p.status]}}>
                 <select className="border p-1" value={p.post_type} onChange={e=>updatePost(idx, p, 'post_type', e.target.value)}>
                   <option value="video">Видео</option>
                   <option value="static">Статика</option>
                   <option value="carousel">Карусель</option>
                 </select>
               </td>
-              <td className="border px-2 py-1">
+              <td className="border px-2 py-1" style={{borderColor: statusColors[p.status]}}>
                 <select className="border p-1" value={p.status} onChange={e=>updatePost(idx, p, 'status', e.target.value)}>
                   {p.status === 'overdue' && <option value="overdue" disabled>Просрочено</option>}
                   <option value="in_progress">В работе</option>
@@ -286,7 +289,7 @@ function ProjectDetail() {
                   <option value="cancelled">Отменен</option>
                 </select>
               </td>
-              <td className="border px-2 py-1">
+              <td className="border px-2 py-1" style={{borderColor: statusColors[p.status]}}>
                 <button
                   className="px-2 py-1 border rounded text-lg"
                   onClick={() => removeRow(idx, p)}
