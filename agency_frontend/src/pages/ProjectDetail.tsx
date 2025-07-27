@@ -265,7 +265,7 @@ function ProjectDetail() {
         <tbody>
           {rows.map((p, idx) => (
             <tr
-              key={p.id || `new-${idx}`}
+              key={p.id ? `post-${p.id}` : `new-${idx}`}
               className="text-center"
             >
               <td className="border px-2 py-1" style={{borderColor: statusColors[p.status]}}>
