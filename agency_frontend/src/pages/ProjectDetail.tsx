@@ -54,12 +54,33 @@ function ProjectDetail() {
       setStartDate(data.start_date?.slice(0, 10) || '')
       setEndDate(data.end_date?.slice(0, 10) || '')
     }
-    const r = await fetch(`${API_URL}/projects/${id}/posts?month=${m}`, { headers: { Authorization: `Bearer ${token}` } })
-    if (r.ok) setPosts(await r.json())
+    let year = startDate ? new Date(startDate).getFullYear() : new Date().getFullYear()
+    const nextMonth = m === 12 ? 1 : m + 1
+    const nextYear = nextMonth === 1 ? year + 1 : year
+    const first = await fetch(`${API_URL}/projects/${id}/posts?month=${m}&year=${year}`, { headers: { Authorization: `Bearer ${token}` } })
+    const second = await fetch(`${API_URL}/projects/${id}/posts?month=${nextMonth}&year=${nextYear}`, { headers: { Authorization: `Bearer ${token}` } })
+    const list1 = first.ok ? await first.json() : []
+    const list2 = second.ok ? await second.json() : []
+    setPosts([...list1, ...list2])
     setLoaded(true)
   }
 
   useEffect(() => { load(month) }, [id, month])
+
+  useEffect(() => {
+    if (!loaded || !startDate) return
+    const d = new Date(startDate)
+    const year = d.getFullYear()
+    const day = d.getDate()
+    const newStart = new Date(year, month - 1, day)
+    const newEnd = new Date(newStart)
+    newEnd.setMonth(newEnd.getMonth() + 1)
+    const s = newStart.toISOString().slice(0, 10)
+    const e = newEnd.toISOString().slice(0, 10)
+    setStartDate(s)
+    setEndDate(e)
+    updateInfo({ start_date: s, end_date: e })
+  }, [month])
 
   // month/year selectors no longer reset start and end dates automatically
 
