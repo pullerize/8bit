@@ -429,22 +429,22 @@ def remove_receipt(receipt_id: int, db: Session = Depends(auth.get_db), current:
 
 
 @app.get("/expense_items/", response_model=list[schemas.ExpenseItem])
-def list_expense_items(db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
-    return crud.get_expense_items(db)
+def list_expense_items(is_common: bool | None = None, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
+    return crud.get_expense_items(db, is_common)
 
 
 @app.post("/expense_items/", response_model=schemas.ExpenseItem)
 def create_expense_item(item: schemas.ExpenseItemCreate, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
     if current.role != models.RoleEnum.admin:
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    return crud.create_expense_item(db, item.name)
+    return crud.create_expense_item(db, item.name, item.is_common, item.unit_cost or 0)
 
 
 @app.put("/expense_items/{item_id}", response_model=schemas.ExpenseItem)
 def update_expense_item(item_id: int, item: schemas.ExpenseItemCreate, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
     if current.role != models.RoleEnum.admin:
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    updated = crud.update_expense_item(db, item_id, item.name)
+    updated = crud.update_expense_item(db, item_id, item.name, item.is_common, item.unit_cost)
     if not updated:
         raise HTTPException(status_code=404, detail="Expense item not found")
     return updated

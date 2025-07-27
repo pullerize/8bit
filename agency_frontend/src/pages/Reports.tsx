@@ -57,7 +57,7 @@ function Reports() {
   const token = localStorage.getItem('token')
   const [projects, setProjects] = useState<Project[]>([])
   const [projectId, setProjectId] = useState<number | ''>('')
-  const [expenseItems, setExpenseItems] = useState<{id:number; name:string}[]>([])
+  const [expenseItems, setExpenseItems] = useState<{id:number; name:string; is_common:boolean}[]>([])
   const [month, setMonth] = useState(new Date().getMonth() + 1)
   const [report, setReport] = useState<Report | null>(null)
 
@@ -86,7 +86,10 @@ function Reports() {
 
   const loadExpenseItems = async () => {
     const res = await fetch(`${API_URL}/expense_items/`, { headers: { Authorization: `Bearer ${token}` } })
-    if (res.ok) setExpenseItems(await res.json())
+    if (res.ok) {
+      const items = await res.json()
+      setExpenseItems(items.filter((i: any) => !i.is_common))
+    }
   }
 
   const loadReport = async (pid: number, m: number = month) => {

@@ -572,23 +572,30 @@ def delete_project_post(db: Session, post_id: int) -> None:
         db.commit()
 
 
-def get_expense_items(db: Session) -> List[models.ExpenseItem]:
-    return db.query(models.ExpenseItem).all()
+def get_expense_items(db: Session, is_common: bool | None = None) -> List[models.ExpenseItem]:
+    q = db.query(models.ExpenseItem)
+    if is_common is not None:
+        q = q.filter(models.ExpenseItem.is_common == is_common)
+    return q.all()
 
 
-def create_expense_item(db: Session, name: str) -> models.ExpenseItem:
-    item = models.ExpenseItem(name=name)
+def create_expense_item(db: Session, name: str, is_common: bool = False, unit_cost: int = 0) -> models.ExpenseItem:
+    item = models.ExpenseItem(name=name, is_common=is_common, unit_cost=unit_cost)
     db.add(item)
     db.commit()
     db.refresh(item)
     return item
 
 
-def update_expense_item(db: Session, item_id: int, name: str) -> Optional[models.ExpenseItem]:
+def update_expense_item(db: Session, item_id: int, name: str, is_common: bool | None = None, unit_cost: int | None = None) -> Optional[models.ExpenseItem]:
     item = db.query(models.ExpenseItem).filter(models.ExpenseItem.id == item_id).first()
     if not item:
         return None
     item.name = name
+    if is_common is not None:
+        item.is_common = is_common
+    if unit_cost is not None:
+        item.unit_cost = unit_cost
     db.commit()
     db.refresh(item)
     return item
@@ -643,5 +650,10 @@ def get_expenses_report(
     for key, (qty, total) in video_totals.items():
         if qty:
             result.append((key, qty, total / qty if qty else 0))
+
+    # include common expenses with quantity 1 and their unit cost
+    common_items = get_expense_items(db, True)
+    for it in common_items:
+        result.append((it.name, 1, float(it.unit_cost)))
 
     return result

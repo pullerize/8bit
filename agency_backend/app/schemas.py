@@ -162,6 +162,8 @@ class ClientExpenseClose(BaseModel):
 
 class ExpenseItemBase(BaseModel):
     name: str
+    is_common: bool = False
+    unit_cost: int | None = None
 
 
 class ExpenseItemCreate(ExpenseItemBase):

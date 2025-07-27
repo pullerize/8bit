@@ -126,6 +126,8 @@ class ExpenseItem(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True)
+    is_common = Column(Boolean, default=False)
+    unit_cost = Column(Integer, default=0)
 
 
 
