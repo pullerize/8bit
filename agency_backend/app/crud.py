@@ -60,7 +60,12 @@ def get_operators(db: Session) -> List[models.Operator]:
 
 
 def create_operator(db: Session, operator: schemas.OperatorCreate) -> models.Operator:
-    op = models.Operator(name=operator.name, role=operator.role, color=operator.color or "#ff0000")
+    op = models.Operator(
+        name=operator.name,
+        role=operator.role,
+        color=operator.color or "#ff0000",
+        price_per_video=operator.price_per_video or 0,
+    )
     db.add(op)
     db.commit()
     db.refresh(op)
@@ -75,6 +80,8 @@ def update_operator(db: Session, operator_id: int, operator: schemas.OperatorCre
     op.role = operator.role
     if operator.color is not None:
         op.color = operator.color
+    if operator.price_per_video is not None:
+        op.price_per_video = operator.price_per_video
     db.commit()
     db.refresh(op)
     return op
@@ -604,13 +611,37 @@ def get_expenses_report(
     if project_id:
         q = q.filter(models.ProjectExpense.project_id == project_id)
     q = q.filter(models.ProjectExpense.created_at >= start).filter(models.ProjectExpense.created_at < end)
-    rows = {}
+    rows: dict[str, list[float]] = {}
     for e in q.all():
         rows.setdefault(e.name, []).append(e.amount)
+
+    # include completed shootings cost
+    sq = db.query(models.Shooting).join(models.Operator)
+    sq = sq.filter(models.Shooting.completed == True)
+    sq = sq.filter(models.Shooting.datetime >= start).filter(models.Shooting.datetime < end)
+    if project_id:
+        proj = db.query(models.Project).filter(models.Project.id == project_id).first()
+        if proj:
+            sq = sq.filter(models.Shooting.project == proj.name)
+    video_totals = {"Видеография": [0, 0.0], "Мобилография": [0, 0.0]}
+    for sh in sq.all():
+        qty = sh.completed_quantity or sh.quantity or 0
+        price = sh.operator.price_per_video or 0
+        role = sh.operator.role
+        key = "Видеография" if role == models.OperatorRole.video else "Мобилография"
+        video_totals[key][0] += qty
+        video_totals[key][1] += qty * price
+
     result = []
     for name, amounts in rows.items():
         qty = len(amounts)
         total = sum(amounts)
         avg = total / qty if qty else 0
         result.append((name, qty, avg))
+
+    # add video/mobilography totals separately using correct calc
+    for key, (qty, total) in video_totals.items():
+        if qty:
+            result.append((key, qty, total / qty if qty else 0))
+
     return result

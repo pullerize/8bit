@@ -6,6 +6,7 @@ interface Operator {
   name: string
   role: string
   color: string
+  price_per_video: number
 }
 
 function Operators() {
@@ -15,6 +16,7 @@ function Operators() {
   const [name, setName] = useState('')
   const [role, setRole] = useState('mobile')
   const [color, setColor] = useState('#ff0000')
+  const [price, setPrice] = useState('')
 
   const token = localStorage.getItem('token')
 
@@ -32,6 +34,7 @@ function Operators() {
     setName('')
     setRole('mobile')
     setColor('#ff0000')
+    setPrice('')
     setShow(true)
   }
 
@@ -40,11 +43,12 @@ function Operators() {
     setName(o.name)
     setRole(o.role)
     setColor(o.color)
+    setPrice(String(o.price_per_video))
     setShow(true)
   }
 
   const save = async () => {
-    const payload = { name, role, color }
+    const payload = { name, role, color, price_per_video: Number(price) || 0 }
     if (editing) {
       await fetch(`${API_URL}/operators/${editing.id}`, {
         method: 'PUT',
@@ -82,6 +86,7 @@ function Operators() {
             <th className="px-4 py-2 border">Имя</th>
             <th className="px-4 py-2 border">Роль</th>
             <th className="px-4 py-2 border">Цвет</th>
+            <th className="px-4 py-2 border">Цена за 1 видео</th>
             <th className="px-4 py-2 border"></th>
           </tr>
         </thead>
@@ -92,6 +97,9 @@ function Operators() {
               <td className="px-4 py-2 border">{o.role}</td>
               <td className="px-4 py-2 border">
                 <span className="inline-block w-4 h-4 rounded" style={{background:o.color}} />
+              </td>
+              <td className="px-4 py-2 border">
+                {o.price_per_video}
               </td>
               <td className="px-4 py-2 border space-x-2">
                 <button className="text-blue-500" onClick={() => openEdit(o)}>Редактировать</button>
@@ -114,6 +122,7 @@ function Operators() {
             <label className="block mb-4">Цвет
               <input type="color" className="border p-2 w-full" value={color} onChange={e => setColor(e.target.value)} />
             </label>
+            <input className="border p-2 w-full mb-4" placeholder="Цена за 1 видео" value={price} onChange={e => setPrice(e.target.value)} />
             <div className="flex justify-end">
               <button className="mr-2 px-4 py-1 border rounded" onClick={() => setShow(false)}>Отмена</button>
               <button className="bg-blue-500 text-white px-4 py-1 rounded" onClick={save}>Сохранить</button>

@@ -46,6 +46,7 @@ class OperatorBase(BaseModel):
     name: str
     role: str
     color: Optional[str] = None
+    price_per_video: Optional[float] = None
 
 class OperatorCreate(OperatorBase):
     pass

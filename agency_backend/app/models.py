@@ -75,6 +75,7 @@ class Operator(Base):
     name = Column(String, index=True)
     role = Column(Enum(OperatorRole))
     color = Column(String, default="#ff0000")
+    price_per_video = Column(Integer, default=0)
 
 def first_day_current_month() -> datetime:
     now = datetime.utcnow()
