@@ -274,7 +274,14 @@ function Tasks() {
 
   const sortedTasks = filteredTasks
     .slice()
-    .sort((a, b) => (b.high_priority === a.high_priority ? 0 : b.high_priority ? 1 : -1))
+    .sort((a, b) => {
+      if (a.high_priority !== b.high_priority) {
+        return b.high_priority ? 1 : -1
+      }
+      const da = a.deadline ? new Date(a.deadline).getTime() : Infinity
+      const db = b.deadline ? new Date(b.deadline).getTime() : Infinity
+      return da - db
+    })
 
   const validateDeadline = () => {
     if (highPriority) return true
