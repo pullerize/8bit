@@ -70,11 +70,10 @@ function ProjectDetail() {
   useEffect(() => {
     if (!loaded || !startDate) return
     const d = new Date(startDate)
-    const year = d.getFullYear()
-    const day = d.getDate()
-    const newStart = new Date(year, month - 1, day)
-    const newEnd = new Date(newStart)
-    newEnd.setMonth(newEnd.getMonth() + 1)
+    const year = d.getUTCFullYear()
+    const day = d.getUTCDate()
+    const newStart = new Date(Date.UTC(year, month - 1, day))
+    const newEnd = new Date(Date.UTC(year, month, day))
     const s = newStart.toISOString().slice(0, 10)
     const e = newEnd.toISOString().slice(0, 10)
     setStartDate(s)
@@ -108,6 +107,16 @@ function ProjectDetail() {
 
   const updatePost = async (idx: number, post: Post, field: string, value: any) => {
     const updated = { ...post, [field]: value }
+    if (field === 'date' && value) {
+      const d = new Date(value)
+      const sd = startDate ? new Date(startDate) : null
+      const ed = endDate ? new Date(endDate) : null
+      if (sd && d < sd) {
+        setMonth(m => (m === 1 ? 12 : m - 1))
+      } else if (ed && d >= ed) {
+        setMonth(m => (m === 12 ? 1 : m + 1))
+      }
+    }
     if (post.id === 0) {
       const draftsCopy = [...drafts]
       draftsCopy[idx - filteredPosts.length] = updated
