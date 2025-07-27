@@ -20,8 +20,8 @@ function ExpensesReport(){
   const year = new Date().getFullYear()
 
   const monthRange = (y:number,m:number) => {
-    const first = new Date(y, m-1, 1)
-    const last = new Date(y, m, 0)
+    const first = new Date(Date.UTC(y, m-1, 1))
+    const last = new Date(Date.UTC(y, m, 0))
     return [fmt(first), fmt(last)] as const
   }
 
