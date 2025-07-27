@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { API_URL } from '../api'
 
 const MONTH_NAMES = [
@@ -327,8 +328,7 @@ function Reports() {
     <div className="p-4 space-y-4">
       <div className="space-x-2 mb-4">
         <button className="px-2 py-1 border rounded bg-blue-500 text-white">Отчеты по проектам</button>
-        <button className="px-2 py-1 border rounded">Отчеты по сотрудникам</button>
-        <button className="px-2 py-1 border rounded">Общие показатели успеваемости проектов</button>
+        <Link to="/expenses-report" className="px-2 py-1 border rounded">Отчет по расходам</Link>
       </div>
       <h1 className="text-2xl mb-4">Отчеты по проектам</h1>
       <div className="flex space-x-2">

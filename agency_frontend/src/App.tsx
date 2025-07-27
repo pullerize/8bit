@@ -4,6 +4,7 @@ import Login from './pages/Login'
 import Tasks from './pages/Tasks'
 import Calendar from './pages/Calendar'
 import Reports from './pages/Reports'
+import ExpensesReport from './pages/ExpensesReport'
 import Users from './pages/Users'
 import Operators from './pages/Operators'
 import Projects from './pages/ProjectsOverview'
@@ -28,6 +29,9 @@ function App() {
         <Route
           path="/reports"
           element={token ? <Reports /> : <Navigate to="/login" />} />
+        <Route
+          path="/expenses-report"
+          element={token ? <ExpensesReport /> : <Navigate to="/login" />} />
         <Route
           path="/admin"
           element={token ? <AdminPanel /> : <Navigate to="/login" />} />
