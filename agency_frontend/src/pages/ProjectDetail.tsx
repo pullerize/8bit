@@ -67,13 +67,30 @@ function ProjectDetail() {
 
   useEffect(() => { load(month) }, [id, month])
 
+  const calcEndDate = (start: string) => {
+    const d = new Date(start + 'T00:00:00Z')
+    const end = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate()))
+    end.setUTCDate(end.getUTCDate() - 1)
+    return end.toISOString().slice(0, 10)
+  }
+
+  const handleStartChange = (value: string) => {
+    setStartDate(value)
+    if (value) {
+      const e = calcEndDate(value)
+      setEndDate(e)
+    }
+  }
+
   useEffect(() => {
     if (!loaded || !startDate) return
-    const d = new Date(startDate)
+    const d = new Date(startDate + 'T00:00:00Z')
     const year = d.getUTCFullYear()
     const day = d.getUTCDate()
     const newStart = new Date(Date.UTC(year, month - 1, day))
-    const newEnd = new Date(Date.UTC(year, month, day))
+    const newEnd = new Date(Date.UTC(year, month - 1, day))
+    newEnd.setUTCMonth(newEnd.getUTCMonth() + 1)
+    newEnd.setUTCDate(newEnd.getUTCDate() - 1)
     const s = newStart.toISOString().slice(0, 10)
     const e = newEnd.toISOString().slice(0, 10)
     setStartDate(s)
@@ -188,7 +205,6 @@ function ProjectDetail() {
     const ed = endDate ? new Date(endDate) : null
     if (sd && d < sd) return false
     if (ed && d >= ed) return false
-    if (d.getMonth()+1 !== month) return false
     return true
   })
 
@@ -199,7 +215,6 @@ function ProjectDetail() {
       const d = new Date(p.date)
       if (sd && d < sd) return false
       if (ed && d >= ed) return false
-      if (d.getMonth()+1 !== month) return false
       return true
     })
     const totalExisting = relevant.reduce((sum, p) => sum + p.posts_per_day, 0)
@@ -237,7 +252,7 @@ function ProjectDetail() {
               <tr>
                 <td className="border px-2 py-1">{name}</td>
                 <td className="border px-2 py-1">{postsCount}</td>
-                <td className="border px-2 py-1"><input type="date" className="border p-1 w-full" value={startDate} onChange={e=>setStartDate(e.target.value)} onBlur={()=>updateInfo({start_date:startDate})} /></td>
+                <td className="border px-2 py-1"><input type="date" className="border p-1 w-full" value={startDate} onChange={e=>handleStartChange(e.target.value)} onBlur={()=>updateInfo({start_date:startDate, end_date:endDate})} /></td>
                 <td className="border px-2 py-1"><input type="date" className="border p-1 w-full" value={endDate} onChange={e=>setEndDate(e.target.value)} onBlur={()=>updateInfo({end_date:endDate})} /></td>
                 <td className="border px-2 py-1"></td>
               </tr>
