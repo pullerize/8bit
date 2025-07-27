@@ -37,13 +37,14 @@ function ProjectDetail() {
   const [postsCount, setPostsCount] = useState(0)
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
+  const [month,setMonth] = useState(new Date().getMonth()+1)
 
   const [posts, setPosts] = useState<Post[]>([])
   const [drafts, setDrafts] = useState<Post[]>([])
   const [loaded, setLoaded] = useState(false)
 
 
-  const load = async () => {
+  const load = async (m:number=month) => {
     const res = await fetch(`${API_URL}/projects/${id}`, { headers: { Authorization: `Bearer ${token}` } })
     if (res.ok) {
       const data = await res.json()
@@ -53,12 +54,12 @@ function ProjectDetail() {
       setStartDate(data.start_date?.slice(0, 10) || '')
       setEndDate(data.end_date?.slice(0, 10) || '')
     }
-    const r = await fetch(`${API_URL}/projects/${id}/posts`, { headers: { Authorization: `Bearer ${token}` } })
+    const r = await fetch(`${API_URL}/projects/${id}/posts?month=${m}`, { headers: { Authorization: `Bearer ${token}` } })
     if (r.ok) setPosts(await r.json())
     setLoaded(true)
   }
 
-  useEffect(() => { load() }, [id])
+  useEffect(() => { load(month) }, [id, month])
 
   // month/year selectors no longer reset start and end dates automatically
 
@@ -153,6 +154,7 @@ function ProjectDetail() {
     const ed = endDate ? new Date(endDate) : null
     if (sd && d < sd) return false
     if (ed && d >= ed) return false
+    if (d.getMonth()+1 !== month) return false
     return true
   })
 
@@ -163,6 +165,7 @@ function ProjectDetail() {
       const d = new Date(p.date)
       if (sd && d < sd) return false
       if (ed && d >= ed) return false
+      if (d.getMonth()+1 !== month) return false
       return true
     })
     const totalExisting = relevant.reduce((sum, p) => sum + p.posts_per_day, 0)
@@ -178,7 +181,7 @@ function ProjectDetail() {
 
   useEffect(() => {
     if (loaded) recalcPostsCount()
-  }, [posts, drafts, startDate, endDate, loaded])
+  }, [posts, drafts, startDate, endDate, month, loaded])
 
   const rows = [...filteredPosts, ...drafts]
 
@@ -204,11 +207,14 @@ function ProjectDetail() {
                 <td className="border px-2 py-1"><input type="date" className="border p-1 w-full" value={endDate} onChange={e=>setEndDate(e.target.value)} onBlur={()=>updateInfo({end_date:endDate})} /></td>
                 <td className="border px-2 py-1"></td>
               </tr>
-            </tbody>
-          </table>
-          {/* Month and year selectors were previously used to reset dates
-              automatically. They have been removed to keep the manually
-              chosen start and end dates intact. */}
+          </tbody>
+        </table>
+        <div className="mb-4">
+          <select className="border p-1" value={month} onChange={e=>setMonth(Number(e.target.value))}>
+            {MONTHS.map((m,i)=>(<option key={i+1} value={i+1}>{m}</option>))}
+          </select>
+        </div>
+          {/* Month and year selectors were previously used to reset dates automatically. */}
         </div>
       )}
 

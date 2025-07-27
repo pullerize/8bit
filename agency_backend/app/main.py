@@ -428,7 +428,23 @@ def remove_receipt(receipt_id: int, db: Session = Depends(auth.get_db), current:
 
 
 @app.get("/projects/{project_id}/posts", response_model=list[schemas.ProjectPost])
-def list_project_posts(project_id: int, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
+def list_project_posts(
+    project_id: int,
+    month: int | None = None,
+    year: int | None = None,
+    db: Session = Depends(auth.get_db),
+    current: models.User = Depends(auth.get_current_active_user),
+):
+    if month:
+        y = year or datetime.utcnow().year
+        start = datetime(y, month, 1)
+        end_month = month + 1
+        end_year = y
+        if end_month > 12:
+            end_month = 1
+            end_year += 1
+        end = datetime(end_year, end_month, 1)
+        return crud.get_project_posts(db, project_id, start, end)
     return crud.get_project_posts(db, project_id)
 
 
