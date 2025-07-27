@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Text, Enum, Boolean, UniqueConstraint
 from sqlalchemy.orm import relationship
-from datetime import datetime
+from datetime import datetime, timedelta
 import enum
 
 from .database import Base
@@ -87,6 +87,10 @@ def first_day_next_month() -> datetime:
     month = 1 if now.month == 12 else now.month + 1
     return datetime(year, month, 1)
 
+def last_day_current_month() -> datetime:
+    start_next = first_day_next_month()
+    return start_next - timedelta(days=1)
+
 
 class Project(Base):
     __tablename__ = "projects"
@@ -95,7 +99,7 @@ class Project(Base):
     name = Column(String, unique=True, index=True)
     posts_count = Column(Integer, default=0)
     start_date = Column(DateTime, default=first_day_current_month)
-    end_date = Column(DateTime, default=first_day_next_month)
+    end_date = Column(DateTime, default=last_day_current_month)
 
 class Shooting(Base):
     __tablename__ = "shootings"

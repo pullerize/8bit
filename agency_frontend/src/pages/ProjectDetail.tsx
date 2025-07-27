@@ -44,6 +44,8 @@ function ProjectDetail() {
   const [loaded, setLoaded] = useState(false)
 
 
+  const parseUTC = (s: string) => new Date(s.endsWith('Z') ? s : s + 'Z')
+
   const load = async (m:number=month) => {
     const res = await fetch(`${API_URL}/projects/${id}`, { headers: { Authorization: `Bearer ${token}` } })
     if (res.ok) {
@@ -54,7 +56,7 @@ function ProjectDetail() {
       setStartDate(data.start_date?.slice(0, 10) || '')
       setEndDate(data.end_date?.slice(0, 10) || '')
     }
-    let year = startDate ? new Date(startDate).getFullYear() : new Date().getFullYear()
+    let year = startDate ? parseUTC(startDate + 'T00:00:00').getUTCFullYear() : new Date().getFullYear()
     const nextMonth = m === 12 ? 1 : m + 1
     const nextYear = nextMonth === 1 ? year + 1 : year
     const first = await fetch(`${API_URL}/projects/${id}/posts?month=${m}&year=${year}`, { headers: { Authorization: `Bearer ${token}` } })
@@ -125,9 +127,9 @@ function ProjectDetail() {
   const updatePost = async (idx: number, post: Post, field: string, value: any) => {
     const updated = { ...post, [field]: value }
     if (field === 'date' && value) {
-      const d = new Date(value)
-      const sd = startDate ? new Date(startDate) : null
-      const ed = endDate ? new Date(endDate) : null
+      const d = parseUTC(value + 'T00:00:00')
+      const sd = startDate ? parseUTC(startDate + 'T00:00:00') : null
+      const ed = endDate ? parseUTC(endDate + 'T00:00:00') : null
       if (sd && d < sd) {
         setMonth(m => (m === 1 ? 12 : m - 1))
       } else if (ed && d >= ed) {
@@ -147,7 +149,7 @@ function ProjectDetail() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
           body: JSON.stringify({
-            date: value + 'T00:00:00',
+            date: value + 'T00:00:00Z',
             posts_per_day: updated.posts_per_day,
             post_type: updated.post_type,
             status: updated.status,
@@ -170,7 +172,7 @@ function ProjectDetail() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          date: (updated.date.includes('T') ? updated.date : updated.date + 'T00:00:00'),
+          date: (updated.date.includes('T') ? updated.date : updated.date + 'T00:00:00Z'),
           posts_per_day: updated.posts_per_day,
           post_type: updated.post_type,
           status: updated.status,
@@ -200,19 +202,19 @@ function ProjectDetail() {
   }
 
   const filteredPosts = posts.filter(p => {
-    const d = new Date(p.date)
-    const sd = startDate ? new Date(startDate) : null
-    const ed = endDate ? new Date(endDate) : null
+    const d = parseUTC(p.date)
+    const sd = startDate ? parseUTC(startDate + 'T00:00:00') : null
+    const ed = endDate ? parseUTC(endDate + 'T00:00:00') : null
     if (sd && d < sd) return false
     if (ed && d >= ed) return false
     return true
   })
 
   const recalcPostsCount = async (list?: Post[], dr?: Post[]) => {
-    const sd = startDate ? new Date(startDate) : null
-    const ed = endDate ? new Date(endDate) : null
+    const sd = startDate ? parseUTC(startDate + 'T00:00:00') : null
+    const ed = endDate ? parseUTC(endDate + 'T00:00:00') : null
     const relevant = (list || posts).filter(p => {
-      const d = new Date(p.date)
+      const d = parseUTC(p.date)
       if (sd && d < sd) return false
       if (ed && d >= ed) return false
       return true
