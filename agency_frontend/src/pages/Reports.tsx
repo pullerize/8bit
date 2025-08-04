@@ -27,8 +27,6 @@ interface Report {
   receipts: number
   total_expenses: number
   debt: number
-  balance_after_tax: number
-  positive_balance: number
   expenses: Expense[]
   receipts_list: Receipt[]
   client_expenses: ClientExpense[]
@@ -47,11 +45,11 @@ function parseNumber(value: string) {
   return parseFloat(value.replace(/[^0-9.,]/g, '').replace(/\s+/g, '').replace(',', '.')) || 0
 }
 
-const VAT_MULTIPLIER = 1.18
-
-function addVat(amount: number) {
-  return amount * VAT_MULTIPLIER
-}
+const TAX_OPTIONS = [
+  { label: 'ЯТТ', value: 0.95 },
+  { label: 'ООО', value: 0.83 },
+  { label: 'Нал', value: 1.0 },
+]
 
 function Reports() {
   const token = localStorage.getItem('token')
@@ -78,6 +76,12 @@ function Reports() {
   const [editingReceipt, setEditingReceipt] = useState<Receipt | null>(null)
   const [editingClientExpense, setEditingClientExpense] = useState<ClientExpense | null>(null)
   const [tab, setTab] = useState<'expenses' | 'receipts' | 'client_expenses'>('expenses')
+  const [tax, setTax] = useState(0.83)
+
+  const applyTax = (amount: number) => amount * tax
+  const balanceAfterTax = report ? applyTax(report.receipts) : 0
+  const positiveBalance = report ? report.receipts - report.total_expenses : 0
+  const positiveBalanceTax = report ? balanceAfterTax - report.total_expenses : 0
 
   const loadProjects = async () => {
     const res = await fetch(`${API_URL}/projects/`, { headers: { Authorization: `Bearer ${token}` } })
@@ -198,12 +202,10 @@ function Reports() {
           expenses = [...expenses, exp]
           total = total + exp.amount
         }
-        const positive_balance = r.contract_amount - total
         return {
           ...r,
           expenses,
           total_expenses: total,
-          positive_balance,
         }
       })
       setEditingExpense(null)
@@ -237,11 +239,9 @@ function Reports() {
           list = [...list, item]
           sum = sum + item.amount
         }
-       const balance_after_tax = sum * 0.83
-        const positive_balance = r.contract_amount - r.total_expenses
         const clientSum = r.client_expenses.reduce((s,x)=>s+x.amount,0)
         const debt = r.contract_amount - sum + clientSum
-        return { ...r, receipts: sum, receipts_list: list, balance_after_tax, positive_balance, debt }
+        return { ...r, receipts: sum, receipts_list: list, debt }
       })
       setEditingReceipt(null)
     } else {
@@ -276,8 +276,7 @@ function Reports() {
         }
         const clientSum = list.reduce((s,x)=>s+x.amount,0)
         const debt = r.contract_amount - r.receipts + clientSum
-        const positive_balance = r.contract_amount - total
-        return { ...r, client_expenses: list, debt, total_expenses: total, positive_balance }
+        return { ...r, client_expenses: list, debt, total_expenses: total }
       })
       setEditingClientExpense(null)
     } else {
@@ -308,8 +307,7 @@ function Reports() {
         }
         const clientSum = list.reduce((s,x)=>s+x.amount,0)
         const debt = r.contract_amount - r.receipts + clientSum
-        const positive_balance = r.contract_amount - total
-        return { ...r, client_expenses: list, debt, total_expenses: total, positive_balance }
+        return { ...r, client_expenses: list, debt, total_expenses: total }
       })
       setEditingClientExpense(null)
     } else {
@@ -350,10 +348,15 @@ function Reports() {
             <option key={i + 1} value={i + 1}>{name}</option>
           ))}
         </select>
+        <select className="border p-2" value={tax} onChange={e => setTax(parseFloat(e.target.value))}>
+          {TAX_OPTIONS.map(opt => (
+            <option key={opt.value} value={opt.value}>{opt.label}</option>
+          ))}
+        </select>
       </div>
       {report && (
         <>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4">
             <div className="p-2 border rounded bg-white cursor-pointer" onClick={() => openEditField('contract_amount')}>
               <div className="text-sm text-gray-500">Сумма контракта</div>
               <div className="text-lg font-semibold">{formatCurrency(report.contract_amount)}</div>
@@ -368,7 +371,7 @@ function Reports() {
             </div>
             <div className="p-2 border rounded bg-gray-50">
               <div className="text-sm text-gray-500">Баланс после вычета налога</div>
-              <div className="text-lg font-semibold">{formatCurrency(report.balance_after_tax)}</div>
+              <div className="text-lg font-semibold">{formatCurrency(balanceAfterTax)}</div>
             </div>
             <div className="p-2 border rounded bg-gray-50">
               <div className="text-sm text-gray-500">Общий расход</div>
@@ -376,7 +379,11 @@ function Reports() {
             </div>
             <div className="p-2 border rounded border-green-500 bg-gray-50">
               <div className="text-sm text-gray-500">Положительный баланс</div>
-              <div className="text-lg font-semibold">{formatCurrency(report.positive_balance)}</div>
+              <div className="text-lg font-semibold">{formatCurrency(positiveBalance)}</div>
+            </div>
+            <div className="p-2 border rounded border-green-500 bg-gray-50">
+              <div className="text-sm text-gray-500">Положительный баланс с учетом налогов</div>
+              <div className="text-lg font-semibold">{formatCurrency(positiveBalanceTax)}</div>
             </div>
           </div>
           <div className="mt-4 flex space-x-4">
@@ -460,7 +467,7 @@ function Reports() {
                   <tr className="bg-gray-100">
                     <th className="px-4 py-2 border">Название</th>
                     <th className="px-4 py-2 border">Сумма</th>
-                    <th className="px-4 py-2 border">Сумма с НДС</th>
+                    <th className="px-4 py-2 border">Сумма с учетом налога</th>
                     <th className="px-4 py-2 border">Комментарий</th>
                     <th className="px-4 py-2 border">Действия</th>
                   </tr>
@@ -470,7 +477,7 @@ function Reports() {
                     <tr key={c.id} className="text-center border-t">
                       <td className="px-4 py-2 border">{c.name}</td>
                       <td className="px-4 py-2 border">{formatCurrency(c.amount)}</td>
-                      <td className="px-4 py-2 border">{formatCurrency(addVat(c.amount))}</td>
+                      <td className="px-4 py-2 border">{formatCurrency(applyTax(c.amount))}</td>
                       <td className="px-4 py-2 border">{c.comment}</td>
                       <td className="px-4 py-2 border space-x-2">
                         <button className="text-blue-500" onClick={() => openClientExpense(c)}>Редактировать</button>
@@ -543,8 +550,8 @@ function Reports() {
                       <input className="border p-2 w-full" value={cExpAmount} onChange={e => setCExpAmount(formatInput(e.target.value))} />
                     </label>
                     <label className="block">
-                      <span className="text-sm text-gray-500">Сумма с НДС</span>
-                      <input className="border p-2 w-full" value={formatInput(String(addVat(parseNumber(cExpAmount))))} disabled />
+                      <span className="text-sm text-gray-500">Сумма с учетом налога</span>
+                      <input className="border p-2 w-full" value={formatInput(String(applyTax(parseNumber(cExpAmount))))} disabled />
                     </label>
                     <label className="block">
                       <span className="text-sm text-gray-500">Комментарий</span>
@@ -563,8 +570,8 @@ function Reports() {
                       <input className="border p-2 w-full" value={closeAmount} onChange={e => setCloseAmount(formatInput(e.target.value))} />
                     </label>
                     <label className="block">
-                      <span className="text-sm text-gray-500">Сумма с НДС</span>
-                      <input className="border p-2 w-full" value={formatInput(String(addVat(parseNumber(closeAmount))))} disabled />
+                      <span className="text-sm text-gray-500">Сумма с учетом налога</span>
+                      <input className="border p-2 w-full" value={formatInput(String(applyTax(parseNumber(closeAmount))))} disabled />
                     </label>
                     <label className="block">
                       <span className="text-sm text-gray-500">Комментарий</span>

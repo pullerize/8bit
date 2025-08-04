@@ -230,9 +230,8 @@ def get_project_report(
     receipts_sum = sum(r.amount for r in receipts_list)
     client_sum = sum(e.amount for e in client_expenses)
     total_expenses = sum(e.amount for e in expenses) + client_sum
-    balance_after_tax = receipts_sum * 0.83
     debt = report.contract_amount - receipts_sum + client_sum
-    positive_balance = report.contract_amount - total_expenses
+    positive_balance = receipts_sum - total_expenses
     return schemas.ProjectReport(
         project_id=project_id,
         contract_amount=report.contract_amount,
@@ -241,7 +240,6 @@ def get_project_report(
         client_expenses=client_expenses,
         total_expenses=total_expenses,
         debt=debt,
-        balance_after_tax=balance_after_tax,
         positive_balance=positive_balance,
         expenses=expenses,
     )
@@ -271,9 +269,8 @@ def update_project_report(
     receipts_sum = sum(r.amount for r in receipts_list)
     client_sum = sum(e.amount for e in client_expenses)
     total_expenses = sum(e.amount for e in expenses) + client_sum
-    balance_after_tax = receipts_sum * 0.83
     debt = report.contract_amount - receipts_sum + client_sum
-    positive_balance = report.contract_amount - total_expenses
+    positive_balance = receipts_sum - total_expenses
     return schemas.ProjectReport(
         project_id=project_id,
         contract_amount=report.contract_amount,
@@ -282,7 +279,6 @@ def update_project_report(
         client_expenses=client_expenses,
         total_expenses=total_expenses,
         debt=debt,
-        balance_after_tax=balance_after_tax,
         positive_balance=positive_balance,
         expenses=expenses,
     )

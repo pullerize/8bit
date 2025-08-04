@@ -212,7 +212,6 @@ class ProjectReport(ProjectReportBase):
     receipts_list: List[Receipt]
     client_expenses: List[ClientExpense]
     debt: float
-    balance_after_tax: float
     positive_balance: float
     expenses: List[Expense]
     model_config = ConfigDict(from_attributes=True)
