@@ -14,11 +14,17 @@ interface Project { id: number; name: string }
 interface Task {
   id: number
   title: string
+  description?: string
   project?: string
   status: string
   created_at: string
   deadline?: string | null
   executor_id?: number
+  author_id?: number
+  task_type?: string
+  task_format?: string
+  finished_at?: string | null
+  high_priority?: boolean
 }
 
 const ROLE_NAMES: Record<string, string> = {
@@ -116,6 +122,21 @@ function EmployeeReport() {
     return da - db
   })
 
+  const completedCount = tasks.filter(t => {
+    if (String(t.executor_id) !== userId) return false
+    if (project && t.project !== project) return false
+    if (t.status !== 'done') return false
+    const created = new Date(t.created_at).getTime()
+    const start = new Date(startDate).getTime()
+    const end = new Date(endDate).getTime() + 86400000 - 1
+    return created >= start && created <= end
+  }).length
+
+  const getUserName = (id?: number) => {
+    const u = users.find(x => x.id === id)
+    return u ? u.name : ''
+  }
+
   const uploadContract = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!userId || !e.target.files?.length) return
     const file = e.target.files[0]
@@ -168,7 +189,6 @@ function EmployeeReport() {
         <div className="space-y-2 mt-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="p-2 border rounded bg-white"><div className="text-sm text-gray-500">Имя</div><div>{selectedUser.name}</div></div>
-            <div className="p-2 border rounded bg-white"><div className="text-sm text-gray-500">Дата рождения</div><div>{formatDate(selectedUser.birth_date)}</div></div>
             <div className="p-2 border rounded bg-white"><div className="text-sm text-gray-500">Должность</div><div>{ROLE_NAMES[selectedUser.role] || selectedUser.role}</div></div>
             <div className="p-2 border rounded bg-white">
               <div className="text-sm text-gray-500">Договор</div>
@@ -178,6 +198,7 @@ function EmployeeReport() {
                 <input type="file" onChange={uploadContract} />
               )}
             </div>
+            <div className="p-2 border rounded bg-white"><div className="text-sm text-gray-500">Завершенные задачи</div><div>{completedCount}</div></div>
           </div>
 
           <div className="mt-4">
@@ -201,20 +222,42 @@ function EmployeeReport() {
                   <th className="px-4 py-2 border">Название задачи</th>
                   <th className="px-4 py-2 border">Проект</th>
                   <th className="px-4 py-2 border">Статус</th>
+                  <th className="px-4 py-2 border">Когда поставлена задача</th>
                   <th className="px-4 py-2 border">Дедлайн</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredTasks.map(t => (
-                  <tr key={t.id} className="text-center border-t">
+                  <tr key={t.id} className="text-center border-t cursor-pointer hover:bg-gray-50" onClick={()=>setModalTask(t)}>
                     <td className="px-4 py-2 border">{t.title}</td>
                     <td className="px-4 py-2 border">{t.project}</td>
                     <td className="px-4 py-2 border">{t.status === 'done' ? 'Завершено' : 'В работе'}</td>
+                    <td className="px-4 py-2 border">{formatDate(t.created_at)}</td>
                     <td className="px-4 py-2 border">{formatDate(t.deadline)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+      {modalTask && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+          <div className="bg-white p-4 rounded w-[40rem] max-h-[90vh] overflow-y-auto relative">
+            <button className="absolute right-2 top-2" onClick={()=>setModalTask(null)}>✕</button>
+            <h2 className="text-xl mb-2">Информация о задаче</h2>
+            <div className="space-y-1">
+              <div><span className="text-gray-500">Название:</span> {modalTask.title}</div>
+              {modalTask.description && <div><span className="text-gray-500">Описание:</span> {modalTask.description}</div>}
+              {modalTask.project && <div><span className="text-gray-500">Проект:</span> {modalTask.project}</div>}
+              {modalTask.task_type && <div><span className="text-gray-500">Тип задачи:</span> {modalTask.task_type}</div>}
+              {modalTask.task_format && <div><span className="text-gray-500">Формат:</span> {modalTask.task_format}</div>}
+              <div><span className="text-gray-500">Кто поставил:</span> {getUserName(modalTask.author_id)}</div>
+              <div><span className="text-gray-500">Исполнитель:</span> {getUserName(modalTask.executor_id)}</div>
+              <div><span className="text-gray-500">Когда поставлена:</span> {formatDate(modalTask.created_at)}</div>
+              {modalTask.deadline && <div><span className="text-gray-500">Дедлайн:</span> {formatDate(modalTask.deadline)}</div>}
+              <div><span className="text-gray-500">Статус:</span> {modalTask.status === 'done' ? 'Завершено' : 'В работе'}</div>
+            </div>
           </div>
         </div>
       )}
