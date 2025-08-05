@@ -1,4 +1,15 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Text, Enum, Boolean, UniqueConstraint
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    ForeignKey,
+    DateTime,
+    Text,
+    Enum,
+    Boolean,
+    UniqueConstraint,
+    Date,
+)
 from sqlalchemy.orm import relationship
 from datetime import datetime, timedelta
 import enum
@@ -19,6 +30,8 @@ class User(Base):
     name = Column(String, index=True)
     hashed_password = Column(String)
     role = Column(Enum(RoleEnum), default=RoleEnum.designer)
+    birth_date = Column(Date, nullable=True)
+    contract_path = Column(String, nullable=True)
 
     tasks = relationship(
         "Task",

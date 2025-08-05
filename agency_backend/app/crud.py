@@ -20,6 +20,7 @@ def create_user(db: Session, user: schemas.UserCreate) -> models.User:
         name=user.name,
         hashed_password=hashed_password,
         role=user.role,
+        birth_date=user.birth_date,
     )
     db.add(db_user)
     db.commit()
@@ -43,6 +44,8 @@ def update_user(db: Session, user_id: int, user: schemas.UserUpdate) -> Optional
         db_user.hashed_password = auth.get_password_hash(user.password)
     if user.role is not None:
         db_user.role = user.role
+    if user.birth_date is not None:
+        db_user.birth_date = user.birth_date
     db.commit()
     db.refresh(db_user)
     return db_user

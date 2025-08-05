@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 from typing import Optional, List
 from pydantic import BaseModel, field_validator, ConfigDict
 
@@ -6,6 +6,7 @@ class UserBase(BaseModel):
     login: str
     name: str
     role: str
+    birth_date: Optional[date] = None
 
 class UserCreate(UserBase):
     password: str
@@ -15,9 +16,11 @@ class UserUpdate(BaseModel):
     name: Optional[str] = None
     password: Optional[str] = None
     role: Optional[str] = None
+    birth_date: Optional[date] = None
 
 class User(UserBase):
     id: int
+    contract_path: Optional[str] = None
     model_config = ConfigDict(from_attributes=True)
 
 class TaskBase(BaseModel):

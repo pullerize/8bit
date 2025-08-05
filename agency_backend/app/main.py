@@ -1,10 +1,12 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from dotenv import load_dotenv
 from datetime import datetime
 from typing import List, Optional
+import os
 
 from . import models, schemas, crud, auth
 from .database import engine, Base, SessionLocal
@@ -85,6 +87,40 @@ def delete_user(user_id: int, db: Session = Depends(auth.get_db), current: model
         raise HTTPException(status_code=403, detail="Not enough permissions")
     crud.delete_user(db, user_id)
     return {"ok": True}
+
+
+@app.post("/users/{user_id}/contract")
+def upload_contract(
+    user_id: int,
+    file: UploadFile = File(...),
+    db: Session = Depends(auth.get_db),
+    current: models.User = Depends(auth.get_current_active_user),
+):
+    if current.role != models.RoleEnum.admin:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    user = crud.get_user(db, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    os.makedirs("contracts", exist_ok=True)
+    path = os.path.join("contracts", f"{user_id}_{file.filename}")
+    with open(path, "wb") as f:
+        f.write(file.file.read())
+    user.contract_path = path
+    db.commit()
+    db.refresh(user)
+    return {"contract_path": path}
+
+
+@app.get("/users/{user_id}/contract")
+def download_contract(
+    user_id: int,
+    db: Session = Depends(auth.get_db),
+    current: models.User = Depends(auth.get_current_active_user),
+):
+    user = crud.get_user(db, user_id)
+    if not user or not user.contract_path:
+        raise HTTPException(status_code=404, detail="Contract not found")
+    return FileResponse(user.contract_path, filename=os.path.basename(user.contract_path))
 
 
 @app.get("/tasks/", response_model=list[schemas.Task])
