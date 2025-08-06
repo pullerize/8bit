@@ -444,6 +444,7 @@ function renderDesign(stepIndex) {
         if (selected.glass === 'Рифленое') {
             options = options.filter(o => !hideWithRiffled.includes(o));
         }
+        selected.shotlan = null;
         shotlanContainer.innerHTML = '';
         activeShot = null;
         options.forEach(name => {
