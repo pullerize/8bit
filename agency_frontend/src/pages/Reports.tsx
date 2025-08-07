@@ -21,6 +21,7 @@ interface Project { id: number; name: string }
 interface Expense { id: number; name: string; amount: number; comment?: string }
 interface Receipt { id: number; name: string; amount: number; comment?: string }
 interface ClientExpense { id: number; name: string; amount: number; comment?: string }
+
 interface Report {
   project_id: number
   contract_amount: number
@@ -44,12 +45,6 @@ function formatInput(value: string) {
 function parseNumber(value: string) {
   return parseFloat(value.replace(/[^0-9.,]/g, '').replace(/\s+/g, '').replace(',', '.')) || 0
 }
-
-const TAX_OPTIONS = [
-  { label: 'ЯТТ', value: 0.95 },
-  { label: 'ООО', value: 0.83 },
-  { label: 'Нал', value: 1.0 },
-]
 
 function Reports() {
   const token = localStorage.getItem('token')
@@ -76,7 +71,8 @@ function Reports() {
   const [editingReceipt, setEditingReceipt] = useState<Receipt | null>(null)
   const [editingClientExpense, setEditingClientExpense] = useState<ClientExpense | null>(null)
   const [tab, setTab] = useState<'expenses' | 'receipts' | 'client_expenses'>('expenses')
-  const [tax, setTax] = useState(0.83)
+  const [taxOptions, setTaxOptions] = useState<{id:number; name:string; rate:number}[]>([])
+  const [tax, setTax] = useState(0)
 
   const applyTax = (amount: number) => amount * tax
   const balanceAfterTax = report ? applyTax(report.receipts) : 0
@@ -101,7 +97,16 @@ function Reports() {
     if (res.ok) setReport(await res.json())
   }
 
-  useEffect(() => { loadProjects(); loadExpenseItems() }, [])
+  const loadTaxes = async () => {
+    const res = await fetch(`${API_URL}/taxes/`, { headers: { Authorization: `Bearer ${token}` } })
+    if (res.ok) {
+      const data = await res.json()
+      setTaxOptions(data)
+      if (data.length) setTax(data[0].rate)
+    }
+  }
+
+  useEffect(() => { loadProjects(); loadExpenseItems(); loadTaxes() }, [])
   useEffect(() => { if (projectId) loadReport(projectId as number, month) }, [projectId, month])
 
   const openEditField = (field: 'contract_amount') => {
@@ -349,8 +354,8 @@ function Reports() {
           ))}
         </select>
         <select className="border p-2" value={tax} onChange={e => setTax(parseFloat(e.target.value))}>
-          {TAX_OPTIONS.map(opt => (
-            <option key={opt.value} value={opt.value}>{opt.label}</option>
+          {taxOptions.map(opt => (
+            <option key={opt.id} value={opt.rate}>{opt.name}</option>
           ))}
         </select>
       </div>

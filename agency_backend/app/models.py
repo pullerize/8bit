@@ -9,6 +9,7 @@ from sqlalchemy import (
     Boolean,
     UniqueConstraint,
     Date,
+    Float,
 )
 from sqlalchemy.orm import relationship
 from datetime import datetime, timedelta
@@ -141,6 +142,15 @@ class ExpenseItem(Base):
     name = Column(String, unique=True)
     is_common = Column(Boolean, default=False)
     unit_cost = Column(Integer, default=0)
+
+
+
+class Tax(Base):
+    __tablename__ = "taxes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, unique=True)
+    rate = Column(Float)
 
 
 

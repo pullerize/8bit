@@ -611,6 +611,36 @@ def delete_expense_item(db: Session, item_id: int) -> None:
         db.commit()
 
 
+def get_taxes(db: Session) -> List[models.Tax]:
+    return db.query(models.Tax).all()
+
+
+def create_tax(db: Session, name: str, rate: float) -> models.Tax:
+    tax = models.Tax(name=name, rate=rate)
+    db.add(tax)
+    db.commit()
+    db.refresh(tax)
+    return tax
+
+
+def update_tax(db: Session, tax_id: int, name: str, rate: float) -> Optional[models.Tax]:
+    tax = db.query(models.Tax).filter(models.Tax.id == tax_id).first()
+    if not tax:
+        return None
+    tax.name = name
+    tax.rate = rate
+    db.commit()
+    db.refresh(tax)
+    return tax
+
+
+def delete_tax(db: Session, tax_id: int) -> None:
+    tax = db.query(models.Tax).filter(models.Tax.id == tax_id).first()
+    if tax:
+        db.delete(tax)
+        db.commit()
+
+
 def get_expenses_report(
     db: Session,
     start: datetime,

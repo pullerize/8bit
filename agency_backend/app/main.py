@@ -29,7 +29,19 @@ def create_default_admin():
     finally:
         db.close()
 
+def create_default_taxes():
+    db = SessionLocal()
+    try:
+        if not crud.get_taxes(db):
+            crud.create_tax(db, "ЯТТ", 0.95)
+            crud.create_tax(db, "ООО", 0.83)
+            crud.create_tax(db, "Нал", 1.0)
+    finally:
+        db.close()
+
+
 create_default_admin()
+create_default_taxes()
 
 app = FastAPI(title="Agency API")
 
@@ -487,6 +499,36 @@ def delete_expense_item(item_id: int, db: Session = Depends(auth.get_db), curren
     if current.role != models.RoleEnum.admin:
         raise HTTPException(status_code=403, detail="Not enough permissions")
     crud.delete_expense_item(db, item_id)
+    return {"ok": True}
+
+
+@app.get("/taxes/", response_model=list[schemas.Tax])
+def list_taxes(db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
+    return crud.get_taxes(db)
+
+
+@app.post("/taxes/", response_model=schemas.Tax)
+def create_tax(tax: schemas.TaxCreate, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
+    if current.role != models.RoleEnum.admin:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    return crud.create_tax(db, tax.name, tax.rate)
+
+
+@app.put("/taxes/{tax_id}", response_model=schemas.Tax)
+def update_tax(tax_id: int, tax: schemas.TaxCreate, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
+    if current.role != models.RoleEnum.admin:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    updated = crud.update_tax(db, tax_id, tax.name, tax.rate)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Tax not found")
+    return updated
+
+
+@app.delete("/taxes/{tax_id}")
+def delete_tax(tax_id: int, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
+    if current.role != models.RoleEnum.admin:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    crud.delete_tax(db, tax_id)
     return {"ok": True}
 
 
