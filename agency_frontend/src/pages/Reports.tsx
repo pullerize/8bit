@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { API_URL } from '../api'
+import EmployeeReport from './EmployeeReport'
 
 const MONTH_NAMES = [
   'Январь',
@@ -48,6 +48,7 @@ function parseNumber(value: string) {
 
 function Reports() {
   const token = localStorage.getItem('token')
+  const [section, setSection] = useState<'projects' | 'employees'>('projects')
   const [projects, setProjects] = useState<Project[]>([])
   const [projectId, setProjectId] = useState<number | ''>('')
   const [expenseItems, setExpenseItems] = useState<{id:number; name:string; is_common:boolean}[]>([])
@@ -336,11 +337,23 @@ function Reports() {
     if (projectId) loadReport(projectId as number, month)
   }
 
+  if (section === 'employees') {
+    return (
+      <div className="p-4 space-y-4">
+        <div className="space-x-2 mb-4">
+          <button className="px-2 py-1 border rounded" onClick={() => setSection('projects')}>Отчеты по проектам</button>
+          <button className="px-2 py-1 border rounded bg-blue-500 text-white">Отчет по сотрудникам</button>
+        </div>
+        <EmployeeReport />
+      </div>
+    )
+  }
+
   return (
     <div className="p-4 space-y-4">
       <div className="space-x-2 mb-4">
         <button className="px-2 py-1 border rounded bg-blue-500 text-white">Отчеты по проектам</button>
-        <Link to="/employee-report" className="px-2 py-1 border rounded">Отчет по сотрудникам</Link>
+        <button className="px-2 py-1 border rounded" onClick={() => setSection('employees')}>Отчет по сотрудникам</button>
       </div>
       <h1 className="text-2xl mb-4">Отчеты по проектам</h1>
       <div className="flex space-x-2">

@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { API_URL } from '../api'
 
 interface User {
@@ -56,6 +55,7 @@ function EmployeeReport() {
   const [users, setUsers] = useState<User[]>([])
   const [projects, setProjects] = useState<Project[]>([])
   const [tasks, setTasks] = useState<Task[]>([])
+  const [modalTask, setModalTask] = useState<Task | null>(null)
 
   const [userId, setUserId] = useState('')
   const [project, setProject] = useState('')
@@ -151,12 +151,7 @@ function EmployeeReport() {
   }
 
   return (
-    <div className="p-4 space-y-4">
-      <div className="space-x-2 mb-4">
-        <Link to="/reports" className="px-2 py-1 border rounded">Отчеты по проектам</Link>
-        <button className="px-2 py-1 border rounded bg-blue-500 text-white">Отчет по сотрудникам</button>
-      </div>
-
+    <div className="space-y-4">
       <h1 className="text-2xl mb-4">Отчет по сотрудникам</h1>
 
       <div className="flex flex-wrap gap-2 items-end">
