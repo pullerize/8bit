@@ -135,6 +135,27 @@ def download_contract(
     return FileResponse(user.contract_path, filename=os.path.basename(user.contract_path))
 
 
+@app.delete("/users/{user_id}/contract")
+def delete_contract(
+    user_id: int,
+    db: Session = Depends(auth.get_db),
+    current: models.User = Depends(auth.get_current_active_user),
+):
+    if current.role != models.RoleEnum.admin:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    user = crud.get_user(db, user_id)
+    if not user or not user.contract_path:
+        raise HTTPException(status_code=404, detail="Contract not found")
+    try:
+        os.remove(user.contract_path)
+    except FileNotFoundError:
+        pass
+    user.contract_path = None
+    db.commit()
+    db.refresh(user)
+    return {"ok": True}
+
+
 @app.get("/tasks/", response_model=list[schemas.Task])
 def read_tasks(skip: int = 0, limit: int = 100, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
     return crud.get_tasks_for_user(db, current, skip=skip, limit=limit)

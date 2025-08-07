@@ -172,6 +172,32 @@ function EmployeeReport() {
     loadData()
   }
 
+  const downloadContract = async () => {
+    if (!selectedUser) return
+    const res = await fetch(`${API_URL}/users/${selectedUser.id}/contract`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    if (res.ok) {
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      const name = selectedUser.contract_path?.split('/').pop() || 'contract'
+      a.download = name
+      a.click()
+      URL.revokeObjectURL(url)
+    }
+  }
+
+  const deleteContract = async () => {
+    if (!userId) return
+    await fetch(`${API_URL}/users/${userId}/contract`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    loadData()
+  }
+
   return (
     <div className="space-y-4">
       <h1 className="text-2xl mb-4">Отчет по сотрудникам</h1>
@@ -210,7 +236,11 @@ function EmployeeReport() {
             <div className="p-2 border rounded bg-white">
               <div className="text-sm text-gray-500">Договор</div>
               {selectedUser.contract_path ? (
-                <a href={`${API_URL}/users/${selectedUser.id}/contract`} className="text-blue-500 underline">Скачать</a>
+                <div className="flex items-center gap-2">
+                  <button onClick={downloadContract} className="text-blue-500 underline">Скачать</button>
+                  <button onClick={deleteContract} className="text-red-500 underline">Удалить</button>
+                  <input type="file" onChange={uploadContract} />
+                </div>
               ) : (
                 <input type="file" onChange={uploadContract} />
               )}
