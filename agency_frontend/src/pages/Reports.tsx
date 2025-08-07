@@ -73,10 +73,7 @@ function Reports() {
   const [editingClientExpense, setEditingClientExpense] = useState<ClientExpense | null>(null)
   const [tab, setTab] = useState<'expenses' | 'receipts' | 'client_expenses'>('expenses')
   const [taxOptions, setTaxOptions] = useState<{id:number; name:string; rate:number}[]>([])
-  const [tax, setTax] = useState(() => {
-    const saved = localStorage.getItem('report_tax')
-    return saved ? parseFloat(saved) : 0
-  })
+  const [tax, setTax] = useState(1)
 
   const applyTax = (amount: number) => amount * tax
   const balanceAfterTax = report ? applyTax(report.receipts) : 0
@@ -106,15 +103,22 @@ function Reports() {
     if (res.ok) {
       const data = await res.json()
       setTaxOptions(data)
-      const saved = localStorage.getItem('report_tax')
-      if (saved && data.some((t: any) => t.rate === parseFloat(saved))) {
-        setTax(parseFloat(saved))
-      } else if (data.length) {
-        setTax(data[0].rate)
-        localStorage.setItem('report_tax', String(data[0].rate))
-      }
     }
   }
+
+  useEffect(() => {
+    if (projectId && taxOptions.length) {
+      const key = `report_tax_${projectId}`
+      const saved = localStorage.getItem(key)
+      if (saved && taxOptions.some(t => t.rate === parseFloat(saved))) {
+        setTax(parseFloat(saved))
+      } else {
+        const def = taxOptions[0].rate
+        setTax(def)
+        localStorage.setItem(key, String(def))
+      }
+    }
+  }, [projectId, taxOptions])
 
   useEffect(() => { loadProjects(); loadExpenseItems(); loadTaxes() }, [])
   useEffect(() => { if (projectId) loadReport(projectId as number, month) }, [projectId, month])
@@ -381,7 +385,9 @@ function Reports() {
           onChange={e => {
             const val = parseFloat(e.target.value)
             setTax(val)
-            localStorage.setItem('report_tax', String(val))
+            if (projectId) {
+              localStorage.setItem(`report_tax_${projectId}`, String(val))
+            }
           }}
         >
           {taxOptions.map(opt => (
