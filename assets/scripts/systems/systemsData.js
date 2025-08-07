@@ -436,8 +436,8 @@ const systemsData = {
         profile_C_cap:1,
         profile_V_cap:1,
         moving_mechanism:1,
-        fixed_mechanism:3,
-        fixed_door_profile:3,
+        fixed_mechanism:2,
+        fixed_door_profile:2,
         moving_mechanism_tros:1
       }},
       '1+1S+1S+1': {min:2200,max:7500,params:{
@@ -454,9 +454,9 @@ const systemsData = {
         profile_cap_with_brush:4,
         profile_C_cap:1,
         profile_V_cap:1,
-        moving_mechanism:1,
-        fixed_mechanism:4,
-        fixed_door_profile:4,
+        moving_mechanism:3,
+        fixed_mechanism:0,
+        fixed_door_profile:0,
         moving_mechanism_tros:1
       }},
       '(1)+(1)+1S+1S+(1)+(1)': {min:3350,max:9000,params:{
@@ -473,7 +473,7 @@ const systemsData = {
         profile_cap_with_brush:4,
         profile_C_cap:1,
         profile_V_cap:1,
-        moving_mechanism:2,
+        moving_mechanism:1,
         fixed_mechanism:4,
         fixed_door_profile:4,
         moving_mechanism_tros:1

@@ -64,8 +64,8 @@ function calculateComponents(width, height, subsystem, params, glass, shotlan) {
   add('top_rail_rubber', Math.ceil((width * params.num_rails * 2) / 1000),
       `ceil((${width}*${params.num_rails}*2)/1000)`);
   add('door_brush_joint',
-      Math.ceil((params.door_brush || 0) * params.num_doors * height / 1000),
-      `ceil((${params.door_brush || 0})*${params.num_doors}*${height}/1000)`);
+      Math.ceil((params.door_brush || 0) * height / 1000),
+      `ceil(${height}/1000*${params.door_brush || 0})`);
   const railMult = width <= 3000 ? 0.5 : (width <= 6000 ? 1 : (width <= 9000 ? 1.5 : 2));
   const capMult = width <= 3000 ? 1 : (width <= 6000 ? 2 : (width <= 9000 ? 3 : 4));
   add('top_rails_41', railMult * params.num_rails,
@@ -226,7 +226,7 @@ function calculatePartitionComponents(widthFull, height, subsystem, params, glas
   add('bolts', numDoors * 8, `${numDoors}*8`);
   add('handles', numHandles, `${numHandles}`);
   add('top_rail_rubber', Math.ceil((widthFull * numRails * 2) / 1000), `ceil((${widthFull}*${numRails}*2)/1000)`);
-  add('door_brush_joint', Math.ceil(numBrush * numDoors * height / 1000), `ceil(${numBrush}*${numDoors}*${height}/1000)`);
+  add('door_brush_joint', Math.ceil(numBrush * height / 1000), `ceil(${height}/1000*${numBrush})`);
   const railMult = widthFull <= 3000 ? 0.5 : (widthFull <= 6000 ? 1 : (widthFull <= 9000 ? 1.5 : 2));
   const capMult = widthFull <= 3000 ? 1 : (widthFull <= 6000 ? 2 : (widthFull <= 9000 ? 3 : 4));
   add('top_rails', railMult * numRails, `${railMult}*${numRails}`);
@@ -339,7 +339,7 @@ function calculateWallMountedComponents(widthFull, openWidth, height, subsystem,
   add('bolts', numDoors * 8, `${numDoors}*8`);
   add('handles', params.num_handles || 0, `${params.num_handles || 0}`);
   add('top_rail_rubber', Math.ceil((widthFull * (params.num_rails_41 || 0) * 2) / 1000), `ceil((${widthFull}*${params.num_rails_41 || 0}*2)/1000)`);
-  add('door_brush_joint', Math.ceil((params.door_brush || 0) * numDoors * height / 1000), `ceil((${params.door_brush || 0})*${numDoors}*${height}/1000)`);
+  add('door_brush_joint', Math.ceil((params.door_brush || 0) * height / 1000), `ceil(${height}/1000*${params.door_brush || 0})`);
   const railMult = widthFull <= 3000 ? 0.5 : 1;
   const capMult = widthFull <= 3000 ? 1 : 2;
   add('top_rails_41', railMult * (params.num_rails_41 || 0), `${railMult}*${params.num_rails_41 || 0}`);
@@ -483,8 +483,8 @@ function calculateAngleComponents(widthFull, height, subsystem, params, glass, s
   add('top_rail_rubber', Math.ceil((widthFull * numRails * 2) / 1000),
       `ceil((${widthFull}*${numRails}*2)/1000)`);
   add('door_brush_joint',
-      Math.ceil(perDoorBrush * numDoors * height / 1000),
-      `ceil(${perDoorBrush}*${numDoors}*${height}/1000)`);
+      Math.ceil(perDoorBrush * height / 1000),
+      `ceil(${height}/1000*${perDoorBrush})`);
   const railMult = widthFull <= 3000 ? 0.5 : (widthFull <= 6000 ? 1 : (widthFull <= 9000 ? 1.5 : 2));
   const capMult = widthFull <= 3000 ? 1 : (widthFull <= 6000 ? 2 : (widthFull <= 9000 ? 3 : 4));
   add('top_rails', railMult * numRails,
@@ -645,8 +645,8 @@ function calculateEmbeddedComponents(widthFull, openWidth, height, subsystem, pa
   add('top_rail_rubber', Math.ceil((widthFull * (params.num_rails || 0) * 2) / 1000),
       `ceil((${widthFull}*${params.num_rails || 0}*2)/1000)`);
   add('door_brush_joint',
-      Math.ceil((params.door_brush || 0) * numDoors * height / 1000),
-      `ceil((${params.door_brush || 0})*${numDoors}*${height}/1000)`);
+      Math.ceil((params.door_brush || 0) * height / 1000),
+      `ceil(${height}/1000*${params.door_brush || 0})`);
   const railMult = widthFull <= 3000 ? 0.5 : (widthFull <= 6000 ? 1 : (widthFull <= 9000 ? 1.5 : 2));
   const capMult = widthFull <= 3000 ? 1 : (widthFull <= 6000 ? 2 : (widthFull <= 9000 ? 3 : 4));
   add('top_rails_41', railMult * (params.num_rails || 0), `${railMult}*${params.num_rails || 0}`);
@@ -777,7 +777,7 @@ function calculateSyncComponents(widthFull, height, subsystem, params, glass, sh
   add('bolts', numDoors * 8, `${numDoors}*8`);
   add('handles', numHandles, `${numHandles}`);
   add('top_rail_rubber', Math.ceil((widthFull * numRails * 2) / 1000), `ceil((${widthFull}*${numRails}*2)/1000)`);
-  add('door_brush_joint', Math.ceil(numBrush * numDoors * height / 1000), `ceil(${numBrush}*${numDoors}*${height}/1000)`);
+  add('door_brush_joint', Math.ceil(numBrush * height / 1000), `ceil(${height}/1000*${numBrush})`);
   const railMult = widthFull <= 3000 ? 0.5 : (widthFull <= 6000 ? 1 : 1.5);
   const capMult = widthFull <= 3000 ? 1 : (widthFull <= 6000 ? 2 : 3);
   add('top_rails_47', railMult * numRails, `${railMult}*${numRails}`);
