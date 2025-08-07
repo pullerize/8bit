@@ -252,7 +252,7 @@ footer {
     .option-block { width: 90%; }
     .steps-bar { gap: 2rem; }
     .steps-bar .step:not(:last-child)::after { width: 60px; }
-    .number-input { width: 90%; pointer-events: none; }
+    .number-input { width: 90%; }
     input[type="range"].range-input { width: 90%; }
     .footer-inner { flex-direction: column; }
     .footer-form .row { flex-direction: column; }

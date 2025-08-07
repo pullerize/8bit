@@ -679,6 +679,7 @@ const systemsData = {
     extraField: true,
     minWidth: 500,
     maxWidth: 3000,
+    maxFullWidth: 6000,
     subsystems: {
       'Система 1W': {min:500,max:1500,params:{
         num_doors:1,

@@ -111,8 +111,7 @@ function calculateComponents(width, height, subsystem, params, glass, shotlan) {
       const divider = ((doorWidth - 32) <= 995 ? 1 : 2) * params.num_doors;
       add('divider_profile', divider,
           `(${doorWidth}-32<=995?1:2)*${params.num_doors}`);
-      add('additional_glass_seal', divider * 2 * 1000 / 2500,
-          `${divider}*2*1000/2500`);
+      add('additional_glass_seal', Math.ceil(divider * 2 * 1000 / 2500), `ceil(${divider}*2*1000/2500)`);
       add('bolts_extra', params.num_doors * 8,
           `${params.num_doors}*8`);
       break; }
@@ -120,8 +119,7 @@ function calculateComponents(width, height, subsystem, params, glass, shotlan) {
       const divider = (height <= 3000 ? 3 : 4) * params.num_doors;
       add('divider_profile', divider,
           `(${height}<=3000?3:4)*${params.num_doors}`);
-      add('additional_glass_seal', divider * 2 * 1000 / 2500,
-          `${divider}*2*1000/2500`);
+      add('additional_glass_seal', Math.ceil(divider * 2 * 1000 / 2500), `ceil(${divider}*2*1000/2500)`);
       add('bolts_extra', params.num_doors * 8,
           `${params.num_doors}*8`);
       break; }
@@ -129,8 +127,7 @@ function calculateComponents(width, height, subsystem, params, glass, shotlan) {
       const divider = ((doorWidth - 32) <= 995 ? 1 : 2) * params.num_doors * 2;
       add('divider_profile', divider,
           `(${doorWidth}-32<=995?1:2)*${params.num_doors}*2`);
-      add('additional_glass_seal', divider * 2 * 1000 / 2500,
-          `${divider}*2*1000/2500`);
+      add('additional_glass_seal', Math.ceil(divider * 2 * 1000 / 2500), `ceil(${divider}*2*1000/2500)`);
       add('bolts_extra', params.num_doors * 16,
           `${params.num_doors}*16`);
       break; }
@@ -140,8 +137,7 @@ function calculateComponents(width, height, subsystem, params, glass, shotlan) {
       const divCnt = vertical + horizontal;
       add('divider_profile', divCnt,
           `${vertical}+${horizontal}`);
-      add('additional_glass_seal', divCnt * 2 * 1000 / 2500,
-          `${divCnt}*2*1000/2500`);
+      add('additional_glass_seal', Math.ceil(divCnt * 2 * 1000 / 2500), `ceil(${divCnt}*2*1000/2500)`);
       add('bolts_extra', params.num_doors * 16,
           `${params.num_doors}*16`);
       break; }
@@ -151,8 +147,7 @@ function calculateComponents(width, height, subsystem, params, glass, shotlan) {
       const divCnt = vertical + horizontal;
       add('divider_profile', divCnt,
           `${vertical}+${horizontal}`);
-      add('additional_glass_seal', divCnt * 2 * 1000 / 2500,
-          `${divCnt}*2*1000/2500`);
+      add('additional_glass_seal', Math.ceil(divCnt * 2 * 1000 / 2500), `ceil(${divCnt}*2*1000/2500)`);
       add('bolts_extra', params.num_doors * 24,
           `${params.num_doors}*24`);
       break; }
@@ -258,19 +253,19 @@ function calculatePartitionComponents(widthFull, height, subsystem, params, glas
     case '1шт по горизонтали': {
       const d = ((doorWidth - 32) <= 995 ? 1 : 2) * numDoors;
       add('divider_profile', d, `(${doorWidth}-32<=995?1:2)*${numDoors}`);
-      add('additional_glass_seal', d * 2 * 1000 / 2500, `${d}*2*1000/2500`);
+      add('additional_glass_seal', Math.ceil(d * 2 * 1000 / 2500), `ceil(${d}*2*1000/2500)`);
       add('bolts_extra', numDoors * 8, `${numDoors}*8`);
       break; }
     case '1шт по вертикали': {
       const d = (height <= 3000 ? 3 : 4) * numDoors;
       add('divider_profile', d, `(${height}<=3000?3:4)*${numDoors}`);
-      add('additional_glass_seal', d * 2 * 1000 / 2500, `${d}*2*1000/2500`);
+      add('additional_glass_seal', Math.ceil(d * 2 * 1000 / 2500), `ceil(${d}*2*1000/2500)`);
       add('bolts_extra', numDoors * 8, `${numDoors}*8`);
       break; }
     case '2шт по горизонтали': {
       const d = ((doorWidth - 32) <= 995 ? 1 : 2) * numDoors * 2;
       add('divider_profile', d, `(${doorWidth}-32<=995?1:2)*${numDoors}*2`);
-      add('additional_glass_seal', d * 2 * 1000 / 2500, `${d}*2*1000/2500`);
+      add('additional_glass_seal', Math.ceil(d * 2 * 1000 / 2500), `ceil(${d}*2*1000/2500)`);
       add('bolts_extra', numDoors * 16, `${numDoors}*16`);
       break; }
     case '1шт по вертикали и 1шт по горизонтали': {
@@ -278,7 +273,7 @@ function calculatePartitionComponents(widthFull, height, subsystem, params, glas
       const h = ((doorWidth - 32) <= 995 ? 1 : 2) * numDoors;
       const d = v + h;
       add('divider_profile', d, `${v}+${h}`);
-      add('additional_glass_seal', d * 2 * 1000 / 2500, `${d}*2*1000/2500`);
+      add('additional_glass_seal', Math.ceil(d * 2 * 1000 / 2500), `ceil(${d}*2*1000/2500)`);
       add('bolts_extra', numDoors * 16, `${numDoors}*16`);
       break; }
     case '1шт по вертикали и 2шт по горизонтали': {
@@ -286,7 +281,7 @@ function calculatePartitionComponents(widthFull, height, subsystem, params, glas
       const h = ((doorWidth - 32) <= 995 ? 1 : 2) * 2 * numDoors;
       const d = v + h;
       add('divider_profile', d, `${v}+${h}`);
-      add('additional_glass_seal', d * 2 * 1000 / 2500, `${d}*2*1000/2500`);
+      add('additional_glass_seal', Math.ceil(d * 2 * 1000 / 2500), `ceil(${d}*2*1000/2500)`);
       add('bolts_extra', numDoors * 24, `${numDoors}*24`);
       break; }
     case '1шт по вертикали и 3шт по горизонтали': {
@@ -379,19 +374,19 @@ function calculateWallMountedComponents(widthFull, openWidth, height, subsystem,
     case '1шт по горизонтали': {
       const d = ((doorWidth - 32) <= 995 ? 1 : 2) * numDoors;
       add('divider_profile', d, `(${doorWidth}-32<=995?1:2)*${numDoors}`);
-      add('additional_glass_seal', d * 2 * 1000 / 2500, `${d}*2*1000/2500`);
+      add('additional_glass_seal', Math.ceil(d * 2 * 1000 / 2500), `ceil(${d}*2*1000/2500)`);
       add('bolts_extra', numDoors * 8, `${numDoors}*8`);
       break; }
     case '1шт по вертикали': {
       const d = (height <= 3000 ? 3 : 4) * numDoors;
       add('divider_profile', d, `(${height}<=3000?3:4)*${numDoors}`);
-      add('additional_glass_seal', d * 2 * 1000 / 2500, `${d}*2*1000/2500`);
+      add('additional_glass_seal', Math.ceil(d * 2 * 1000 / 2500), `ceil(${d}*2*1000/2500)`);
       add('bolts_extra', numDoors * 8, `${numDoors}*8`);
       break; }
     case '2шт по горизонтали': {
       const d = ((doorWidth - 32) <= 995 ? 1 : 2) * numDoors * 2;
       add('divider_profile', d, `(${doorWidth}-32<=995?1:2)*${numDoors}*2`);
-      add('additional_glass_seal', d * 2 * 1000 / 2500, `${d}*2*1000/2500`);
+      add('additional_glass_seal', Math.ceil(d * 2 * 1000 / 2500), `ceil(${d}*2*1000/2500)`);
       add('bolts_extra', numDoors * 16, `${numDoors}*16`);
       break; }
     case '1шт по вертикали и 1шт по горизонтали': {
@@ -399,7 +394,7 @@ function calculateWallMountedComponents(widthFull, openWidth, height, subsystem,
       const h = ((doorWidth - 32) <= 995 ? 1 : 2) * numDoors;
       const d = v + h;
       add('divider_profile', d, `${v}+${h}`);
-      add('additional_glass_seal', d * 2 * 1000 / 2500, `${d}*2*1000/2500`);
+      add('additional_glass_seal', Math.ceil(d * 2 * 1000 / 2500), `ceil(${d}*2*1000/2500)`);
       add('bolts_extra', numDoors * 16, `${numDoors}*16`);
       break; }
     case '1шт по вертикали и 2шт по горизонтали': {
@@ -407,7 +402,7 @@ function calculateWallMountedComponents(widthFull, openWidth, height, subsystem,
       const h = ((doorWidth - 32) <= 995 ? 1 : 2) * 2 * numDoors;
       const d = v + h;
       add('divider_profile', d, `${v}+${h}`);
-      add('additional_glass_seal', d * 2 * 1000 / 2500, `${d}*2*1000/2500`);
+      add('additional_glass_seal', Math.ceil(d * 2 * 1000 / 2500), `ceil(${d}*2*1000/2500)`);
       add('bolts_extra', numDoors * 24, `${numDoors}*24`);
       break; }
     case '1шт по вертикали и 3шт по горизонтали': {
@@ -536,8 +531,7 @@ function calculateAngleComponents(widthFull, height, subsystem, params, glass, s
       const divider = ((doorWidth - 32) <= 995 ? 1 : 2) * numDoors;
       add('divider_profile', divider,
           `(${doorWidth}-32<=995?1:2)*${numDoors}`);
-      add('additional_glass_seal', divider * 2 * 1000 / 2500,
-          `${divider}*2*1000/2500`);
+      add('additional_glass_seal', Math.ceil(divider * 2 * 1000 / 2500), `ceil(${divider}*2*1000/2500)`);
       add('bolts_extra', numDoors * 8,
           `${numDoors}*8`);
       break; }
@@ -545,8 +539,7 @@ function calculateAngleComponents(widthFull, height, subsystem, params, glass, s
       const divider = (height <= 3000 ? 3 : 4) * numDoors;
       add('divider_profile', divider,
           `(${height}<=3000?3:4)*${numDoors}`);
-      add('additional_glass_seal', divider * 2 * 1000 / 2500,
-          `${divider}*2*1000/2500`);
+      add('additional_glass_seal', Math.ceil(divider * 2 * 1000 / 2500), `ceil(${divider}*2*1000/2500)`);
       add('bolts_extra', numDoors * 8,
           `${numDoors}*8`);
       break; }
@@ -554,8 +547,7 @@ function calculateAngleComponents(widthFull, height, subsystem, params, glass, s
       const divider = ((doorWidth - 32) <= 995 ? 1 : 2) * numDoors * 2;
       add('divider_profile', divider,
           `(${doorWidth}-32<=995?1:2)*${numDoors}*2`);
-      add('additional_glass_seal', divider * 2 * 1000 / 2500,
-          `${divider}*2*1000/2500`);
+      add('additional_glass_seal', Math.ceil(divider * 2 * 1000 / 2500), `ceil(${divider}*2*1000/2500)`);
       add('bolts_extra', numDoors * 16,
           `${numDoors}*16`);
       break; }
@@ -565,8 +557,7 @@ function calculateAngleComponents(widthFull, height, subsystem, params, glass, s
       const divCnt = vert + horiz;
       add('divider_profile', divCnt,
           `${vert}+${horiz}`);
-      add('additional_glass_seal', divCnt * 2 * 1000 / 2500,
-          `${divCnt}*2*1000/2500`);
+      add('additional_glass_seal', Math.ceil(divCnt * 2 * 1000 / 2500), `ceil(${divCnt}*2*1000/2500)`);
       add('bolts_extra', numDoors * 16,
           `${numDoors}*16`);
       break; }
@@ -576,8 +567,7 @@ function calculateAngleComponents(widthFull, height, subsystem, params, glass, s
       const divCnt = vert + horiz;
       add('divider_profile', divCnt,
           `${vert}+${horiz}`);
-      add('additional_glass_seal', divCnt * 2 * 1000 / 2500,
-          `${divCnt}*2*1000/2500`);
+      add('additional_glass_seal', Math.ceil(divCnt * 2 * 1000 / 2500), `ceil(${divCnt}*2*1000/2500)`);
       add('bolts_extra', numDoors * 24,
           `${numDoors}*24`);
       break; }
@@ -689,19 +679,19 @@ function calculateEmbeddedComponents(widthFull, openWidth, height, subsystem, pa
     case '1шт по горизонтали': {
       const d = ((doorWidth - 32) <= 995 ? 1 : 2) * numDoors;
       add('divider_profile', d, `(${doorWidth}-32<=995?1:2)*${numDoors}`);
-      add('additional_glass_seal', d * 2 * 1000 / 2500, `${d}*2*1000/2500`);
+      add('additional_glass_seal', Math.ceil(d * 2 * 1000 / 2500), `ceil(${d}*2*1000/2500)`);
       add('bolts_extra', numDoors * 8, `${numDoors}*8`);
       break; }
     case '1шт по вертикали': {
       const d = (height <= 3000 ? 3 : 4) * numDoors;
       add('divider_profile', d, `(${height}<=3000?3:4)*${numDoors}`);
-      add('additional_glass_seal', d * 2 * 1000 / 2500, `${d}*2*1000/2500`);
+      add('additional_glass_seal', Math.ceil(d * 2 * 1000 / 2500), `ceil(${d}*2*1000/2500)`);
       add('bolts_extra', numDoors * 8, `${numDoors}*8`);
       break; }
     case '2шт по горизонтали': {
       const d = ((doorWidth - 32) <= 995 ? 1 : 2) * numDoors * 2;
       add('divider_profile', d, `(${doorWidth}-32<=995?1:2)*${numDoors}*2`);
-      add('additional_glass_seal', d * 2 * 1000 / 2500, `${d}*2*1000/2500`);
+      add('additional_glass_seal', Math.ceil(d * 2 * 1000 / 2500), `ceil(${d}*2*1000/2500)`);
       add('bolts_extra', numDoors * 16, `${numDoors}*16`);
       break; }
     case '1шт по вертикали и 1шт по горизонтали': {
@@ -709,7 +699,7 @@ function calculateEmbeddedComponents(widthFull, openWidth, height, subsystem, pa
       const h = ((doorWidth - 32) <= 995 ? 1 : 2) * numDoors;
       const d = v + h;
       add('divider_profile', d, `${v}+${h}`);
-      add('additional_glass_seal', d * 2 * 1000 / 2500, `${d}*2*1000/2500`);
+      add('additional_glass_seal', Math.ceil(d * 2 * 1000 / 2500), `ceil(${d}*2*1000/2500)`);
       add('bolts_extra', numDoors * 16, `${numDoors}*16`);
       break; }
     case '1шт по вертикали и 2шт по горизонтали': {
@@ -717,7 +707,7 @@ function calculateEmbeddedComponents(widthFull, openWidth, height, subsystem, pa
       const h = ((doorWidth - 32) <= 995 ? 1 : 2) * 2 * numDoors;
       const d = v + h;
       add('divider_profile', d, `${v}+${h}`);
-      add('additional_glass_seal', d * 2 * 1000 / 2500, `${d}*2*1000/2500`);
+      add('additional_glass_seal', Math.ceil(d * 2 * 1000 / 2500), `ceil(${d}*2*1000/2500)`);
       add('bolts_extra', numDoors * 24, `${numDoors}*24`);
       break; }
     case '1шт по вертикали и 3шт по горизонтали': {
@@ -815,19 +805,19 @@ function calculateSyncComponents(widthFull, height, subsystem, params, glass, sh
     case '1шт по горизонтали': {
       const d = ((doorWidth - 32) <= 995 ? 1 : 2) * numDoors;
       add('divider_profile', d, `(${doorWidth}-32<=995?1:2)*${numDoors}`);
-      add('additional_glass_seal', d * 2 * 1000 / 2500, `${d}*2*1000/2500`);
+      add('additional_glass_seal', Math.ceil(d * 2 * 1000 / 2500), `ceil(${d}*2*1000/2500)`);
       add('bolts_extra', numDoors * 8, `${numDoors}*8`);
       break; }
     case '1шт по вертикали': {
       const d = (height <= 3000 ? 3 : 4) * numDoors;
       add('divider_profile', d, `(${height}<=3000?3:4)*${numDoors}`);
-      add('additional_glass_seal', d * 2 * 1000 / 2500, `${d}*2*1000/2500`);
+      add('additional_glass_seal', Math.ceil(d * 2 * 1000 / 2500), `ceil(${d}*2*1000/2500)`);
       add('bolts_extra', numDoors * 8, `${numDoors}*8`);
       break; }
     case '2шт по горизонтали': {
       const d = ((doorWidth - 32) <= 995 ? 1 : 2) * numDoors * 2;
       add('divider_profile', d, `(${doorWidth}-32<=995?1:2)*${numDoors}*2`);
-      add('additional_glass_seal', d * 2 * 1000 / 2500, `${d}*2*1000/2500`);
+      add('additional_glass_seal', Math.ceil(d * 2 * 1000 / 2500), `ceil(${d}*2*1000/2500)`);
       add('bolts_extra', numDoors * 16, `${numDoors}*16`);
       break; }
     case '1шт по вертикали и 1шт по горизонтали': {
@@ -835,7 +825,7 @@ function calculateSyncComponents(widthFull, height, subsystem, params, glass, sh
       const h = ((doorWidth - 32) <= 995 ? 1 : 2) * numDoors;
       const d = v + h;
       add('divider_profile', d, `${v}+${h}`);
-      add('additional_glass_seal', d * 2 * 1000 / 2500, `${d}*2*1000/2500`);
+      add('additional_glass_seal', Math.ceil(d * 2 * 1000 / 2500), `ceil(${d}*2*1000/2500)`);
       add('bolts_extra', numDoors * 16, `${numDoors}*16`);
       break; }
     case '1шт по вертикали и 2шт по горизонтали': {
@@ -843,7 +833,7 @@ function calculateSyncComponents(widthFull, height, subsystem, params, glass, sh
       const h = ((doorWidth - 32) <= 995 ? 1 : 2) * 2 * numDoors;
       const d = v + h;
       add('divider_profile', d, `${v}+${h}`);
-      add('additional_glass_seal', d * 2 * 1000 / 2500, `${d}*2*1000/2500`);
+      add('additional_glass_seal', Math.ceil(d * 2 * 1000 / 2500), `ceil(${d}*2*1000/2500)`);
       add('bolts_extra', numDoors * 24, `${numDoors}*24`);
       break; }
     case '1шт по вертикали и 3шт по горизонтали': {

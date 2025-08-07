@@ -142,7 +142,7 @@ function renderParams(stepIndex) {
     const wFull = document.createElement('input');
     wFull.type = 'range';
     wFull.min = system.minWidth || 500;
-    wFull.max = system.maxWidth || 6000;
+    wFull.max = system.maxFullWidth || system.maxWidth || 6000;
     wFull.value = Math.min(Math.max(defaults.fullWidth || wFull.min, wFull.min), wFull.max);
     wFull.className = 'range-input';
     const wFullVal = document.createElement('span');
