@@ -239,10 +239,12 @@ function EmployeeReport() {
                 <div className="flex items-center gap-2">
                   <button onClick={downloadContract} className="text-blue-500 underline">Скачать</button>
                   <button onClick={deleteContract} className="text-red-500 underline">Удалить</button>
-                  <input type="file" onChange={uploadContract} />
                 </div>
               ) : (
-                <input type="file" onChange={uploadContract} />
+                <label className="inline-block px-2 py-1 bg-blue-500 text-white rounded cursor-pointer">
+                  Загрузить договор
+                  <input type="file" className="hidden" onChange={uploadContract} />
+                </label>
               )}
             </div>
             <div className="p-2 border rounded bg-white"><div className="text-sm text-gray-500">Количество задач</div><div>{filteredTasks.length}</div></div>
