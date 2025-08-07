@@ -41,13 +41,41 @@ function lastDay(dt: Date) {
   return new Date(dt.getFullYear(), dt.getMonth() + 1, 0)
 }
 
-function formatDate(d?: string | null) {
+function formatDateTime(d?: string | null) {
   if (!d) return ''
   const date = new Date(d)
-  const day = String(date.getDate()).padStart(2, '0')
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const year = date.getFullYear()
-  return `${day}.${month}.${year}`
+  return date.toLocaleString('ru-RU', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'Asia/Tashkent',
+  })
+}
+
+function timeLeft(d: string) {
+  const target = new Date(d).getTime()
+  const now = Date.now()
+  const diff = target - now
+  if (diff <= 0) return 'Просрочено'
+  const hours = Math.floor(diff / 3600000)
+  const minutes = Math.floor((diff % 3600000) / 60000)
+  const seconds = Math.floor((diff % 60000) / 1000)
+  const parts: string[] = []
+  if (hours) parts.push(`${hours}ч`)
+  if (minutes || hours) parts.push(`${minutes}м`)
+  parts.push(`${seconds}с`)
+  return parts.join(' ')
+}
+
+function renderDeadline(t: Task) {
+  if (!t.deadline) return ''
+  const formatted = formatDateTime(t.deadline)
+  if (t.status !== 'done') {
+    return `${formatted} (${timeLeft(t.deadline)})`
+  }
+  return formatted
 }
 
 function EmployeeReport() {
@@ -79,6 +107,10 @@ function EmployeeReport() {
   }
 
   useEffect(() => { loadData() }, [])
+  useEffect(() => {
+    const id = setInterval(() => setTasks(ts => [...ts]), 1000)
+    return () => clearInterval(id)
+  }, [])
 
   const selectedUser = users.find(u => String(u.id) === userId)
 
@@ -121,16 +153,6 @@ function EmployeeReport() {
     const db = new Date(b.deadline || b.created_at).getTime()
     return da - db
   })
-
-  const completedCount = tasks.filter(t => {
-    if (String(t.executor_id) !== userId) return false
-    if (project && t.project !== project) return false
-    if (t.status !== 'done') return false
-    const created = new Date(t.created_at).getTime()
-    const start = new Date(startDate).getTime()
-    const end = new Date(endDate).getTime() + 86400000 - 1
-    return created >= start && created <= end
-  }).length
 
   const getUserName = (id?: number) => {
     const u = users.find(x => x.id === id)
@@ -193,7 +215,7 @@ function EmployeeReport() {
                 <input type="file" onChange={uploadContract} />
               )}
             </div>
-            <div className="p-2 border rounded bg-white"><div className="text-sm text-gray-500">Завершенные задачи</div><div>{completedCount}</div></div>
+            <div className="p-2 border rounded bg-white"><div className="text-sm text-gray-500">Количество задач</div><div>{filteredTasks.length}</div></div>
           </div>
 
           <div className="mt-4">
@@ -227,8 +249,8 @@ function EmployeeReport() {
                     <td className="px-4 py-2 border">{t.title}</td>
                     <td className="px-4 py-2 border">{t.project}</td>
                     <td className="px-4 py-2 border">{t.status === 'done' ? 'Завершено' : 'В работе'}</td>
-                    <td className="px-4 py-2 border">{formatDate(t.created_at)}</td>
-                    <td className="px-4 py-2 border">{formatDate(t.deadline)}</td>
+                    <td className="px-4 py-2 border">{formatDateTime(t.created_at)}</td>
+                    <td className="px-4 py-2 border">{renderDeadline(t)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -249,8 +271,8 @@ function EmployeeReport() {
               {modalTask.task_format && <div><span className="text-gray-500">Формат:</span> {modalTask.task_format}</div>}
               <div><span className="text-gray-500">Кто поставил:</span> {getUserName(modalTask.author_id)}</div>
               <div><span className="text-gray-500">Исполнитель:</span> {getUserName(modalTask.executor_id)}</div>
-              <div><span className="text-gray-500">Когда поставлена:</span> {formatDate(modalTask.created_at)}</div>
-              {modalTask.deadline && <div><span className="text-gray-500">Дедлайн:</span> {formatDate(modalTask.deadline)}</div>}
+              <div><span className="text-gray-500">Когда поставлена:</span> {formatDateTime(modalTask.created_at)}</div>
+              {modalTask.deadline && <div><span className="text-gray-500">Дедлайн:</span> {renderDeadline(modalTask)}</div>}
               <div><span className="text-gray-500">Статус:</span> {modalTask.status === 'done' ? 'Завершено' : 'В работе'}</div>
             </div>
           </div>
