@@ -73,7 +73,7 @@ const prices = {
   gap_rubber: 0.2,
   fixed_door_profile: 10,
   fixed_mechanism: 35,
-  corner_magnet: 8,
+  corner_magnet: 16,
   wall_connector: 5,
   divider_profile: 10,
   adhesive_profile: 4,
@@ -88,7 +88,7 @@ const prices = {
     'Зеркальное': 96,
     'Гравированное': 310
   },
-  installation: 80,
+  installation: 60,
   logistics: 50
 };
 
