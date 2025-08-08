@@ -659,3 +659,29 @@ def complete_shooting(sid: int, data: schemas.ShootingComplete, db: Session = De
     if not sh:
         raise HTTPException(status_code=404, detail="Shooting not found")
     return sh
+
+
+@app.get("/digital/services", response_model=list[schemas.DigitalService])
+def list_digital_services(db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
+    return crud.get_digital_services(db)
+
+
+@app.post("/digital/services", response_model=schemas.DigitalService)
+def create_digital_service(service: schemas.DigitalServiceCreate, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
+    if current.role != models.RoleEnum.admin:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    return crud.create_digital_service(db, service.name)
+
+
+@app.get("/digital/projects", response_model=list[schemas.DigitalProject])
+def list_digital_projects(db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
+    return [schemas.DigitalProject(**item) for item in crud.get_digital_projects(db)]
+
+
+@app.post("/digital/projects", response_model=schemas.DigitalProject)
+def create_digital_project(proj: schemas.DigitalProjectCreate, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
+    dp = crud.create_digital_project(db, proj)
+    for item in crud.get_digital_projects(db):
+        if item["id"] == dp.id:
+            return schemas.DigitalProject(**item)
+    raise HTTPException(status_code=500, detail="Creation failed")

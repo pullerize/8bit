@@ -690,3 +690,64 @@ def get_expenses_report(
         result.append((it.name, 1, float(it.unit_cost)))
 
     return result
+
+
+def get_digital_services(db: Session) -> List[models.DigitalService]:
+    return db.query(models.DigitalService).all()
+
+
+def create_digital_service(db: Session, name: str) -> models.DigitalService:
+    service = models.DigitalService(name=name)
+    db.add(service)
+    db.commit()
+    db.refresh(service)
+    return service
+
+
+def delete_digital_service(db: Session, service_id: int) -> None:
+    service = db.query(models.DigitalService).filter(models.DigitalService.id == service_id).first()
+    if service:
+        db.delete(service)
+        db.commit()
+
+
+def get_digital_projects(db: Session) -> List[dict]:
+    q = (
+        db.query(
+            models.DigitalProject,
+            models.Project.name,
+            models.DigitalService.name,
+            models.User.name,
+        )
+        .join(models.Project, models.DigitalProject.project_id == models.Project.id)
+        .join(models.DigitalService, models.DigitalProject.service_id == models.DigitalService.id)
+        .join(models.User, models.DigitalProject.executor_id == models.User.id)
+    )
+    items: list[dict] = []
+    for dp, proj_name, serv_name, exec_name in q.all():
+        items.append(
+            {
+                "id": dp.id,
+                "project": proj_name,
+                "service": serv_name,
+                "executor": exec_name,
+                "created_at": dp.created_at,
+                "deadline": dp.deadline,
+                "monthly": dp.monthly,
+            }
+        )
+    return items
+
+
+def create_digital_project(db: Session, data: schemas.DigitalProjectCreate) -> models.DigitalProject:
+    proj = models.DigitalProject(
+        project_id=data.project_id,
+        service_id=data.service_id,
+        executor_id=data.executor_id,
+        deadline=data.deadline,
+        monthly=data.monthly,
+    )
+    db.add(proj)
+    db.commit()
+    db.refresh(proj)
+    return proj

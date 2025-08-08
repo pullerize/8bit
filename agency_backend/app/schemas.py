@@ -232,3 +232,36 @@ class ProjectReport(ProjectReportBase):
     positive_balance: float
     expenses: List[Expense]
     model_config = ConfigDict(from_attributes=True)
+
+
+class DigitalServiceBase(BaseModel):
+    name: str
+
+
+class DigitalServiceCreate(DigitalServiceBase):
+    pass
+
+
+class DigitalService(DigitalServiceBase):
+    id: int
+    model_config = ConfigDict(from_attributes=True)
+
+
+class DigitalProjectCreate(BaseModel):
+    project_id: int
+    service_id: int
+    executor_id: int
+    deadline: datetime | None = None
+    monthly: bool = False
+
+
+class DigitalProject(BaseModel):
+    id: int
+    project: str
+    service: str
+    executor: str
+    created_at: datetime
+    deadline: datetime | None = None
+    monthly: bool
+
+    model_config = ConfigDict(from_attributes=True)

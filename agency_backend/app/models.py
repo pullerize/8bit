@@ -233,3 +233,26 @@ class ProjectPost(Base):
     status = Column(Enum(PostStatus), default=PostStatus.in_progress)
 
     project = relationship("Project")
+
+
+class DigitalService(Base):
+    __tablename__ = "digital_services"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, unique=True)
+
+
+class DigitalProject(Base):
+    __tablename__ = "digital_projects"
+
+    id = Column(Integer, primary_key=True, index=True)
+    project_id = Column(Integer, ForeignKey("projects.id"))
+    service_id = Column(Integer, ForeignKey("digital_services.id"))
+    executor_id = Column(Integer, ForeignKey("users.id"))
+    created_at = Column(DateTime, default=datetime.utcnow)
+    deadline = Column(DateTime, nullable=True)
+    monthly = Column(Boolean, default=False)
+
+    project = relationship("Project")
+    service = relationship("DigitalService")
+    executor = relationship("User")

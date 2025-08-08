@@ -4,6 +4,7 @@ import { API_URL } from '../api';
 import DigitalProject from './DigitalProject';
 
 interface ProjectOption { id: number; name: string }
+interface Service { id: number; name: string }
 interface User { id: number; name: string; role: string }
 
 interface DigitalItem {
@@ -11,7 +12,7 @@ interface DigitalItem {
   project: string;
   service: string;
   executor: string;
-  createdAt: string;
+  created_at: string;
   deadline?: string;
   monthly: boolean;
 }
@@ -29,6 +30,7 @@ function DigitalList() {
   const token = localStorage.getItem('token');
   const [items, setItems] = useState<DigitalItem[]>([]);
   const [projects, setProjects] = useState<ProjectOption[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [show, setShow] = useState(false);
   const [proj, setProj] = useState('');
@@ -38,36 +40,45 @@ function DigitalList() {
   const [monthly, setMonthly] = useState(false);
   const navigate = useNavigate();
 
-  const serviceOptions = ['Дизайн', 'SMM'];
+  const load = async () => {
+    const [resP, resS, resU, resD] = await Promise.all([
+      fetch(`${API_URL}/projects/`, { headers: { Authorization: `Bearer ${token}` } }),
+      fetch(`${API_URL}/digital/services`, { headers: { Authorization: `Bearer ${token}` } }),
+      fetch(`${API_URL}/users/`, { headers: { Authorization: `Bearer ${token}` } }),
+      fetch(`${API_URL}/digital/projects`, { headers: { Authorization: `Bearer ${token}` } })
+    ]);
+    if (resP.ok) setProjects(await resP.json());
+    if (resS.ok) setServices(await resS.json());
+    if (resU.ok) setUsers(await resU.json());
+    if (resD.ok) setItems(await resD.json());
+  };
 
-  useEffect(() => {
-    const load = async () => {
-      const resP = await fetch(`${API_URL}/projects/`, { headers: { Authorization: `Bearer ${token}` } });
-      if (resP.ok) setProjects(await resP.json());
-      const resU = await fetch(`${API_URL}/users/`, { headers: { Authorization: `Bearer ${token}` } });
-      if (resU.ok) setUsers(await resU.json());
-    };
-    load();
-  }, []);
+  useEffect(() => { load(); }, []);
 
-  const add = () => {
+  const add = async () => {
     if (!proj || !service || !executor) return;
-    const item: DigitalItem = {
-      id: Date.now(),
-      project: proj,
-      service,
-      executor,
-      createdAt: new Date().toISOString(),
-      deadline: monthly || !deadline ? undefined : deadline,
-      monthly,
+    const payload = {
+      project_id: Number(proj),
+      service_id: Number(service),
+      executor_id: Number(executor),
+      deadline: monthly || !deadline ? null : deadline,
+      monthly
     };
-    setItems([...items, item]);
-    setShow(false);
-    setProj('');
-    setService('');
-    setExecutor('');
-    setDeadline('');
-    setMonthly(false);
+    const res = await fetch(`${API_URL}/digital/projects`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify(payload)
+    });
+    if (res.ok) {
+      const item = await res.json();
+      setItems([...items, item]);
+      setShow(false);
+      setProj('');
+      setService('');
+      setExecutor('');
+      setDeadline('');
+      setMonthly(false);
+    }
   };
 
   return (
@@ -91,7 +102,7 @@ function DigitalList() {
               <td className="border px-2 py-1">{it.project}</td>
               <td className="border px-2 py-1">{it.service}</td>
               <td className="border px-2 py-1">{it.executor}</td>
-              <td className="border px-2 py-1">{new Date(it.createdAt).toLocaleString('ru-RU')}</td>
+              <td className="border px-2 py-1">{new Date(it.created_at).toLocaleString('ru-RU')}</td>
               <td className="border px-2 py-1">{it.monthly ? 'Ежемесячно' : it.deadline ? timeLeft(it.deadline) : ''}</td>
             </tr>
           ))}
@@ -104,15 +115,15 @@ function DigitalList() {
             <h3 className="text-lg mb-2">Новый проект</h3>
             <select className="border p-2 w-full" value={proj} onChange={e => setProj(e.target.value)}>
               <option value="">Выберите проект</option>
-              {projects.map(p => <option key={p.id} value={p.name}>{p.name}</option>)}
+              {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
             <select className="border p-2 w-full" value={service} onChange={e => setService(e.target.value)}>
               <option value="">Выберите услугу</option>
-              {serviceOptions.map(s => <option key={s} value={s}>{s}</option>)}
+              {services.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
             </select>
             <select className="border p-2 w-full" value={executor} onChange={e => setExecutor(e.target.value)}>
               <option value="">Выберите исполнителя</option>
-              {users.filter(u => u.role === 'digital').map(u => <option key={u.id} value={u.name}>{u.name}</option>)}
+              {users.filter(u => u.role === 'digital').map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
             </select>
             {!monthly && (
               <input type="datetime-local" className="border p-2 w-full" value={deadline} onChange={e => setDeadline(e.target.value)} />
@@ -140,4 +151,3 @@ export default function DigitalTasks() {
     </Routes>
   );
 }
-
