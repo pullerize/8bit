@@ -263,5 +263,25 @@ class DigitalProject(BaseModel):
     created_at: datetime
     deadline: datetime | None = None
     monthly: bool
+    logo: str | None = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class LinkItem(BaseModel):
+    name: str
+    url: str
+
+
+class DigitalTaskCreate(BaseModel):
+    title: str
+    description: str | None = None
+    deadline: datetime | None = None
+    links: list[LinkItem] = []
+
+
+class DigitalTask(DigitalTaskCreate):
+    id: int
+    created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)

@@ -15,6 +15,7 @@ interface DigitalItem {
   created_at: string;
   deadline?: string;
   monthly: boolean;
+  logo?: string;
 }
 
 function timeLeft(dateStr: string) {
@@ -38,6 +39,7 @@ function DigitalList() {
   const [executor, setExecutor] = useState('');
   const [deadline, setDeadline] = useState('');
   const [monthly, setMonthly] = useState(false);
+  const [logo, setLogo] = useState<File | null>(null);
   const navigate = useNavigate();
 
   const load = async () => {
@@ -70,7 +72,20 @@ function DigitalList() {
       body: JSON.stringify(payload)
     });
     if (res.ok) {
-      const item = await res.json();
+      let item = await res.json();
+      if (logo) {
+        const form = new FormData();
+        form.append('file', logo);
+        const lr = await fetch(`${API_URL}/digital/projects/${item.id}/logo`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` },
+          body: form
+        });
+        if (lr.ok) {
+          const data = await lr.json();
+          item.logo = data.logo;
+        }
+      }
       setItems([...items, item]);
       setShow(false);
       setProj('');
@@ -78,6 +93,31 @@ function DigitalList() {
       setExecutor('');
       setDeadline('');
       setMonthly(false);
+      setLogo(null);
+    }
+  };
+
+  const changeLogo = async (id: number, file: File) => {
+    const form = new FormData();
+    form.append('file', file);
+    const res = await fetch(`${API_URL}/digital/projects/${id}/logo`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+      body: form
+    });
+    if (res.ok) {
+      const data = await res.json();
+      setItems(items.map(it => it.id === id ? { ...it, logo: data.logo } : it));
+    }
+  };
+
+  const removeLogo = async (id: number) => {
+    const res = await fetch(`${API_URL}/digital/projects/${id}/logo`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (res.ok) {
+      setItems(items.map(it => it.id === id ? { ...it, logo: undefined } : it));
     }
   };
 
@@ -89,7 +129,7 @@ function DigitalList() {
       <table className="min-w-full bg-white border">
         <thead>
           <tr className="bg-gray-100">
-            <th className="px-2 py-1 border">Название проекта</th>
+            <th className="px-2 py-1 border">Логотип</th>
             <th className="px-2 py-1 border">Вид услуги</th>
             <th className="px-2 py-1 border">Исполнитель</th>
             <th className="px-2 py-1 border">Время создания</th>
@@ -98,11 +138,26 @@ function DigitalList() {
         </thead>
         <tbody>
           {items.map(it => (
-            <tr key={it.id} className="text-center cursor-pointer hover:bg-gray-50" onClick={() => navigate(String(it.id), { state: it })}>
-              <td className="border px-2 py-1">{it.project}</td>
+            <tr key={it.id} className="text-center hover:bg-gray-50" onClick={() => navigate(String(it.id), { state: it })}>
+              <td className="border px-2 py-1" onClick={e => e.stopPropagation()}>
+                {it.logo ? (
+                  <img src={`${API_URL}/${it.logo}`} className="w-12 h-12 object-cover mx-auto" />
+                ) : (
+                  <span className="text-sm text-gray-500">Нет</span>
+                )}
+                <div className="space-x-1 mt-1">
+                  <label className="text-blue-500 underline cursor-pointer">
+                    Изменить
+                    <input type="file" className="hidden" onChange={e => e.target.files && changeLogo(it.id, e.target.files[0])} />
+                  </label>
+                  {it.logo && (
+                    <button className="text-red-500" onClick={() => removeLogo(it.id)}>Удалить</button>
+                  )}
+                </div>
+              </td>
               <td className="border px-2 py-1">{it.service}</td>
               <td className="border px-2 py-1">{it.executor}</td>
-              <td className="border px-2 py-1">{new Date(it.created_at).toLocaleString('ru-RU')}</td>
+              <td className="border px-2 py-1">{new Date(it.created_at).toLocaleString('ru-RU', { timeZone: 'Asia/Tashkent' })}</td>
               <td className="border px-2 py-1">{it.monthly ? 'Ежемесячно' : it.deadline ? timeLeft(it.deadline) : ''}</td>
             </tr>
           ))}
@@ -111,7 +166,7 @@ function DigitalList() {
 
       {show && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white p-4 rounded w-96 space-y-2">
+          <div className="bg-white p-4 rounded w-[32rem] space-y-2">
             <h3 className="text-lg mb-2">Новый проект</h3>
             <select className="border p-2 w-full" value={proj} onChange={e => setProj(e.target.value)}>
               <option value="">Выберите проект</option>
@@ -132,6 +187,7 @@ function DigitalList() {
               <input type="checkbox" checked={monthly} onChange={e => setMonthly(e.target.checked)} />
               Ежемесячно
             </label>
+            <input type="file" className="border p-2 w-full" onChange={e => setLogo(e.target.files ? e.target.files[0] : null)} />
             <div className="text-right space-x-2">
               <button className="px-3 py-1 border rounded" onClick={() => setShow(false)}>Отмена</button>
               <button className="px-3 py-1 bg-blue-500 text-white rounded" onClick={add}>Сохранить</button>

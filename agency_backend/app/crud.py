@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import datetime
+import json
 
 from . import models, schemas, auth
 
@@ -734,6 +735,7 @@ def get_digital_projects(db: Session) -> List[dict]:
                 "created_at": dp.created_at,
                 "deadline": dp.deadline,
                 "monthly": dp.monthly,
+                "logo": dp.logo,
             }
         )
     return items
@@ -751,3 +753,37 @@ def create_digital_project(db: Session, data: schemas.DigitalProjectCreate) -> m
     db.commit()
     db.refresh(proj)
     return proj
+
+
+def set_digital_project_logo(db: Session, project_id: int, logo: str | None) -> Optional[models.DigitalProject]:
+    proj = db.query(models.DigitalProject).filter(models.DigitalProject.id == project_id).first()
+    if not proj:
+        return None
+    proj.logo = logo
+    db.commit()
+    db.refresh(proj)
+    return proj
+
+
+def get_digital_tasks(db: Session, project_id: int) -> List[models.DigitalProjectTask]:
+    return (
+        db.query(models.DigitalProjectTask)
+        .filter(models.DigitalProjectTask.project_id == project_id)
+        .all()
+    )
+
+
+def create_digital_task(
+    db: Session, project_id: int, data: schemas.DigitalTaskCreate
+) -> models.DigitalProjectTask:
+    task = models.DigitalProjectTask(
+        project_id=project_id,
+        title=data.title,
+        description=data.description,
+        links=json.dumps([l.dict() for l in data.links]),
+        deadline=data.deadline,
+    )
+    db.add(task)
+    db.commit()
+    db.refresh(task)
+    return task

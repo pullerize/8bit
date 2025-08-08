@@ -7,6 +7,8 @@ from dotenv import load_dotenv
 from datetime import datetime
 from typing import List, Optional
 import os
+from fastapi.staticfiles import StaticFiles
+import json
 
 from . import models, schemas, crud, auth
 from .database import engine, Base, SessionLocal
@@ -44,6 +46,7 @@ create_default_admin()
 create_default_taxes()
 
 app = FastAPI(title="Agency API")
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.add_middleware(
     CORSMiddleware,
@@ -685,3 +688,69 @@ def create_digital_project(proj: schemas.DigitalProjectCreate, db: Session = Dep
         if item["id"] == dp.id:
             return schemas.DigitalProject(**item)
     raise HTTPException(status_code=500, detail="Creation failed")
+
+
+@app.post("/digital/projects/{project_id}/logo")
+async def upload_digital_logo(
+    project_id: int,
+    file: UploadFile = File(...),
+    db: Session = Depends(auth.get_db),
+    current: models.User = Depends(auth.get_current_active_user),
+):
+    os.makedirs("static/digital", exist_ok=True)
+    path = f"static/digital/{project_id}_{file.filename}"
+    with open(path, "wb") as f:
+        f.write(await file.read())
+    proj = crud.set_digital_project_logo(db, project_id, path)
+    if not proj:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return {"logo": path}
+
+
+@app.delete("/digital/projects/{project_id}/logo")
+def delete_digital_logo(
+    project_id: int,
+    db: Session = Depends(auth.get_db),
+    current: models.User = Depends(auth.get_current_active_user),
+):
+    proj = crud.set_digital_project_logo(db, project_id, None)
+    if not proj:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return {"ok": True}
+
+
+@app.get("/digital/projects/{project_id}/tasks", response_model=list[schemas.DigitalTask])
+def list_digital_tasks(
+    project_id: int,
+    db: Session = Depends(auth.get_db),
+    current: models.User = Depends(auth.get_current_active_user),
+):
+    return [
+        schemas.DigitalTask(
+            id=t.id,
+            title=t.title,
+            description=t.description,
+            deadline=t.deadline,
+            created_at=t.created_at,
+            links=json.loads(t.links or "[]"),
+        )
+        for t in crud.get_digital_tasks(db, project_id)
+    ]
+
+
+@app.post("/digital/projects/{project_id}/tasks", response_model=schemas.DigitalTask)
+def create_digital_task(
+    project_id: int,
+    task: schemas.DigitalTaskCreate,
+    db: Session = Depends(auth.get_db),
+    current: models.User = Depends(auth.get_current_active_user),
+):
+    t = crud.create_digital_task(db, project_id, task)
+    return schemas.DigitalTask(
+        id=t.id,
+        title=t.title,
+        description=t.description,
+        deadline=t.deadline,
+        created_at=t.created_at,
+        links=task.links,
+    )

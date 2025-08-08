@@ -1,27 +1,65 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
+import { API_URL } from '../api';
 
 interface LinkItem { id: number; name: string; url: string }
-interface TaskItem { id: number; title: string; description: string; links: LinkItem[] }
+interface TaskItem {
+  id: number;
+  title: string;
+  description: string;
+  links: LinkItem[];
+  created_at: string;
+  deadline?: string;
+}
 
 export default function DigitalProject() {
   const { state } = useLocation();
   const project = state as { id: number; project: string } | undefined;
+  const token = localStorage.getItem('token');
   const [tasks, setTasks] = useState<TaskItem[]>([]);
   const [show, setShow] = useState(false);
   const [title, setTitle] = useState('');
   const [desc, setDesc] = useState('');
   const [links, setLinks] = useState<LinkItem[]>([]);
   const [linksModal, setLinksModal] = useState<LinkItem[] | null>(null);
+  const [deadline, setDeadline] = useState('');
 
-  const addTask = () => {
-    if (!title) return;
-    const item: TaskItem = { id: Date.now(), title, description: desc, links };
-    setTasks([...tasks, item]);
-    setShow(false);
-    setTitle('');
-    setDesc('');
-    setLinks([]);
+  const load = async () => {
+    if (!project) return;
+    const res = await fetch(`${API_URL}/digital/projects/${project.id}/tasks`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (res.ok) {
+      const data: TaskItem[] = await res.json();
+      setTasks(data.map(t => ({ ...t, links: t.links.map((l, i) => ({ ...l, id: i })) })));
+    }
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const addTask = async () => {
+    if (!project || !title) return;
+    const payload = {
+      title,
+      description: desc,
+      deadline: deadline || null,
+      links: links.map(({ name, url }) => ({ name, url }))
+    };
+    const res = await fetch(`${API_URL}/digital/projects/${project.id}/tasks`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify(payload)
+    });
+    if (res.ok) {
+      const item: TaskItem = await res.json();
+      item.links = item.links.map((l, i) => ({ ...l, id: i }));
+      setTasks([...tasks, item]);
+      setShow(false);
+      setTitle('');
+      setDesc('');
+      setLinks([]);
+      setDeadline('');
+    }
   };
 
   const addLink = () => setLinks([...links, { id: Date.now(), name: '', url: '' }]);
@@ -42,6 +80,8 @@ export default function DigitalProject() {
             <th className="px-2 py-1 border">Название задачи</th>
             <th className="px-2 py-1 border">Описание</th>
             <th className="px-2 py-1 border">Полезные ссылки</th>
+            <th className="px-2 py-1 border">Когда поставлена</th>
+            <th className="px-2 py-1 border">Дедлайн</th>
           </tr>
         </thead>
         <tbody>
@@ -54,6 +94,8 @@ export default function DigitalProject() {
                   <button className="text-blue-500 underline" onClick={() => setLinksModal(t.links)}>Полезные ссылки</button>
                 )}
               </td>
+              <td className="border px-2 py-1">{new Date(t.created_at).toLocaleString('ru-RU', { timeZone: 'Asia/Tashkent' })}</td>
+              <td className="border px-2 py-1">{t.deadline ? new Date(t.deadline).toLocaleString('ru-RU', { timeZone: 'Asia/Tashkent' }) : ''}</td>
             </tr>
           ))}
         </tbody>
@@ -61,7 +103,7 @@ export default function DigitalProject() {
 
       {show && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white p-4 rounded w-96 space-y-2">
+          <div className="bg-white p-4 rounded w-[40rem] space-y-2">
             <h3 className="text-lg mb-2">Новая задача</h3>
             <input className="border p-2 w-full" placeholder="Название" value={title} onChange={e => setTitle(e.target.value)} />
             <textarea className="border p-2 w-full" placeholder="Описание" value={desc} onChange={e => setDesc(e.target.value)} />
@@ -74,6 +116,7 @@ export default function DigitalProject() {
               ))}
             </div>
             <button className="text-sm text-blue-500" onClick={addLink}>Добавить ссылку</button>
+            <input type="datetime-local" className="border p-2 w-full" value={deadline} onChange={e => setDeadline(e.target.value)} />
             <div className="text-right space-x-2">
               <button className="px-3 py-1 border rounded" onClick={() => setShow(false)}>Отмена</button>
               <button className="px-3 py-1 bg-blue-500 text-white rounded" onClick={addTask}>Сохранить</button>

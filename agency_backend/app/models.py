@@ -252,7 +252,22 @@ class DigitalProject(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     deadline = Column(DateTime, nullable=True)
     monthly = Column(Boolean, default=False)
+    logo = Column(String, nullable=True)
 
     project = relationship("Project")
     service = relationship("DigitalService")
     executor = relationship("User")
+
+
+class DigitalProjectTask(Base):
+    __tablename__ = "digital_project_tasks"
+
+    id = Column(Integer, primary_key=True, index=True)
+    project_id = Column(Integer, ForeignKey("digital_projects.id"))
+    title = Column(String, nullable=False)
+    description = Column(Text, nullable=True)
+    links = Column(Text, nullable=True)
+    deadline = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    project = relationship("DigitalProject")
