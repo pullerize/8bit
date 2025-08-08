@@ -11,6 +11,7 @@ import ProjectsAdmin from './pages/ProjectsAdmin'
 import ProjectsOverview from './pages/ProjectsOverview'
 import ProjectDetail from './pages/ProjectDetail'
 import AdminPanel from './pages/AdminPanel'
+import Digital from './pages/Digital'
 
 function App() {
   const token = localStorage.getItem('token')
@@ -39,6 +40,7 @@ function App() {
         <Route path="/projects" element={token ? <ProjectsOverview /> : <Navigate to="/login" />} />
         <Route path="/projects/:id" element={token ? <ProjectDetail /> : <Navigate to="/login" />} />
         <Route path="/projects-admin" element={token ? <ProjectsAdmin /> : <Navigate to="/login" />} />
+        <Route path="/digital/*" element={token ? <Digital /> : <Navigate to="/login" />} />
         <Route
           path="*"
           element={<Navigate to={token ? '/tasks' : '/login'} />} />
