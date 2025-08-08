@@ -60,6 +60,7 @@ const ROLE_NAMES: Record<string, string> = {
   smm_manager: 'СММ-менеджер',
   head_smm: 'Head of SMM',
   admin: 'Администратор',
+  digital: 'Digital',
 }
 
 const TYPE_ICONS: Record<string, string> = {

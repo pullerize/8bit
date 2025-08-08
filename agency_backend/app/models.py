@@ -22,6 +22,7 @@ class RoleEnum(str, enum.Enum):
     smm_manager = "smm_manager"
     head_smm = "head_smm"
     admin = "admin"
+    digital = "digital"
 
 class User(Base):
     __tablename__ = "users"

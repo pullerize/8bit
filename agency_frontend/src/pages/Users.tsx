@@ -122,6 +122,7 @@ function Users() {
               <option value="designer">Дизайнер</option>
               <option value="smm_manager">СММ-менеджер</option>
               <option value="head_smm">Head of SMM</option>
+              <option value="digital">Digital</option>
               <option value="admin">Админ</option>
             </select>
             <div className="flex justify-end">
