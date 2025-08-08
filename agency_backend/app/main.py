@@ -45,6 +45,9 @@ def create_default_taxes():
 create_default_admin()
 create_default_taxes()
 
+# Ensure the static directory exists before mounting it
+os.makedirs("static", exist_ok=True)
+
 app = FastAPI(title="Agency API")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
