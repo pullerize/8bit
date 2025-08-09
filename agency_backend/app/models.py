@@ -113,6 +113,7 @@ class Project(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, index=True)
+    logo = Column(String, nullable=True)
     posts_count = Column(Integer, default=0)
     start_date = Column(DateTime, default=first_day_current_month)
     end_date = Column(DateTime, default=last_day_current_month)

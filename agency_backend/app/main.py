@@ -282,6 +282,39 @@ def delete_project(project_id: int, db: Session = Depends(auth.get_db), current:
     return {"ok": True}
 
 
+@app.post("/projects/{project_id}/logo")
+async def upload_project_logo(
+    project_id: int,
+    file: UploadFile = File(...),
+    db: Session = Depends(auth.get_db),
+    current: models.User = Depends(auth.get_current_active_user),
+):
+    if current.role != models.RoleEnum.admin:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    os.makedirs("static/projects", exist_ok=True)
+    path = f"static/projects/{project_id}_{file.filename}"
+    with open(path, "wb") as f:
+        f.write(await file.read())
+    proj = crud.set_project_logo(db, project_id, path)
+    if not proj:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return {"logo": path}
+
+
+@app.delete("/projects/{project_id}/logo")
+def delete_project_logo(
+    project_id: int,
+    db: Session = Depends(auth.get_db),
+    current: models.User = Depends(auth.get_current_active_user),
+):
+    if current.role != models.RoleEnum.admin:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    proj = crud.set_project_logo(db, project_id, None)
+    if not proj:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return {"ok": True}
+
+
 @app.get("/projects/{project_id}/report", response_model=schemas.ProjectReport)
 def get_project_report(
     project_id: int,

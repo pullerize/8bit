@@ -14,9 +14,11 @@ interface TaskItem {
 
 export default function DigitalProject() {
   const { state } = useLocation();
-  const project = state as { id: number; project: string } | undefined;
+  const project = state as { id: number; project: string; logo?: string } | undefined;
   const token = localStorage.getItem('token');
   const [tasks, setTasks] = useState<TaskItem[]>([]);
+  const [filterDate, setFilterDate] = useState('all');
+  const [customDate, setCustomDate] = useState('');
   const [show, setShow] = useState(false);
   const [title, setTitle] = useState('');
   const [desc, setDesc] = useState('');
@@ -68,10 +70,48 @@ export default function DigitalProject() {
     setLinks(links.map(l => (l.id === id ? { ...l, [field]: value } : l)));
   };
 
+  const filtered = tasks.filter(t => {
+    if (filterDate === 'today') {
+      const d = new Date(t.created_at);
+      const now = new Date();
+      return d.toDateString() === now.toDateString();
+    }
+    if (filterDate === 'week') {
+      const d = new Date(t.created_at).getTime();
+      return Date.now() - d <= 7 * 86400000;
+    }
+    if (filterDate === 'month') {
+      const d = new Date(t.created_at).getTime();
+      return Date.now() - d <= 30 * 86400000;
+    }
+    if (filterDate === 'custom' && customDate) {
+      const d = new Date(t.created_at);
+      const sel = new Date(customDate);
+      return d.toDateString() === sel.toDateString();
+    }
+    return true;
+  });
+
   return (
     <div className="space-y-4">
-      <h2 className="text-center text-xl">{project?.project}</h2>
-      <div className="text-right">
+      {project?.logo ? (
+        <img src={`${API_URL}/${project.logo}`} className="h-24 mx-auto" />
+      ) : (
+        <h2 className="text-center text-xl">{project?.project}</h2>
+      )}
+      <div className="flex justify-between items-center">
+        <div className="flex gap-2">
+          <select className="border p-1" value={filterDate} onChange={e => setFilterDate(e.target.value)}>
+            <option value="all">За все время</option>
+            <option value="today">За сегодня</option>
+            <option value="week">За неделю</option>
+            <option value="month">За месяц</option>
+            <option value="custom">Выбрать дату</option>
+          </select>
+          {filterDate === 'custom' && (
+            <input type="date" className="border p-1" value={customDate} onChange={e => setCustomDate(e.target.value)} />
+          )}
+        </div>
         <button className="px-2 py-1 border rounded" onClick={() => setShow(true)}>Добавить задачу</button>
       </div>
       <table className="min-w-full bg-white border">
@@ -85,7 +125,7 @@ export default function DigitalProject() {
           </tr>
         </thead>
         <tbody>
-          {tasks.map(t => (
+          {filtered.map(t => (
             <tr key={t.id} className="text-center">
               <td className="border px-2 py-1">{t.title}</td>
               <td className="border px-2 py-1">{t.description}</td>

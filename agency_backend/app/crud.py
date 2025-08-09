@@ -215,6 +215,16 @@ def update_project(db: Session, project_id: int, name: str) -> Optional[models.P
     return proj
 
 
+def set_project_logo(db: Session, project_id: int, logo: str | None) -> Optional[models.Project]:
+    proj = db.query(models.Project).filter(models.Project.id == project_id).first()
+    if not proj:
+        return None
+    proj.logo = logo
+    db.commit()
+    db.refresh(proj)
+    return proj
+
+
 def update_project_info(db: Session, project_id: int, info: schemas.ProjectUpdate) -> Optional[models.Project]:
     proj = db.query(models.Project).filter(models.Project.id == project_id).first()
     if not proj:
@@ -719,13 +729,14 @@ def get_digital_projects(db: Session) -> List[dict]:
             models.Project.name,
             models.DigitalService.name,
             models.User.name,
+            models.Project.logo,
         )
         .join(models.Project, models.DigitalProject.project_id == models.Project.id)
         .join(models.DigitalService, models.DigitalProject.service_id == models.DigitalService.id)
         .join(models.User, models.DigitalProject.executor_id == models.User.id)
     )
     items: list[dict] = []
-    for dp, proj_name, serv_name, exec_name in q.all():
+    for dp, proj_name, serv_name, exec_name, logo in q.all():
         items.append(
             {
                 "id": dp.id,
@@ -735,7 +746,7 @@ def get_digital_projects(db: Session) -> List[dict]:
                 "created_at": dp.created_at,
                 "deadline": dp.deadline,
                 "monthly": dp.monthly,
-                "logo": dp.logo,
+                "logo": logo,
             }
         )
     return items

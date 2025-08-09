@@ -39,7 +39,9 @@ function DigitalList() {
   const [executor, setExecutor] = useState('');
   const [deadline, setDeadline] = useState('');
   const [monthly, setMonthly] = useState(false);
-  const [logo, setLogo] = useState<File | null>(null);
+  const [filterProj, setFilterProj] = useState('');
+  const [filterService, setFilterService] = useState('');
+  const [filterExec, setFilterExec] = useState('');
   const navigate = useNavigate();
 
   const load = async () => {
@@ -73,19 +75,6 @@ function DigitalList() {
     });
     if (res.ok) {
       let item = await res.json();
-      if (logo) {
-        const form = new FormData();
-        form.append('file', logo);
-        const lr = await fetch(`${API_URL}/digital/projects/${item.id}/logo`, {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${token}` },
-          body: form
-        });
-        if (lr.ok) {
-          const data = await lr.json();
-          item.logo = data.logo;
-        }
-      }
       setItems([...items, item]);
       setShow(false);
       setProj('');
@@ -93,37 +82,26 @@ function DigitalList() {
       setExecutor('');
       setDeadline('');
       setMonthly(false);
-      setLogo(null);
-    }
-  };
-
-  const changeLogo = async (id: number, file: File) => {
-    const form = new FormData();
-    form.append('file', file);
-    const res = await fetch(`${API_URL}/digital/projects/${id}/logo`, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}` },
-      body: form
-    });
-    if (res.ok) {
-      const data = await res.json();
-      setItems(items.map(it => it.id === id ? { ...it, logo: data.logo } : it));
-    }
-  };
-
-  const removeLogo = async (id: number) => {
-    const res = await fetch(`${API_URL}/digital/projects/${id}/logo`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    if (res.ok) {
-      setItems(items.map(it => it.id === id ? { ...it, logo: undefined } : it));
     }
   };
 
   return (
     <div className="space-y-4">
-      <div className="text-right">
+      <div className="flex justify-between items-center">
+        <div className="flex gap-2">
+          <select className="border p-1" value={filterProj} onChange={e => setFilterProj(e.target.value)}>
+            <option value="">Все проекты</option>
+            {projects.map(p => <option key={p.id} value={p.name}>{p.name}</option>)}
+          </select>
+          <select className="border p-1" value={filterService} onChange={e => setFilterService(e.target.value)}>
+            <option value="">Все услуги</option>
+            {services.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
+          </select>
+          <select className="border p-1" value={filterExec} onChange={e => setFilterExec(e.target.value)}>
+            <option value="">Все исполнители</option>
+            {users.filter(u => u.role === 'digital').map(u => <option key={u.id} value={u.name}>{u.name}</option>)}
+          </select>
+        </div>
         <button className="px-2 py-1 border rounded" onClick={() => setShow(true)}>Добавить проект</button>
       </div>
       <table className="min-w-full bg-white border">
@@ -137,23 +115,18 @@ function DigitalList() {
           </tr>
         </thead>
         <tbody>
-          {items.map(it => (
+          {items.filter(it => (
+            (!filterProj || it.project === filterProj) &&
+            (!filterService || it.service === filterService) &&
+            (!filterExec || it.executor === filterExec)
+          )).map(it => (
             <tr key={it.id} className="text-center hover:bg-gray-50" onClick={() => navigate(String(it.id), { state: it })}>
-              <td className="border px-2 py-1" onClick={e => e.stopPropagation()}>
+              <td className="border px-2 py-1">
                 {it.logo ? (
                   <img src={`${API_URL}/${it.logo}`} className="w-12 h-12 object-cover mx-auto" />
                 ) : (
                   <span className="text-sm text-gray-500">Нет</span>
                 )}
-                <div className="space-x-1 mt-1">
-                  <label className="text-blue-500 underline cursor-pointer">
-                    Изменить
-                    <input type="file" className="hidden" onChange={e => e.target.files && changeLogo(it.id, e.target.files[0])} />
-                  </label>
-                  {it.logo && (
-                    <button className="text-red-500" onClick={() => removeLogo(it.id)}>Удалить</button>
-                  )}
-                </div>
               </td>
               <td className="border px-2 py-1">{it.service}</td>
               <td className="border px-2 py-1">{it.executor}</td>
@@ -187,7 +160,6 @@ function DigitalList() {
               <input type="checkbox" checked={monthly} onChange={e => setMonthly(e.target.checked)} />
               Ежемесячно
             </label>
-            <input type="file" className="border p-2 w-full" onChange={e => setLogo(e.target.files ? e.target.files[0] : null)} />
             <div className="text-right space-x-2">
               <button className="px-3 py-1 border rounded" onClick={() => setShow(false)}>Отмена</button>
               <button className="px-3 py-1 bg-blue-500 text-white rounded" onClick={add}>Сохранить</button>

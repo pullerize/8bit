@@ -61,6 +61,7 @@ class Operator(OperatorBase):
 class Project(BaseModel):
     id: int
     name: str
+    logo: str | None = None
     posts_count: int = 0
     start_date: datetime | None = None
     end_date: datetime | None = None
