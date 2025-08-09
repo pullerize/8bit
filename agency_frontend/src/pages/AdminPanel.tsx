@@ -4,9 +4,10 @@ import Operators from './Operators'
 import Projects from './ProjectsAdmin'
 import ExpensesAdmin from './ExpensesAdmin'
 import Taxes from './Taxes'
+import Settings from './Settings'
 
 function AdminPanel() {
-  const [tab, setTab] = useState<'users'|'operators'|'projects'|'expenses'|'taxes'>('users')
+  const [tab, setTab] = useState<'users'|'operators'|'projects'|'expenses'|'taxes'|'settings'>('users')
 
   return (
     <div className="p-4 space-y-4">
@@ -16,12 +17,14 @@ function AdminPanel() {
         <button className={`px-2 py-1 border rounded ${tab==='projects'&&'bg-gray-200'}`} onClick={()=>setTab('projects')}>Проекты</button>
         <button className={`px-2 py-1 border rounded ${tab==='expenses'&&'bg-gray-200'}`} onClick={()=>setTab('expenses')}>Расходы</button>
         <button className={`px-2 py-1 border rounded ${tab==='taxes'&&'bg-gray-200'}`} onClick={()=>setTab('taxes')}>Налоги</button>
+        <button className={`px-2 py-1 border rounded ${tab==='settings'&&'bg-gray-200'}`} onClick={()=>setTab('settings')}>Настройки</button>
       </div>
       {tab === 'users' && <Users />}
       {tab === 'operators' && <Operators />}
       {tab === 'projects' && <Projects />}
       {tab === 'expenses' && <ExpensesAdmin />}
       {tab === 'taxes' && <Taxes />}
+      {tab === 'settings' && <Settings />}
     </div>
   )
 }

@@ -42,8 +42,19 @@ def create_default_taxes():
         db.close()
 
 
+def create_default_timezone():
+    db = SessionLocal()
+    try:
+        if not db.query(models.Setting).filter(models.Setting.key == "timezone").first():
+            db.add(models.Setting(key="timezone", value="Asia/Tashkent"))
+            db.commit()
+    finally:
+        db.close()
+
+
 create_default_admin()
 create_default_taxes()
+create_default_timezone()
 
 # Ensure the static directory exists before mounting it
 os.makedirs("static", exist_ok=True)
@@ -698,6 +709,26 @@ def complete_shooting(sid: int, data: schemas.ShootingComplete, db: Session = De
     if not sh:
         raise HTTPException(status_code=404, detail="Shooting not found")
     return sh
+
+
+@app.get("/settings/timezone")
+def get_timezone(db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
+    setting = db.query(models.Setting).filter(models.Setting.key == "timezone").first()
+    return {"timezone": setting.value if setting else "Asia/Tashkent"}
+
+
+@app.put("/settings/timezone")
+def set_timezone(data: schemas.TimezoneUpdate, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
+    if current.role != models.RoleEnum.admin:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    setting = db.query(models.Setting).filter(models.Setting.key == "timezone").first()
+    if not setting:
+        setting = models.Setting(key="timezone", value=data.timezone)
+        db.add(setting)
+    else:
+        setting.value = data.timezone
+    db.commit()
+    return {"timezone": setting.value}
 
 
 @app.get("/digital/services", response_model=list[schemas.DigitalService])

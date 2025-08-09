@@ -25,16 +25,21 @@ export default function DigitalProject() {
   const [links, setLinks] = useState<LinkItem[]>([]);
   const [linksModal, setLinksModal] = useState<LinkItem[] | null>(null);
   const [deadline, setDeadline] = useState('');
+  const [timezone, setTimezone] = useState('Asia/Tashkent');
 
   const load = async () => {
     if (!project) return;
-    const res = await fetch(`${API_URL}/digital/projects/${project.id}/tasks`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    const [res, tz] = await Promise.all([
+      fetch(`${API_URL}/digital/projects/${project.id}/tasks`, {
+        headers: { Authorization: `Bearer ${token}` }
+      }),
+      fetch(`${API_URL}/settings/timezone`, { headers: { Authorization: `Bearer ${token}` } })
+    ]);
     if (res.ok) {
       const data: TaskItem[] = await res.json();
       setTasks(data.map(t => ({ ...t, links: t.links.map((l, i) => ({ ...l, id: i })) })));
     }
+    if (tz.ok) { const d = await tz.json(); setTimezone(d.timezone); }
   };
 
   useEffect(() => { load(); }, []);
@@ -72,20 +77,20 @@ export default function DigitalProject() {
 
   const filtered = tasks.filter(t => {
     if (filterDate === 'today') {
-      const d = new Date(t.created_at);
+      const d = new Date(t.created_at.endsWith('Z') ? t.created_at : t.created_at + 'Z');
       const now = new Date();
       return d.toDateString() === now.toDateString();
     }
     if (filterDate === 'week') {
-      const d = new Date(t.created_at).getTime();
+      const d = new Date(t.created_at.endsWith('Z') ? t.created_at : t.created_at + 'Z').getTime();
       return Date.now() - d <= 7 * 86400000;
     }
     if (filterDate === 'month') {
-      const d = new Date(t.created_at).getTime();
+      const d = new Date(t.created_at.endsWith('Z') ? t.created_at : t.created_at + 'Z').getTime();
       return Date.now() - d <= 30 * 86400000;
     }
     if (filterDate === 'custom' && customDate) {
-      const d = new Date(t.created_at);
+      const d = new Date(t.created_at.endsWith('Z') ? t.created_at : t.created_at + 'Z');
       const sel = new Date(customDate);
       return d.toDateString() === sel.toDateString();
     }
@@ -134,8 +139,8 @@ export default function DigitalProject() {
                   <button className="text-blue-500 underline" onClick={() => setLinksModal(t.links)}>Полезные ссылки</button>
                 )}
               </td>
-              <td className="border px-2 py-1">{new Date(t.created_at).toLocaleString('ru-RU', { timeZone: 'Asia/Tashkent' })}</td>
-              <td className="border px-2 py-1">{t.deadline ? new Date(t.deadline).toLocaleString('ru-RU', { timeZone: 'Asia/Tashkent' }) : ''}</td>
+              <td className="border px-2 py-1">{new Date(t.created_at.endsWith('Z') ? t.created_at : t.created_at + 'Z').toLocaleString('ru-RU', { timeZone: timezone })}</td>
+              <td className="border px-2 py-1">{t.deadline ? new Date(t.deadline).toLocaleString('ru-RU', { timeZone: timezone }) : ''}</td>
             </tr>
           ))}
         </tbody>

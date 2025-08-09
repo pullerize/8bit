@@ -272,3 +272,10 @@ class DigitalProjectTask(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     project = relationship("DigitalProject")
+
+
+class Setting(Base):
+    __tablename__ = "settings"
+
+    key = Column(String, primary_key=True)
+    value = Column(String, nullable=False)

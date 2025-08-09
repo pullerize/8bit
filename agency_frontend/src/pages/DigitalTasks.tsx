@@ -15,7 +15,6 @@ interface DigitalItem {
   created_at: string;
   deadline?: string;
   monthly: boolean;
-  logo?: string;
 }
 
 function timeLeft(dateStr: string) {
@@ -42,19 +41,22 @@ function DigitalList() {
   const [filterProj, setFilterProj] = useState('');
   const [filterService, setFilterService] = useState('');
   const [filterExec, setFilterExec] = useState('');
+  const [timezone, setTimezone] = useState('Asia/Tashkent');
   const navigate = useNavigate();
 
   const load = async () => {
-    const [resP, resS, resU, resD] = await Promise.all([
+    const [resP, resS, resU, resD, resT] = await Promise.all([
       fetch(`${API_URL}/projects/`, { headers: { Authorization: `Bearer ${token}` } }),
       fetch(`${API_URL}/digital/services`, { headers: { Authorization: `Bearer ${token}` } }),
       fetch(`${API_URL}/users/`, { headers: { Authorization: `Bearer ${token}` } }),
-      fetch(`${API_URL}/digital/projects`, { headers: { Authorization: `Bearer ${token}` } })
+      fetch(`${API_URL}/digital/projects`, { headers: { Authorization: `Bearer ${token}` } }),
+      fetch(`${API_URL}/settings/timezone`, { headers: { Authorization: `Bearer ${token}` } })
     ]);
     if (resP.ok) setProjects(await resP.json());
     if (resS.ok) setServices(await resS.json());
     if (resU.ok) setUsers(await resU.json());
     if (resD.ok) setItems(await resD.json());
+    if (resT.ok) { const data = await resT.json(); setTimezone(data.timezone); }
   };
 
   useEffect(() => { load(); }, []);
@@ -107,7 +109,7 @@ function DigitalList() {
       <table className="min-w-full bg-white border">
         <thead>
           <tr className="bg-gray-100">
-            <th className="px-2 py-1 border">Логотип</th>
+            <th className="px-2 py-1 border">Проект</th>
             <th className="px-2 py-1 border">Вид услуги</th>
             <th className="px-2 py-1 border">Исполнитель</th>
             <th className="px-2 py-1 border">Время создания</th>
@@ -121,16 +123,10 @@ function DigitalList() {
             (!filterExec || it.executor === filterExec)
           )).map(it => (
             <tr key={it.id} className="text-center hover:bg-gray-50" onClick={() => navigate(String(it.id), { state: it })}>
-              <td className="border px-2 py-1">
-                {it.logo ? (
-                  <img src={`${API_URL}/${it.logo}`} className="w-12 h-12 object-cover mx-auto" />
-                ) : (
-                  <span className="text-sm text-gray-500">Нет</span>
-                )}
-              </td>
+              <td className="border px-2 py-1">{it.project}</td>
               <td className="border px-2 py-1">{it.service}</td>
               <td className="border px-2 py-1">{it.executor}</td>
-              <td className="border px-2 py-1">{new Date(it.created_at).toLocaleString('ru-RU', { timeZone: 'Asia/Tashkent' })}</td>
+              <td className="border px-2 py-1">{new Date(it.created_at.endsWith('Z') ? it.created_at : it.created_at + 'Z').toLocaleString('ru-RU', { timeZone: timezone })}</td>
               <td className="border px-2 py-1">{it.monthly ? 'Ежемесячно' : it.deadline ? timeLeft(it.deadline) : ''}</td>
             </tr>
           ))}
