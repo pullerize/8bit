@@ -585,23 +585,23 @@ function buildResultTable() {
     const row = (comp, indent=false) => {
         const name = componentNames[comp.name] || comp.name;
         const cls = indent ? ' class="indent"' : '';
-        return `<tr${cls}><td>${name}</td><td>${comp.qty}</td><td>${comp.price}</td><td>${comp.sum}</td><td>${comp.formula || ''}</td></tr>`;
+        return `<tr${cls}><td>${name}</td><td>${comp.qty}</td><td>${comp.price}</td><td>${comp.sum}</td></tr>`;
     };
 
     let html = '<table class="calc-table">';
-    html += '<tr><th>Компонент</th><th>Кол-во</th><th>Цена</th><th>Сумма</th><th>Формула</th></tr>';
-    html += '<tr class="section-header"><td colspan="5">Компоненты</td></tr>';
+    html += '<tr><th>Компонент</th><th>Кол-во</th><th>Цена</th><th>Сумма</th></tr>';
+    html += '<tr class="section-header"><td colspan="4">Компоненты</td></tr>';
     base.forEach(c => { html += row(c, true); });
     if (shot.length) {
-        html += '<tr class="section-header"><td colspan="5">Шотланки</td></tr>';
+        html += '<tr class="section-header"><td colspan="4">Шотланки</td></tr>';
         shot.forEach(c => { html += row(c, true); });
     }
     if (last.length) {
-        html += '<tr class="section-header"><td colspan="5">Остальные расходы</td></tr>';
+        html += '<tr class="section-header"><td colspan="4">Остальные расходы</td></tr>';
         last.forEach(c => { html += row(c, true); });
     }
-    html += `<tr class="summary"><td colspan="4">Ширина двери</td><td>${lastCalculation.doorWidth} мм</td></tr>`;
-    html += `<tr class="summary"><td colspan="4">Итоговая стоимость</td><td>${total} у.е.</td></tr>`;
+    html += `<tr class="summary"><td colspan="3">Ширина двери</td><td>${lastCalculation.doorWidth} мм</td></tr>`;
+    html += `<tr class="summary"><td colspan="3">Итоговая стоимость</td><td>${total} у.е.</td></tr>`;
     html += '</table>';
     html += '<div class="currency-note">Оплата производиться по курсу цб в день оформления заказа</div>';
     return html;
