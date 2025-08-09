@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Калькулятор системы</title>
+    <link rel="stylesheet" href="assets/styles/main.css">
+</head>
+<body>
+<header class="system-header">
+    <div id="steps-bar" class="steps-bar"></div>
+</header>
+<div class="container">
+<main id="calc-container" class="calc-container">
+    <!-- Шаги калькулятора -->
+</main>
+<div id="result-table" class="hidden"></div>
+</div>
+<div id="viewer" class="modal hidden"><div class="modal-content"></div></div>
+<div id="calc-modal" class="modal hidden"><div class="modal-content"></div></div>
+<footer>
+    <div class="container footer-inner">
+        <div class="footer-text">
+            <h3>Нужна консультация?</h3>
+            <p>Сомневаетесь, подойдет ли вам этот товар? Оставьте заявку, наш менеджер свяжется с вами в ближайшее время.</p>
+        </div>
+        <form id="feedback-form" class="footer-form">
+            <div class="row">
+                <input type="text" placeholder="Введите ваше имя" required>
+                <input type="tel" placeholder="Введите ваш номер телефона" pattern="\+998\s\d{2}\s\d{3}\s\d{2}\s\d{2}" title="+998 99 999 99 99" required>
+            </div>
+            <div class="row">
+                <textarea placeholder="Описание"></textarea>
+                <button type="submit">Отправить</button>
+            </div>
+        </form>
+    </div>
+</footer>
+<script src="assets/scripts/images.js"></script>
+<script src="assets/scripts/systems/systemsData.js"></script>
+<script src="assets/scripts/calc-constants.js"></script>
+<script src="assets/scripts/calc-functions.js"></script>
+<script src="assets/scripts/system-calc.js"></script>
+</body>
+</html>
