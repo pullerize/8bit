@@ -12,6 +12,17 @@ interface TaskItem {
   deadline?: string;
 }
 
+interface ProjectInfo {
+  id: number;
+  project_id: number;
+  project: string;
+  service_id: number;
+  executor_id: number;
+  deadline?: string;
+  monthly: boolean;
+  logo?: string | null;
+}
+
 function timeLeft(dateStr: string) {
   const diff = new Date(dateStr).getTime() - Date.now();
   if (diff <= 0) return 'Просрочено';
@@ -27,7 +38,7 @@ function timeLeft(dateStr: string) {
 
 export default function DigitalProject() {
   const { state } = useLocation();
-  const project = state as { id: number; project: string; logo?: string } | undefined;
+  const [project, setProject] = useState<ProjectInfo | undefined>(state as ProjectInfo | undefined);
   const token = localStorage.getItem('token');
   const [tasks, setTasks] = useState<TaskItem[]>([]);
   const [filterDate, setFilterDate] = useState('all');
@@ -41,6 +52,9 @@ export default function DigitalProject() {
   const [deadlineTime, setDeadlineTime] = useState('');
   const [editId, setEditId] = useState<number | null>(null);
   const [timezone, setTimezone] = useState('Asia/Tashkent');
+  const [confirm, setConfirm] = useState(false);
+  const [pendingPayload, setPendingPayload] = useState<any | null>(null);
+  const [pendingDeadline, setPendingDeadline] = useState<string | null>(null);
 
   const load = async () => {
     if (!project) return;
@@ -59,15 +73,13 @@ export default function DigitalProject() {
 
   useEffect(() => { load(); }, []);
 
-  const saveTask = async () => {
-    if (!project || !title) return;
-    const deadline = !deadlineDate || !deadlineTime ? null : `${deadlineDate}T${deadlineTime}`;
-    const payload = {
-      title,
-      description: desc,
-      deadline,
-      links: links.map(({ name, url }) => ({ name, url }))
-    };
+  useEffect(() => {
+    const id = setInterval(() => setTasks(ts => [...ts]), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  const submitTask = async (payload: any) => {
+    if (!project) return;
     const url = editId ? `${API_URL}/digital/projects/${project.id}/tasks/${editId}` : `${API_URL}/digital/projects/${project.id}/tasks`;
     const method = editId ? 'PUT' : 'POST';
     const res = await fetch(url, {
@@ -91,6 +103,44 @@ export default function DigitalProject() {
       setDeadlineTime('');
       setEditId(null);
     }
+  };
+
+  const saveTask = async () => {
+    if (!project || !title) return;
+    const deadline = !deadlineDate || !deadlineTime ? null : `${deadlineDate}T${deadlineTime}`;
+    const payload = {
+      title,
+      description: desc,
+      deadline,
+      links: links.map(({ name, url }) => ({ name, url }))
+    };
+    if (deadline && project.deadline && new Date(deadline) > new Date(project.deadline)) {
+      setPendingPayload(payload);
+      setPendingDeadline(deadline);
+      setConfirm(true);
+      return;
+    }
+    await submitTask(payload);
+  };
+
+  const continueWithDeadline = async () => {
+    if (!project || !pendingPayload || !pendingDeadline) return;
+    await fetch(`${API_URL}/digital/projects/${project.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({
+        project_id: project.project_id,
+        service_id: project.service_id,
+        executor_id: project.executor_id,
+        deadline: pendingDeadline,
+        monthly: project.monthly
+      })
+    });
+    setProject({ ...project, deadline: pendingDeadline });
+    await submitTask(pendingPayload);
+    setConfirm(false);
+    setPendingPayload(null);
+    setPendingDeadline(null);
   };
 
   const addLink = () => setLinks([...links, { id: Date.now(), name: '', url: '' }]);
@@ -239,6 +289,17 @@ export default function DigitalProject() {
               <button className="px-3 py-1 border rounded" onClick={() => { setShow(false); setEditId(null); }}>Отмена</button>
               {editId && <button className="px-3 py-1 bg-red-500 text-white rounded" onClick={() => remove(editId)}>Удалить</button>}
               <button className="px-3 py-1 bg-green-500 text-white rounded" onClick={saveTask}>Сохранить</button>
+            </div>
+          </div>
+        </div>
+      )}
+      {confirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-4 rounded w-80 space-y-4">
+            <p>Дедлайн задачи позже дедлайна проекта.</p>
+            <div className="text-right space-x-2">
+              <button className="px-3 py-1 border rounded" onClick={() => setConfirm(false)}>Изменить дедлайн</button>
+              <button className="px-3 py-1 bg-green-500 text-white rounded" onClick={continueWithDeadline}>Продолжить</button>
             </div>
           </div>
         </div>

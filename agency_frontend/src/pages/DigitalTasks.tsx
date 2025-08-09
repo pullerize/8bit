@@ -73,6 +73,11 @@ function DigitalList() {
 
   useEffect(() => { load(); }, []);
 
+  useEffect(() => {
+    const id = setInterval(() => setItems(it => [...it]), 1000);
+    return () => clearInterval(id);
+  }, []);
+
   const save = async () => {
     if (!proj || !service || !executor) return;
     const deadline = monthly || !deadlineDate || !deadlineTime ? null : `${deadlineDate}T${deadlineTime}`;
