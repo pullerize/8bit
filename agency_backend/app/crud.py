@@ -743,6 +743,9 @@ def get_digital_projects(db: Session) -> List[dict]:
                 "project": proj_name,
                 "service": serv_name,
                 "executor": exec_name,
+                "project_id": dp.project_id,
+                "service_id": dp.service_id,
+                "executor_id": dp.executor_id,
                 "created_at": dp.created_at,
                 "deadline": dp.deadline,
                 "monthly": dp.monthly,
@@ -764,6 +767,27 @@ def create_digital_project(db: Session, data: schemas.DigitalProjectCreate) -> m
     db.commit()
     db.refresh(proj)
     return proj
+
+
+def update_digital_project(db: Session, project_id: int, data: schemas.DigitalProjectCreate) -> Optional[models.DigitalProject]:
+    proj = db.query(models.DigitalProject).filter(models.DigitalProject.id == project_id).first()
+    if not proj:
+        return None
+    proj.project_id = data.project_id
+    proj.service_id = data.service_id
+    proj.executor_id = data.executor_id
+    proj.deadline = data.deadline
+    proj.monthly = data.monthly
+    db.commit()
+    db.refresh(proj)
+    return proj
+
+
+def delete_digital_project(db: Session, project_id: int) -> None:
+    proj = db.query(models.DigitalProject).filter(models.DigitalProject.id == project_id).first()
+    if proj:
+        db.delete(proj)
+        db.commit()
 
 
 def set_digital_project_logo(db: Session, project_id: int, logo: str | None) -> Optional[models.DigitalProject]:
@@ -798,3 +822,23 @@ def create_digital_task(
     db.commit()
     db.refresh(task)
     return task
+
+
+def update_digital_task(db: Session, task_id: int, data: schemas.DigitalTaskCreate) -> Optional[models.DigitalProjectTask]:
+    task = db.query(models.DigitalProjectTask).filter(models.DigitalProjectTask.id == task_id).first()
+    if not task:
+        return None
+    task.title = data.title
+    task.description = data.description
+    task.links = json.dumps([l.dict() for l in data.links])
+    task.deadline = data.deadline
+    db.commit()
+    db.refresh(task)
+    return task
+
+
+def delete_digital_task(db: Session, task_id: int) -> None:
+    task = db.query(models.DigitalProjectTask).filter(models.DigitalProjectTask.id == task_id).first()
+    if task:
+        db.delete(task)
+        db.commit()

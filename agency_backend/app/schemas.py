@@ -261,6 +261,9 @@ class DigitalProject(BaseModel):
     project: str
     service: str
     executor: str
+    project_id: int
+    service_id: int
+    executor_id: int
     created_at: datetime
     deadline: datetime | None = None
     monthly: bool

@@ -24,7 +24,9 @@ export default function DigitalProject() {
   const [desc, setDesc] = useState('');
   const [links, setLinks] = useState<LinkItem[]>([]);
   const [linksModal, setLinksModal] = useState<LinkItem[] | null>(null);
-  const [deadline, setDeadline] = useState('');
+  const [deadlineDate, setDeadlineDate] = useState('');
+  const [deadlineTime, setDeadlineTime] = useState('');
+  const [editId, setEditId] = useState<number | null>(null);
   const [timezone, setTimezone] = useState('Asia/Tashkent');
 
   const load = async () => {
@@ -44,28 +46,37 @@ export default function DigitalProject() {
 
   useEffect(() => { load(); }, []);
 
-  const addTask = async () => {
+  const saveTask = async () => {
     if (!project || !title) return;
+    const deadline = !deadlineDate || !deadlineTime ? null : `${deadlineDate}T${deadlineTime}`;
     const payload = {
       title,
       description: desc,
-      deadline: deadline || null,
+      deadline,
       links: links.map(({ name, url }) => ({ name, url }))
     };
-    const res = await fetch(`${API_URL}/digital/projects/${project.id}/tasks`, {
-      method: 'POST',
+    const url = editId ? `${API_URL}/digital/projects/${project.id}/tasks/${editId}` : `${API_URL}/digital/projects/${project.id}/tasks`;
+    const method = editId ? 'PUT' : 'POST';
+    const res = await fetch(url, {
+      method,
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify(payload)
     });
     if (res.ok) {
       const item: TaskItem = await res.json();
       item.links = item.links.map((l, i) => ({ ...l, id: i }));
-      setTasks([...tasks, item]);
+      if (editId) {
+        setTasks(tasks.map(t => (t.id === editId ? item : t)));
+      } else {
+        setTasks([...tasks, item]);
+      }
       setShow(false);
       setTitle('');
       setDesc('');
       setLinks([]);
-      setDeadline('');
+      setDeadlineDate('');
+      setDeadlineTime('');
+      setEditId(null);
     }
   };
 
@@ -73,6 +84,47 @@ export default function DigitalProject() {
 
   const updateLink = (id: number, field: 'name' | 'url', value: string) => {
     setLinks(links.map(l => (l.id === id ? { ...l, [field]: value } : l)));
+  };
+
+  const handleTimeChange = (val: string) => {
+    let v = val.replace(/\D/g, '').slice(0, 4);
+    if (v.length >= 3) v = v.slice(0, 2) + ':' + v.slice(2);
+    setDeadlineTime(v);
+  };
+
+  const openAdd = () => {
+    setEditId(null);
+    setTitle('');
+    setDesc('');
+    setLinks([]);
+    setDeadlineDate('');
+    setDeadlineTime('');
+    setShow(true);
+  };
+
+  const openEdit = (t: TaskItem) => {
+    setEditId(t.id);
+    setTitle(t.title);
+    setDesc(t.description);
+    setLinks(t.links.map((l, i) => ({ ...l, id: i }))); // ensure ids
+    if (t.deadline) {
+      const d = new Date(t.deadline);
+      setDeadlineDate(d.toISOString().slice(0, 10));
+      setDeadlineTime(d.toISOString().slice(11, 16));
+    } else {
+      setDeadlineDate('');
+      setDeadlineTime('');
+    }
+    setShow(true);
+  };
+
+  const remove = async (id: number) => {
+    await fetch(`${API_URL}/digital/projects/${project?.id}/tasks/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    setTasks(tasks.filter(t => t.id !== id));
+    if (editId === id) setShow(false);
   };
 
   const filtered = tasks.filter(t => {
@@ -117,7 +169,7 @@ export default function DigitalProject() {
             <input type="date" className="border p-1" value={customDate} onChange={e => setCustomDate(e.target.value)} />
           )}
         </div>
-        <button className="px-2 py-1 border rounded" onClick={() => setShow(true)}>Добавить задачу</button>
+        <button className="px-2 py-1 border rounded" onClick={openAdd}>Добавить задачу</button>
       </div>
       <table className="min-w-full bg-white border">
         <thead>
@@ -127,6 +179,7 @@ export default function DigitalProject() {
             <th className="px-2 py-1 border">Полезные ссылки</th>
             <th className="px-2 py-1 border">Когда поставлена</th>
             <th className="px-2 py-1 border">Дедлайн</th>
+            <th className="px-2 py-1 border">Действия</th>
           </tr>
         </thead>
         <tbody>
@@ -141,6 +194,10 @@ export default function DigitalProject() {
               </td>
               <td className="border px-2 py-1">{new Date(t.created_at.endsWith('Z') ? t.created_at : t.created_at + 'Z').toLocaleString('ru-RU', { timeZone: timezone })}</td>
               <td className="border px-2 py-1">{t.deadline ? new Date(t.deadline).toLocaleString('ru-RU', { timeZone: timezone }) : ''}</td>
+              <td className="border px-2 py-1 space-x-2">
+                <button className="text-blue-500" onClick={() => openEdit(t)}>Редактировать</button>
+                <button className="text-green-600" onClick={() => remove(t.id)}>Завершено</button>
+              </td>
             </tr>
           ))}
         </tbody>
@@ -149,7 +206,7 @@ export default function DigitalProject() {
       {show && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
           <div className="bg-white p-4 rounded w-[40rem] space-y-2">
-            <h3 className="text-lg mb-2">Новая задача</h3>
+            <h3 className="text-lg mb-2">{editId ? 'Редактировать задачу' : 'Новая задача'}</h3>
             <input className="border p-2 w-full" placeholder="Название" value={title} onChange={e => setTitle(e.target.value)} />
             <textarea className="border p-2 w-full" placeholder="Описание" value={desc} onChange={e => setDesc(e.target.value)} />
             <div className="space-y-1">
@@ -161,10 +218,14 @@ export default function DigitalProject() {
               ))}
             </div>
             <button className="text-sm text-blue-500" onClick={addLink}>Добавить ссылку</button>
-            <input type="datetime-local" className="border p-2 w-full" value={deadline} onChange={e => setDeadline(e.target.value)} />
+            <div className="flex gap-2">
+              <input type="date" className="border p-2 flex-1" value={deadlineDate} onChange={e => setDeadlineDate(e.target.value)} />
+              <input className="border p-2 w-24" placeholder="00:00" value={deadlineTime} onChange={e => handleTimeChange(e.target.value)} />
+            </div>
             <div className="text-right space-x-2">
-              <button className="px-3 py-1 border rounded" onClick={() => setShow(false)}>Отмена</button>
-              <button className="px-3 py-1 bg-blue-500 text-white rounded" onClick={addTask}>Сохранить</button>
+              <button className="px-3 py-1 border rounded" onClick={() => { setShow(false); setEditId(null); }}>Отмена</button>
+              {editId && <button className="px-3 py-1 bg-red-500 text-white rounded" onClick={() => remove(editId)}>Удалить</button>}
+              <button className="px-3 py-1 bg-green-500 text-white rounded" onClick={saveTask}>Сохранить</button>
             </div>
           </div>
         </div>

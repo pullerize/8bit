@@ -9,12 +9,16 @@ interface User { id: number; name: string; role: string }
 
 interface DigitalItem {
   id: number;
+  project_id: number;
   project: string;
+  service_id: number;
   service: string;
+  executor_id: number;
   executor: string;
   created_at: string;
   deadline?: string;
   monthly: boolean;
+  logo?: string | null;
 }
 
 function timeLeft(dateStr: string) {
@@ -36,8 +40,10 @@ function DigitalList() {
   const [proj, setProj] = useState('');
   const [service, setService] = useState('');
   const [executor, setExecutor] = useState('');
-  const [deadline, setDeadline] = useState('');
+  const [deadlineDate, setDeadlineDate] = useState('');
+  const [deadlineTime, setDeadlineTime] = useState('');
   const [monthly, setMonthly] = useState(false);
+  const [editId, setEditId] = useState<number | null>(null);
   const [filterProj, setFilterProj] = useState('');
   const [filterService, setFilterService] = useState('');
   const [filterExec, setFilterExec] = useState('');
@@ -61,30 +67,82 @@ function DigitalList() {
 
   useEffect(() => { load(); }, []);
 
-  const add = async () => {
+  const save = async () => {
     if (!proj || !service || !executor) return;
+    const deadline = monthly || !deadlineDate || !deadlineTime ? null : `${deadlineDate}T${deadlineTime}`;
     const payload = {
       project_id: Number(proj),
       service_id: Number(service),
       executor_id: Number(executor),
-      deadline: monthly || !deadline ? null : deadline,
+      deadline,
       monthly
     };
-    const res = await fetch(`${API_URL}/digital/projects`, {
-      method: 'POST',
+    const url = editId ? `${API_URL}/digital/projects/${editId}` : `${API_URL}/digital/projects`;
+    const method = editId ? 'PUT' : 'POST';
+    const res = await fetch(url, {
+      method,
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify(payload)
     });
     if (res.ok) {
-      let item = await res.json();
-      setItems([...items, item]);
+      const item = await res.json();
+      if (editId) {
+        setItems(items.map(i => (i.id === editId ? item : i)));
+      } else {
+        setItems([...items, item]);
+      }
       setShow(false);
       setProj('');
       setService('');
       setExecutor('');
-      setDeadline('');
+      setDeadlineDate('');
+      setDeadlineTime('');
       setMonthly(false);
+      setEditId(null);
     }
+  };
+
+  const remove = async (id: number) => {
+    await fetch(`${API_URL}/digital/projects/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    setItems(items.filter(i => i.id !== id));
+    if (editId === id) setShow(false);
+  };
+
+  const handleTimeChange = (val: string) => {
+    let v = val.replace(/\D/g, '').slice(0, 4);
+    if (v.length >= 3) v = v.slice(0, 2) + ':' + v.slice(2);
+    setDeadlineTime(v);
+  };
+
+  const openAdd = () => {
+    setEditId(null);
+    setProj('');
+    setService('');
+    setExecutor('');
+    setDeadlineDate('');
+    setDeadlineTime('');
+    setMonthly(false);
+    setShow(true);
+  };
+
+  const openEdit = (it: DigitalItem) => {
+    setEditId(it.id);
+    setProj(String(it.project_id));
+    setService(String(it.service_id));
+    setExecutor(String(it.executor_id));
+    if (it.deadline) {
+      const d = new Date(it.deadline);
+      setDeadlineDate(d.toISOString().slice(0, 10));
+      setDeadlineTime(d.toISOString().slice(11, 16));
+    } else {
+      setDeadlineDate('');
+      setDeadlineTime('');
+    }
+    setMonthly(it.monthly);
+    setShow(true);
   };
 
   return (
@@ -104,7 +162,7 @@ function DigitalList() {
             {users.filter(u => u.role === 'digital').map(u => <option key={u.id} value={u.name}>{u.name}</option>)}
           </select>
         </div>
-        <button className="px-2 py-1 border rounded" onClick={() => setShow(true)}>Добавить проект</button>
+        <button className="px-2 py-1 border rounded" onClick={openAdd}>Добавить проект</button>
       </div>
       <table className="min-w-full bg-white border">
         <thead>
@@ -114,6 +172,7 @@ function DigitalList() {
             <th className="px-2 py-1 border">Исполнитель</th>
             <th className="px-2 py-1 border">Время создания</th>
             <th className="px-2 py-1 border">Дедлайн</th>
+            <th className="px-2 py-1 border">Действия</th>
           </tr>
         </thead>
         <tbody>
@@ -128,6 +187,10 @@ function DigitalList() {
               <td className="border px-2 py-1">{it.executor}</td>
               <td className="border px-2 py-1">{new Date(it.created_at.endsWith('Z') ? it.created_at : it.created_at + 'Z').toLocaleString('ru-RU', { timeZone: timezone })}</td>
               <td className="border px-2 py-1">{it.monthly ? 'Ежемесячно' : it.deadline ? timeLeft(it.deadline) : ''}</td>
+              <td className="border px-2 py-1 space-x-2" onClick={e => e.stopPropagation()}>
+                <button className="text-blue-500" onClick={() => openEdit(it)}>Редактировать</button>
+                <button className="text-green-600" onClick={() => remove(it.id)}>Завершено</button>
+              </td>
             </tr>
           ))}
         </tbody>
@@ -136,7 +199,7 @@ function DigitalList() {
       {show && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
           <div className="bg-white p-4 rounded w-[32rem] space-y-2">
-            <h3 className="text-lg mb-2">Новый проект</h3>
+            <h3 className="text-lg mb-2">{editId ? 'Редактировать проект' : 'Новый проект'}</h3>
             <select className="border p-2 w-full" value={proj} onChange={e => setProj(e.target.value)}>
               <option value="">Выберите проект</option>
               {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
@@ -150,15 +213,19 @@ function DigitalList() {
               {users.filter(u => u.role === 'digital').map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
             </select>
             {!monthly && (
-              <input type="datetime-local" className="border p-2 w-full" value={deadline} onChange={e => setDeadline(e.target.value)} />
+              <div className="flex gap-2">
+                <input type="date" className="border p-2 flex-1" value={deadlineDate} onChange={e => setDeadlineDate(e.target.value)} />
+                <input className="border p-2 w-24" placeholder="00:00" value={deadlineTime} onChange={e => handleTimeChange(e.target.value)} />
+              </div>
             )}
             <label className="flex items-center gap-2">
               <input type="checkbox" checked={monthly} onChange={e => setMonthly(e.target.checked)} />
               Ежемесячно
             </label>
             <div className="text-right space-x-2">
-              <button className="px-3 py-1 border rounded" onClick={() => setShow(false)}>Отмена</button>
-              <button className="px-3 py-1 bg-blue-500 text-white rounded" onClick={add}>Сохранить</button>
+              <button className="px-3 py-1 border rounded" onClick={() => { setShow(false); setEditId(null); }}>Отмена</button>
+              {editId && <button className="px-3 py-1 bg-red-500 text-white rounded" onClick={() => remove(editId)}>Удалить</button>}
+              <button className="px-3 py-1 bg-green-500 text-white rounded" onClick={save}>Сохранить</button>
             </div>
           </div>
         </div>

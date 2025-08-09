@@ -757,6 +757,32 @@ def create_digital_project(proj: schemas.DigitalProjectCreate, db: Session = Dep
     raise HTTPException(status_code=500, detail="Creation failed")
 
 
+@app.put("/digital/projects/{project_id}", response_model=schemas.DigitalProject)
+def update_digital_project(
+    project_id: int,
+    proj: schemas.DigitalProjectCreate,
+    db: Session = Depends(auth.get_db),
+    current: models.User = Depends(auth.get_current_active_user),
+):
+    dp = crud.update_digital_project(db, project_id, proj)
+    if not dp:
+        raise HTTPException(status_code=404, detail="Project not found")
+    for item in crud.get_digital_projects(db):
+        if item["id"] == project_id:
+            return schemas.DigitalProject(**item)
+    raise HTTPException(status_code=500, detail="Update failed")
+
+
+@app.delete("/digital/projects/{project_id}")
+def delete_digital_project(
+    project_id: int,
+    db: Session = Depends(auth.get_db),
+    current: models.User = Depends(auth.get_current_active_user),
+):
+    crud.delete_digital_project(db, project_id)
+    return {"ok": True}
+
+
 @app.post("/digital/projects/{project_id}/logo")
 async def upload_digital_logo(
     project_id: int,
@@ -821,3 +847,35 @@ def create_digital_task(
         created_at=t.created_at,
         links=task.links,
     )
+
+
+@app.put("/digital/projects/{project_id}/tasks/{task_id}", response_model=schemas.DigitalTask)
+def update_digital_task(
+    project_id: int,
+    task_id: int,
+    task: schemas.DigitalTaskCreate,
+    db: Session = Depends(auth.get_db),
+    current: models.User = Depends(auth.get_current_active_user),
+):
+    t = crud.update_digital_task(db, task_id, task)
+    if not t or t.project_id != project_id:
+        raise HTTPException(status_code=404, detail="Task not found")
+    return schemas.DigitalTask(
+        id=t.id,
+        title=t.title,
+        description=t.description,
+        deadline=t.deadline,
+        created_at=t.created_at,
+        links=json.loads(t.links or "[]"),
+    )
+
+
+@app.delete("/digital/projects/{project_id}/tasks/{task_id}")
+def delete_digital_task(
+    project_id: int,
+    task_id: int,
+    db: Session = Depends(auth.get_db),
+    current: models.User = Depends(auth.get_current_active_user),
+):
+    crud.delete_digital_task(db, task_id)
+    return {"ok": True}
