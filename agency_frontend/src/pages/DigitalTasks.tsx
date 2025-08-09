@@ -22,12 +22,16 @@ interface DigitalItem {
 }
 
 function timeLeft(dateStr: string) {
-  const target = new Date(dateStr).getTime();
-  const diff = target - Date.now();
+  const diff = new Date(dateStr).getTime() - Date.now();
   if (diff <= 0) return 'Просрочено';
-  const h = Math.floor(diff / 3600000);
-  const m = Math.floor((diff % 3600000) / 60000);
-  return `${h}ч ${m}м`;
+  const days = Math.floor(diff / 86400000);
+  const hours = Math.floor((diff % 86400000) / 3600000);
+  const minutes = Math.floor((diff % 3600000) / 60000);
+  if (days > 0) {
+    return `${days}д ${hours}ч ${minutes}м`;
+  }
+  const seconds = Math.floor((diff % 60000) / 1000);
+  return `${hours}ч ${minutes}м ${seconds}с`;
 }
 
 function DigitalList() {
@@ -47,6 +51,8 @@ function DigitalList() {
   const [filterProj, setFilterProj] = useState('');
   const [filterService, setFilterService] = useState('');
   const [filterExec, setFilterExec] = useState('');
+  const [filterDate, setFilterDate] = useState('all');
+  const [customDate, setCustomDate] = useState('');
   const [timezone, setTimezone] = useState('Asia/Tashkent');
   const navigate = useNavigate();
 
@@ -148,7 +154,7 @@ function DigitalList() {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap items-center">
           <select className="border p-1" value={filterProj} onChange={e => setFilterProj(e.target.value)}>
             <option value="">Все проекты</option>
             {projects.map(p => <option key={p.id} value={p.name}>{p.name}</option>)}
@@ -161,6 +167,16 @@ function DigitalList() {
             <option value="">Все исполнители</option>
             {users.filter(u => u.role === 'digital').map(u => <option key={u.id} value={u.name}>{u.name}</option>)}
           </select>
+          <select className="border p-1" value={filterDate} onChange={e => setFilterDate(e.target.value)}>
+            <option value="all">За все время</option>
+            <option value="today">За сегодня</option>
+            <option value="week">За неделю</option>
+            <option value="month">За месяц</option>
+            <option value="custom">Выбрать дату</option>
+          </select>
+          {filterDate === 'custom' && (
+            <input type="date" className="border p-1" value={customDate} onChange={e => setCustomDate(e.target.value)} />
+          )}
         </div>
         <button className="px-2 py-1 border rounded" onClick={openAdd}>Добавить проект</button>
       </div>
@@ -176,11 +192,24 @@ function DigitalList() {
           </tr>
         </thead>
         <tbody>
-          {items.filter(it => (
-            (!filterProj || it.project === filterProj) &&
-            (!filterService || it.service === filterService) &&
-            (!filterExec || it.executor === filterExec)
-          )).map(it => (
+          {items.filter(it => {
+            if (filterProj && it.project !== filterProj) return false;
+            if (filterService && it.service !== filterService) return false;
+            if (filterExec && it.executor !== filterExec) return false;
+            const created = new Date(it.created_at.endsWith('Z') ? it.created_at : it.created_at + 'Z');
+            if (filterDate === 'today') {
+              const now = new Date();
+              if (created.toDateString() !== now.toDateString()) return false;
+            } else if (filterDate === 'week') {
+              if (Date.now() - created.getTime() > 7 * 86400000) return false;
+            } else if (filterDate === 'month') {
+              if (Date.now() - created.getTime() > 30 * 86400000) return false;
+            } else if (filterDate === 'custom' && customDate) {
+              const sel = new Date(customDate);
+              if (created.toDateString() !== sel.toDateString()) return false;
+            }
+            return true;
+          }).map(it => (
             <tr key={it.id} className="text-center hover:bg-gray-50" onClick={() => navigate(String(it.id), { state: it })}>
               <td className="border px-2 py-1">{it.project}</td>
               <td className="border px-2 py-1">{it.service}</td>

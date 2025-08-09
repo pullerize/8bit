@@ -12,6 +12,19 @@ interface TaskItem {
   deadline?: string;
 }
 
+function timeLeft(dateStr: string) {
+  const diff = new Date(dateStr).getTime() - Date.now();
+  if (diff <= 0) return 'Просрочено';
+  const days = Math.floor(diff / 86400000);
+  const hours = Math.floor((diff % 86400000) / 3600000);
+  const minutes = Math.floor((diff % 3600000) / 60000);
+  if (days > 0) {
+    return `${days}д ${hours}ч ${minutes}м`;
+  }
+  const seconds = Math.floor((diff % 60000) / 1000);
+  return `${hours}ч ${minutes}м ${seconds}с`;
+}
+
 export default function DigitalProject() {
   const { state } = useLocation();
   const project = state as { id: number; project: string; logo?: string } | undefined;
@@ -193,7 +206,7 @@ export default function DigitalProject() {
                 )}
               </td>
               <td className="border px-2 py-1">{new Date(t.created_at.endsWith('Z') ? t.created_at : t.created_at + 'Z').toLocaleString('ru-RU', { timeZone: timezone })}</td>
-              <td className="border px-2 py-1">{t.deadline ? new Date(t.deadline).toLocaleString('ru-RU', { timeZone: timezone }) : ''}</td>
+              <td className="border px-2 py-1">{t.deadline ? timeLeft(t.deadline) : ''}</td>
               <td className="border px-2 py-1 space-x-2">
                 <button className="text-blue-500" onClick={() => openEdit(t)}>Редактировать</button>
                 <button className="text-green-600" onClick={() => remove(t.id)}>Завершено</button>
