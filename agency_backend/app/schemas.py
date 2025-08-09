@@ -271,6 +271,7 @@ class DigitalProject(BaseModel):
     deadline: datetime | None = None
     monthly: bool
     logo: str | None = None
+    high_priority: bool = False
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -285,6 +286,7 @@ class DigitalTaskCreate(BaseModel):
     description: str | None = None
     deadline: datetime | None = None
     links: list[LinkItem] = []
+    high_priority: bool = False
 
 
 class DigitalTask(DigitalTaskCreate):

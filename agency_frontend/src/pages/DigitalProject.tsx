@@ -10,6 +10,7 @@ interface TaskItem {
   links: LinkItem[];
   created_at: string;
   deadline?: string;
+  high_priority?: boolean;
 }
 
 interface ProjectInfo {
@@ -66,6 +67,7 @@ export default function DigitalProject() {
     ]);
     if (res.ok) {
       const data: TaskItem[] = await res.json();
+      data.sort((a,b)=> (b.high_priority?1:0)-(a.high_priority?1:0) || ((a.deadline?new Date(a.deadline).getTime():Infinity)-(b.deadline?new Date(b.deadline).getTime():Infinity)));
       setTasks(data.map(t => ({ ...t, links: t.links.map((l, i) => ({ ...l, id: i })) })));
     }
     if (tz.ok) { const d = await tz.json(); setTimezone(d.timezone); }
@@ -91,9 +93,9 @@ export default function DigitalProject() {
       const item: TaskItem = await res.json();
       item.links = item.links.map((l, i) => ({ ...l, id: i }));
       if (editId) {
-        setTasks(tasks.map(t => (t.id === editId ? item : t)));
+        setTasks(tasks.map(t => (t.id === editId ? item : t)).sort((a,b)=> (b.high_priority?1:0)-(a.high_priority?1:0) || ((a.deadline?new Date(a.deadline).getTime():Infinity)-(b.deadline?new Date(b.deadline).getTime():Infinity))));
       } else {
-        setTasks([...tasks, item]);
+        setTasks([...tasks, item].sort((a,b)=> (b.high_priority?1:0)-(a.high_priority?1:0) || ((a.deadline?new Date(a.deadline).getTime():Infinity)-(b.deadline?new Date(b.deadline).getTime():Infinity))));
       }
       setShow(false);
       setTitle('');
@@ -112,7 +114,8 @@ export default function DigitalProject() {
       title,
       description: desc,
       deadline,
-      links: links.map(({ name, url }) => ({ name, url }))
+      links: links.map(({ name, url }) => ({ name, url })),
+      high_priority: editId ? tasks.find(t => t.id === editId)?.high_priority ?? false : false
     };
     if (deadline && project.deadline && new Date(deadline) > new Date(project.deadline)) {
       setPendingPayload(payload);
@@ -181,6 +184,22 @@ export default function DigitalProject() {
     setShow(true);
   };
 
+  const toggleTaskPriority = async (t: TaskItem) => {
+    if (!project) return;
+    await fetch(`${API_URL}/digital/projects/${project.id}/tasks/${t.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({
+        title: t.title,
+        description: t.description,
+        deadline: t.deadline,
+        links: t.links.map(({name,url})=>({name,url})),
+        high_priority: !t.high_priority
+      })
+    });
+    setTasks(tasks.map(it => it.id === t.id ? { ...it, high_priority: !it.high_priority } : it).sort((a,b)=> (b.high_priority?1:0)-(a.high_priority?1:0) || ((a.deadline?new Date(a.deadline).getTime():Infinity)-(b.deadline?new Date(b.deadline).getTime():Infinity))));
+  };
+
   const remove = async (id: number) => {
     await fetch(`${API_URL}/digital/projects/${project?.id}/tasks/${id}`, {
       method: 'DELETE',
@@ -237,6 +256,7 @@ export default function DigitalProject() {
       <table className="min-w-full bg-white border">
         <thead>
           <tr className="bg-gray-100">
+            <th className="px-2 py-1 border"></th>
             <th className="px-2 py-1 border">Название задачи</th>
             <th className="px-2 py-1 border">Описание</th>
             <th className="px-2 py-1 border">Полезные ссылки</th>
@@ -248,6 +268,9 @@ export default function DigitalProject() {
         <tbody>
           {filtered.map(t => (
             <tr key={t.id} className="text-center">
+              <td className="border px-2 py-1 cursor-pointer" onClick={() => toggleTaskPriority(t)}>
+                {t.high_priority ? '★' : '☆'}
+              </td>
               <td className="border px-2 py-1">{t.title}</td>
               <td className="border px-2 py-1">{t.description}</td>
               <td className="border px-2 py-1">

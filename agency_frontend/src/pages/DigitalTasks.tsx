@@ -19,6 +19,7 @@ interface DigitalItem {
   deadline?: string;
   monthly: boolean;
   logo?: string | null;
+  high_priority?: boolean;
 }
 
 function timeLeft(dateStr: string) {
@@ -67,7 +68,11 @@ function DigitalList() {
     if (resP.ok) setProjects(await resP.json());
     if (resS.ok) setServices(await resS.json());
     if (resU.ok) setUsers(await resU.json());
-    if (resD.ok) setItems(await resD.json());
+    if (resD.ok) {
+      const data: DigitalItem[] = await resD.json();
+      data.sort((a,b)=> (b.high_priority?1:0)-(a.high_priority?1:0) || ((a.deadline?new Date(a.deadline).getTime():Infinity)-(b.deadline?new Date(b.deadline).getTime():Infinity)));
+      setItems(data);
+    }
     if (resT.ok) { const data = await resT.json(); setTimezone(data.timezone); }
   };
 
@@ -156,6 +161,15 @@ function DigitalList() {
     setShow(true);
   };
 
+  const togglePriority = async (it: DigitalItem) => {
+    await fetch(`${API_URL}/projects/${it.project_id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ name: it.project, high_priority: !it.high_priority })
+    });
+    setItems(items.map(p => p.id === it.id ? { ...p, high_priority: !p.high_priority } : p).sort((a,b)=> (b.high_priority?1:0)-(a.high_priority?1:0) || ((a.deadline?new Date(a.deadline).getTime():Infinity)-(b.deadline?new Date(b.deadline).getTime():Infinity))));
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
@@ -188,6 +202,7 @@ function DigitalList() {
       <table className="min-w-full bg-white border">
         <thead>
           <tr className="bg-gray-100">
+            <th className="px-2 py-1 border"></th>
             <th className="px-2 py-1 border">Проект</th>
             <th className="px-2 py-1 border">Вид услуги</th>
             <th className="px-2 py-1 border">Исполнитель</th>
@@ -216,6 +231,9 @@ function DigitalList() {
             return true;
           }).map(it => (
             <tr key={it.id} className="text-center hover:bg-gray-50" onClick={() => navigate(String(it.id), { state: it })}>
+              <td className="border px-2 py-1 cursor-pointer" onClick={e => {e.stopPropagation(); togglePriority(it);}}>
+                {it.high_priority ? '★' : '☆'}
+              </td>
               <td className="border px-2 py-1">{it.project}</td>
               <td className="border px-2 py-1">{it.service}</td>
               <td className="border px-2 py-1">{it.executor}</td>

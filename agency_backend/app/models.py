@@ -271,6 +271,7 @@ class DigitalProjectTask(Base):
     links = Column(Text, nullable=True)
     deadline = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+    high_priority = Column(Boolean, default=False)
 
     project = relationship("DigitalProject")
 

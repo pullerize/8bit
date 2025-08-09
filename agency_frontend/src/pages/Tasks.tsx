@@ -151,7 +151,6 @@ function Tasks() {
   const [project, setProject] = useState('')
   const [taskType, setTaskType] = useState('')
   const [taskFormat, setTaskFormat] = useState('')
-  const [highPriority, setHighPriority] = useState(false)
   const [executorRole, setExecutorRole] = useState('')
   const [users, setUsers] = useState<User[]>([])
   const [projects, setProjects] = useState<{id: number; name: string}[]>([])
@@ -276,39 +275,12 @@ function Tasks() {
   const sortedTasks = filteredTasks
     .slice()
     .sort((a, b) => {
-      if (a.high_priority !== b.high_priority) {
-        return b.high_priority ? 1 : -1
-      }
       const da = a.deadline ? new Date(a.deadline).getTime() - Date.now() : Infinity
       const db = b.deadline ? new Date(b.deadline).getTime() - Date.now() : Infinity
       return da - db
     })
 
-  const togglePriority = async (task: Task) => {
-    const token = localStorage.getItem('token')
-    const payload = {
-      title: task.title,
-      description: task.description,
-      project: task.project,
-      task_type: task.task_type,
-      task_format: task.task_format,
-      executor_id: task.executor_id,
-      deadline: task.deadline,
-      high_priority: !task.high_priority,
-    }
-    const res = await fetch(`${API_URL}/tasks/${task.id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify(payload),
-    })
-    if (res.ok) {
-      const updated = await res.json()
-      setTasks(tasks.map(t => t.id === task.id ? updated : t))
-    }
-  }
-
   const validateDeadline = () => {
-    if (highPriority) return true
     const execRole = executorId ? users.find(u => u.id === Number(executorId))?.role : role
     if (execRole === 'designer') {
       if (!deadlineDate || !deadlineTime) return true
@@ -353,7 +325,7 @@ function Tasks() {
       task_format: taskFormat || undefined,
       executor_id: executorId ? Number(executorId) : undefined,
       deadline: deadlineStr,
-      high_priority: highPriority,
+      
     }
     const token = localStorage.getItem('token')
     await fetch(`${API_URL}/tasks/`, {
@@ -416,7 +388,7 @@ function Tasks() {
       task_format: taskFormat || undefined,
       executor_id: executorId ? Number(executorId) : undefined,
       deadline: deadlineStr,
-      high_priority: highPriority,
+      
     }
     const token = localStorage.getItem('token')
     await fetch(`${API_URL}/tasks/${selectedTask.id}`, {
@@ -571,7 +543,6 @@ function Tasks() {
       <table className="min-w-full bg-white border-separate border-spacing-y-2">
         <thead>
           <tr className="bg-gray-100">
-            <th className="px-2 py-2 border"></th>
             <th className="px-4 py-2 border">Название задачи</th>
             <th className="px-4 py-2 border">Проект</th>
             <th className="px-4 py-2 border">Тип задачи</th>
@@ -586,13 +557,8 @@ function Tasks() {
           {sortedTasks.map((t) => (
             <tr
               key={t.id}
-              className={`text-center hover:bg-gray-50 ${
-                t.high_priority ? 'border-red-500 border-2' : 'border'
-              }`}
+              className="text-center hover:bg-gray-50 border"
             >
-              <td className="px-2 py-2 border cursor-pointer" onClick={() => togglePriority(t)}>
-                {t.high_priority ? '★' : '☆'}
-              </td>
               <td
                 className="px-4 py-2 border cursor-pointer underline"
                 onClick={() => {
@@ -606,7 +572,6 @@ function Tasks() {
                   setTaskFormat(t.task_format || '')
                   setExecutorId(t.executor_id ? String(t.executor_id) : '')
                   setExecutorRole(users.find(u => u.id === t.executor_id)?.role || '')
-                  setHighPriority(t.high_priority || false)
                   if (t.deadline) {
                     const d = new Date(t.deadline)
                     setDeadlineDate(d.toISOString().slice(0,10))
@@ -808,12 +773,6 @@ function Tasks() {
                 disabled={!isEditing}
               />
             </div>
-            {isEditing && (
-              <label className="flex items-center mb-2 gap-2">
-                <input type="checkbox" checked={highPriority} onChange={(e) => setHighPriority(e.target.checked)} />
-                <span>Высший приоритет (Срочно)</span>
-              </label>
-            )}
             <div className="flex justify-end">
               <button
                 className="mr-2 px-4 py-1 border rounded"

@@ -731,13 +731,14 @@ def get_digital_projects(db: Session) -> List[dict]:
             models.DigitalService.name,
             models.User.name,
             models.Project.logo,
+            models.Project.high_priority,
         )
         .join(models.Project, models.DigitalProject.project_id == models.Project.id)
         .join(models.DigitalService, models.DigitalProject.service_id == models.DigitalService.id)
         .join(models.User, models.DigitalProject.executor_id == models.User.id)
     )
     items: list[dict] = []
-    for dp, proj_name, serv_name, exec_name, logo in q.all():
+    for dp, proj_name, serv_name, exec_name, logo, high_priority in q.all():
         items.append(
             {
                 "id": dp.id,
@@ -751,6 +752,7 @@ def get_digital_projects(db: Session) -> List[dict]:
                 "deadline": dp.deadline,
                 "monthly": dp.monthly,
                 "logo": logo,
+                "high_priority": high_priority,
             }
         )
     return items
@@ -805,6 +807,7 @@ def get_digital_tasks(db: Session, project_id: int) -> List[models.DigitalProjec
     return (
         db.query(models.DigitalProjectTask)
         .filter(models.DigitalProjectTask.project_id == project_id)
+        .order_by(models.DigitalProjectTask.high_priority.desc(), models.DigitalProjectTask.deadline)
         .all()
     )
 
@@ -818,6 +821,7 @@ def create_digital_task(
         description=data.description,
         links=json.dumps([l.dict() for l in data.links]),
         deadline=data.deadline,
+        high_priority=data.high_priority or False,
     )
     db.add(task)
     db.commit()
@@ -833,6 +837,8 @@ def update_digital_task(db: Session, task_id: int, data: schemas.DigitalTaskCrea
     task.description = data.description
     task.links = json.dumps([l.dict() for l in data.links])
     task.deadline = data.deadline
+    if data.high_priority is not None:
+        task.high_priority = data.high_priority
     db.commit()
     db.refresh(task)
     return task

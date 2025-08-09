@@ -825,6 +825,7 @@ def list_digital_tasks(
             description=t.description,
             deadline=t.deadline,
             created_at=t.created_at,
+            high_priority=t.high_priority,
             links=json.loads(t.links or "[]"),
         )
         for t in crud.get_digital_tasks(db, project_id)
@@ -845,6 +846,7 @@ def create_digital_task(
         description=t.description,
         deadline=t.deadline,
         created_at=t.created_at,
+        high_priority=t.high_priority,
         links=task.links,
     )
 
@@ -866,6 +868,7 @@ def update_digital_task(
         description=t.description,
         deadline=t.deadline,
         created_at=t.created_at,
+        high_priority=t.high_priority,
         links=json.loads(t.links or "[]"),
     )
 
