@@ -5,6 +5,7 @@ interface Project {
   id: number
   name: string
   logo?: string
+  high_priority?: boolean
 }
 
 function Projects() {
@@ -20,7 +21,10 @@ function Projects() {
     const res = await fetch(`${API_URL}/projects/`, {
       headers: { Authorization: `Bearer ${token}` },
     })
-    if (res.ok) setItems(await res.json())
+    if (res.ok) {
+      const data: Project[] = await res.json()
+      setItems(data.sort((a,b)=> (b.high_priority?1:0) - (a.high_priority?1:0)))
+    }
   }
 
   useEffect(() => { load() }, [])
@@ -40,7 +44,7 @@ function Projects() {
   }
 
   const save = async () => {
-    const payload = { name }
+    const payload = { name, high_priority: editing ? editing.high_priority ?? false : false }
     let proj: Project | null = null
     if (editing) {
       const res = await fetch(`${API_URL}/projects/${editing.id}`, {
@@ -105,6 +109,15 @@ function Projects() {
     load()
   }
 
+  const togglePriority = async (p: Project) => {
+    await fetch(`${API_URL}/projects/${p.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ name: p.name, high_priority: !p.high_priority })
+    })
+    load()
+  }
+
   return (
     <div className="p-4">
       <div className="flex justify-between items-center mb-4">
@@ -114,6 +127,7 @@ function Projects() {
       <table className="min-w-full bg-white border">
         <thead>
           <tr className="bg-gray-100">
+            <th className="px-2 py-2 border"></th>
             <th className="px-4 py-2 border">Логотип</th>
             <th className="px-4 py-2 border">Название</th>
             <th className="px-4 py-2 border"></th>
@@ -122,6 +136,9 @@ function Projects() {
         <tbody>
           {items.map(p => (
             <tr key={p.id} className="text-center border-t">
+              <td className="px-2 py-2 border cursor-pointer" onClick={() => togglePriority(p)}>
+                {p.high_priority ? '★' : '☆'}
+              </td>
               <td className="px-4 py-2 border" onClick={e => e.stopPropagation()}>
                 {p.logo ? (
                   <img src={`${API_URL}/${p.logo}`} className="w-12 h-12 object-cover mx-auto" />

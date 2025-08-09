@@ -256,7 +256,7 @@ def list_projects(db: Session = Depends(auth.get_db), current: models.User = Dep
 def create_project(project: schemas.ProjectCreate, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
     if current.role != models.RoleEnum.admin:
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    return crud.create_project(db, project.name)
+    return crud.create_project(db, project)
 
 
 @app.get("/projects/{project_id}", response_model=schemas.Project)
@@ -271,7 +271,7 @@ def get_project(project_id: int, db: Session = Depends(auth.get_db), current: mo
 def update_project(project_id: int, project: schemas.ProjectCreate, db: Session = Depends(auth.get_db), current: models.User = Depends(auth.get_current_active_user)):
     if current.role != models.RoleEnum.admin:
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    updated = crud.update_project(db, project_id, project.name)
+    updated = crud.update_project(db, project_id, project)
     if not updated:
         raise HTTPException(status_code=404, detail="Project not found")
     return updated

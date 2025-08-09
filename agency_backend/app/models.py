@@ -117,6 +117,7 @@ class Project(Base):
     posts_count = Column(Integer, default=0)
     start_date = Column(DateTime, default=first_day_current_month)
     end_date = Column(DateTime, default=last_day_current_month)
+    high_priority = Column(Boolean, default=False)
 
 class Shooting(Base):
     __tablename__ = "shootings"

@@ -190,12 +190,12 @@ def get_projects(db: Session) -> List[models.Project]:
     return db.query(models.Project).all()
 
 
-def create_project(db: Session, name: str) -> models.Project:
-    project = models.Project(name=name)
-    db.add(project)
+def create_project(db: Session, project: schemas.ProjectCreate) -> models.Project:
+    proj = models.Project(name=project.name, high_priority=project.high_priority)
+    db.add(proj)
     db.commit()
-    db.refresh(project)
-    return project
+    db.refresh(proj)
+    return proj
 
 
 def delete_project(db: Session, project_id: int) -> None:
@@ -205,11 +205,12 @@ def delete_project(db: Session, project_id: int) -> None:
         db.commit()
 
 
-def update_project(db: Session, project_id: int, name: str) -> Optional[models.Project]:
+def update_project(db: Session, project_id: int, project: schemas.ProjectCreate) -> Optional[models.Project]:
     proj = db.query(models.Project).filter(models.Project.id == project_id).first()
     if not proj:
         return None
-    proj.name = name
+    proj.name = project.name
+    proj.high_priority = project.high_priority
     db.commit()
     db.refresh(proj)
     return proj

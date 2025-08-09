@@ -279,10 +279,33 @@ function Tasks() {
       if (a.high_priority !== b.high_priority) {
         return b.high_priority ? 1 : -1
       }
-      const da = a.deadline ? new Date(a.deadline).getTime() : Infinity
-      const db = b.deadline ? new Date(b.deadline).getTime() : Infinity
+      const da = a.deadline ? new Date(a.deadline).getTime() - Date.now() : Infinity
+      const db = b.deadline ? new Date(b.deadline).getTime() - Date.now() : Infinity
       return da - db
     })
+
+  const togglePriority = async (task: Task) => {
+    const token = localStorage.getItem('token')
+    const payload = {
+      title: task.title,
+      description: task.description,
+      project: task.project,
+      task_type: task.task_type,
+      task_format: task.task_format,
+      executor_id: task.executor_id,
+      deadline: task.deadline,
+      high_priority: !task.high_priority,
+    }
+    const res = await fetch(`${API_URL}/tasks/${task.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify(payload),
+    })
+    if (res.ok) {
+      const updated = await res.json()
+      setTasks(tasks.map(t => t.id === task.id ? updated : t))
+    }
+  }
 
   const validateDeadline = () => {
     if (highPriority) return true
@@ -548,6 +571,7 @@ function Tasks() {
       <table className="min-w-full bg-white border-separate border-spacing-y-2">
         <thead>
           <tr className="bg-gray-100">
+            <th className="px-2 py-2 border"></th>
             <th className="px-4 py-2 border">Название задачи</th>
             <th className="px-4 py-2 border">Проект</th>
             <th className="px-4 py-2 border">Тип задачи</th>
@@ -566,6 +590,9 @@ function Tasks() {
                 t.high_priority ? 'border-red-500 border-2' : 'border'
               }`}
             >
+              <td className="px-2 py-2 border cursor-pointer" onClick={() => togglePriority(t)}>
+                {t.high_priority ? '★' : '☆'}
+              </td>
               <td
                 className="px-4 py-2 border cursor-pointer underline"
                 onClick={() => {
@@ -590,7 +617,7 @@ function Tasks() {
                   }
                 }}
               >
-                {t.high_priority && '⭐ '} {t.title}
+                {t.title}
               </td>
               <td className="px-4 py-2 border">{t.project}</td>
               <td className="px-4 py-2 border">

@@ -5,6 +5,7 @@ import { API_URL } from '../api'
 interface Project {
   id: number
   name: string
+  high_priority?: boolean
 }
 
 interface PostSummary {
@@ -36,7 +37,8 @@ function Projects() {
   const load = async (m:number=month) => {
     const res = await fetch(`${API_URL}/projects/`,{headers:{Authorization:`Bearer ${token}`}})
     if(res.ok){
-      const data = await res.json()
+      const data:Project[] = await res.json()
+      data.sort((a,b)=> (b.high_priority?1:0)-(a.high_priority?1:0))
       setProjects(data)
       const obj:Record<number,PostSummary>={}
       for(const p of data){
@@ -58,6 +60,15 @@ function Projects() {
 
   useEffect(()=>{load(month)},[month])
 
+  const togglePriority = async (p:Project) => {
+    await fetch(`${API_URL}/projects/${p.id}`, {
+      method:'PUT',
+      headers:{'Content-Type':'application/json', Authorization:`Bearer ${token}`},
+      body: JSON.stringify({name:p.name, high_priority: !p.high_priority})
+    })
+    load(month)
+  }
+
   return (
     <div className="p-4">
       <h1 className="text-center text-xl mb-4">Общие показатели успеваемости по проектам</h1>
@@ -70,7 +81,12 @@ function Projects() {
         {projects.map(p=> (
           <div key={p.id} className="border p-4 flex flex-col items-center cursor-pointer" onClick={()=>navigate(`/projects/${p.id}`)}>
             <Donut stats={stats[p.id]||{in_progress:0,approved:0,cancelled:0,overdue:0}} />
-            <div className="mt-2 font-semibold">{p.name}</div>
+            <div className="mt-2 font-semibold flex items-center gap-2">
+              <span>{p.name}</span>
+              <span onClick={e=>{e.stopPropagation(); togglePriority(p)}} className="cursor-pointer">
+                {p.high_priority ? '★' : '☆'}
+              </span>
+            </div>
           </div>
         ))}
       </div>

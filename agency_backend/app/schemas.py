@@ -65,17 +65,20 @@ class Project(BaseModel):
     posts_count: int = 0
     start_date: datetime | None = None
     end_date: datetime | None = None
+    high_priority: bool = False
 
     model_config = ConfigDict(from_attributes=True)
 
 class ProjectCreate(BaseModel):
     name: str
+    high_priority: bool = False
 
 
 class ProjectUpdate(BaseModel):
     posts_count: Optional[int] = None
     start_date: Optional[datetime] = None
     end_date: Optional[datetime] = None
+    high_priority: Optional[bool] = None
 
 
 class ProjectPostBase(BaseModel):
