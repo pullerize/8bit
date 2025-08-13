@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
+from sqlalchemy import inspect, text
 from dotenv import load_dotenv
 from datetime import datetime
 from typing import List, Optional
@@ -15,6 +16,20 @@ from .database import engine, Base, SessionLocal
 
 load_dotenv()
 Base.metadata.create_all(bind=engine)
+
+
+def ensure_digital_task_priority_column():
+    with engine.connect() as conn:
+        inspector = inspect(conn)
+        cols = [c["name"] for c in inspector.get_columns("digital_project_tasks")]
+        if "high_priority" not in cols:
+            conn.execute(text(
+                "ALTER TABLE digital_project_tasks "
+                "ADD COLUMN high_priority BOOLEAN DEFAULT 0"
+            ))
+
+
+ensure_digital_task_priority_column()
 
 
 def create_default_admin():
